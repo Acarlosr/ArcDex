@@ -44,8 +44,18 @@ export default function StakePage() {
   const { formatted: usdcRewards, refetch: refetchUSDCRewards } = usePendingRewards('USDC')
   const { formatted: eurcRewards, refetch: refetchEURCRewards } = usePendingRewards('EURC')
 
-  // APR data
-  const { baseAPR, boostAPR, totalAPR } = useAPR(selectedToken)
+  // APR data - use fallback static values if contract returns 0
+  const { baseAPR: contractBaseAPR, boostAPR: contractBoostAPR, totalAPR: contractTotalAPR } = useAPR(selectedToken)
+
+  // Fallback APR values (from PROTOCOL constants)
+  const fallbackAPR = {
+    USDC: { base: 8, boost: 2, total: 10 },
+    EURC: { base: 6, boost: 2, total: 8 },
+  }
+
+  const baseAPR = contractBaseAPR > 0 ? contractBaseAPR : fallbackAPR[selectedToken].base
+  const boostAPR = contractBoostAPR > 0 ? contractBoostAPR : fallbackAPR[selectedToken].boost
+  const totalAPR = contractTotalAPR > 0 ? contractTotalAPR : fallbackAPR[selectedToken].total
 
   // Total staked in protocol
   const { formatted: totalStakedUSDC } = useTotalStaked('USDC')
