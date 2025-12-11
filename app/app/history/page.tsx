@@ -3,45 +3,19 @@
 import { useState, useMemo } from "react"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { Loader2, ExternalLink, RefreshCw } from "lucide-react"
-import { useAccount, useReadContracts } from "wagmi"
-import { ARCDEX, CHAIN_CONFIG } from "@/lib/contracts"
-import { ARCDEX_SWAP_ABI } from "@/lib/abi/swap"
-import { ARCDEX_STAKING_ABI } from "@/lib/abi/staking"
-import { formatDistanceToNow } from "date-fns"
+import { ExternalLink } from "lucide-react"
+import { useAccount } from "wagmi"
+import { ARCDEX } from "@/lib/contracts"
 
-// Types for transactions
-interface Transaction {
-  type: "Swap" | "Stake" | "Unstake" | "Add Liquidity" | "Remove Liquidity" | "Payment"
-  token: string
-  amount: string
-  date: string
-  status: "Completed" | "Pending" | "Failed"
-  hash?: string
-}
+// Correct Arc Testnet Explorer URL
+const EXPLORER_URL = "https://testnet.arcscan.app"
 
 export default function HistoryPage() {
   const [filterToken, setFilterToken] = useState("all")
-  const [isLoading, setIsLoading] = useState(false)
 
   const { address, isConnected } = useAccount()
 
-  // Since reading contract events requires archive nodes/indexers which may not be available
-  // on Arc Testnet, we'll show a helpful message and link to the explorer
-
-  const explorerUrl = CHAIN_CONFIG.blockExplorers?.default?.url || "https://explorer.testnet.arc.network"
-  const addressExplorerUrl = address ? `${explorerUrl}/address/${address}` : explorerUrl
-
-  // Placeholder for when we can fetch real events
-  const transactions: Transaction[] = []
-
-  const filteredTransactions = useMemo(() => {
-    if (filterToken === "all") return transactions
-    return transactions.filter((t) =>
-      t.token.toLowerCase().includes(filterToken.toLowerCase()) ||
-      t.type.toLowerCase().includes(filterToken.toLowerCase())
-    )
-  }, [transactions, filterToken])
+  const addressExplorerUrl = address ? `${EXPLORER_URL}/address/${address}` : EXPLORER_URL
 
   return (
     <div className="w-full">
@@ -94,7 +68,7 @@ export default function HistoryPage() {
                     </h3>
                     <p className="text-sm text-muted-foreground mb-4">
                       Para ver o histórico completo de suas transações no Arc Testnet,
-                      acesse o Explorer da rede. Lá você encontrará todas as interações
+                      acesse o ArcScan Explorer. Lá você encontrará todas as interações
                       com os contratos ArcDex, incluindo swaps, stakes e pagamentos.
                     </p>
                     <div className="flex flex-wrap gap-3">
@@ -107,14 +81,14 @@ export default function HistoryPage() {
                       </Button>
                       <Button
                         variant="outline"
-                        onClick={() => window.open(`${explorerUrl}/address/${ARCDEX.Swap}`, '_blank')}
+                        onClick={() => window.open(`${EXPLORER_URL}/address/${ARCDEX.Swap}`, '_blank')}
                         className="border-border text-foreground hover:bg-muted"
                       >
                         Swap Contract
                       </Button>
                       <Button
                         variant="outline"
-                        onClick={() => window.open(`${explorerUrl}/address/${ARCDEX.Staking}`, '_blank')}
+                        onClick={() => window.open(`${EXPLORER_URL}/address/${ARCDEX.Staking}`, '_blank')}
                         className="border-border text-foreground hover:bg-muted"
                       >
                         Staking Contract
@@ -146,19 +120,47 @@ export default function HistoryPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-muted/50 rounded-xl p-4">
                   <p className="text-sm text-muted-foreground mb-1">Swap Contract</p>
-                  <code className="text-xs text-foreground font-mono">{ARCDEX.Swap}</code>
+                  <a
+                    href={`${EXPLORER_URL}/address/${ARCDEX.Swap}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-cyan-400 font-mono hover:underline"
+                  >
+                    {ARCDEX.Swap}
+                  </a>
                 </div>
                 <div className="bg-muted/50 rounded-xl p-4">
                   <p className="text-sm text-muted-foreground mb-1">Staking Contract</p>
-                  <code className="text-xs text-foreground font-mono">{ARCDEX.Staking}</code>
+                  <a
+                    href={`${EXPLORER_URL}/address/${ARCDEX.Staking}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-cyan-400 font-mono hover:underline"
+                  >
+                    {ARCDEX.Staking}
+                  </a>
                 </div>
                 <div className="bg-muted/50 rounded-xl p-4">
                   <p className="text-sm text-muted-foreground mb-1">LP Token</p>
-                  <code className="text-xs text-foreground font-mono">{ARCDEX.LP}</code>
+                  <a
+                    href={`${EXPLORER_URL}/address/${ARCDEX.LP}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-cyan-400 font-mono hover:underline"
+                  >
+                    {ARCDEX.LP}
+                  </a>
                 </div>
                 <div className="bg-muted/50 rounded-xl p-4">
                   <p className="text-sm text-muted-foreground mb-1">Payments Contract</p>
-                  <code className="text-xs text-foreground font-mono">{ARCDEX.Payments}</code>
+                  <a
+                    href={`${EXPLORER_URL}/address/${ARCDEX.Payments}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-cyan-400 font-mono hover:underline"
+                  >
+                    {ARCDEX.Payments}
+                  </a>
                 </div>
               </div>
             </div>
