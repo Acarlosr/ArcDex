@@ -189,17 +189,55 @@ export function Navbar() {
             </div>
           ) : (
             <div className="space-y-4">
-              {connectors.map((connector) => (
-                <button
-                  key={connector.id}
-                  onClick={() => handleConnect(connector.id)}
-                  disabled={!connector.ready}
-                  className="w-full p-3 rounded-lg bg-muted hover:bg-muted/80 text-foreground text-sm font-medium transition-colors glow-border disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {connector.name}
-                  {!connector.ready && " (unavailable)"}
-                </button>
-              ))}
+              {/* Check if MetaMask or other wallet is detected */}
+              {typeof window !== 'undefined' && (window as unknown as { ethereum?: unknown }).ethereum ? (
+                <>
+                  <button
+                    onClick={() => {
+                      const injectedConnector = connectors.find(c => c.id === 'injected')
+                      if (injectedConnector) {
+                        connect({ connector: injectedConnector })
+                        setIsDialogOpen(false)
+                      }
+                    }}
+                    className="w-full p-4 rounded-xl bg-gradient-to-r from-orange-500/20 to-orange-600/20 hover:from-orange-500/30 hover:to-orange-600/30 text-foreground text-sm font-medium transition-all border border-orange-500/30 flex items-center gap-3"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center">
+                      <span className="text-white font-bold text-sm">M</span>
+                    </div>
+                    <span>MetaMask</span>
+                    <span className="ml-auto text-xs text-green-400">● Detected</span>
+                  </button>
+
+                  {connectors.filter(c => c.id !== 'injected').map((connector) => (
+                    <button
+                      key={connector.id}
+                      onClick={() => handleConnect(connector.id)}
+                      className="w-full p-3 rounded-lg bg-muted hover:bg-muted/80 text-foreground text-sm font-medium transition-colors border border-border"
+                    >
+                      {connector.name}
+                    </button>
+                  ))}
+                </>
+              ) : (
+                <div className="text-center py-6">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+                    <span className="text-3xl">🦊</span>
+                  </div>
+                  <p className="text-foreground font-medium mb-2">No Wallet Detected</p>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Please install MetaMask to connect to this app.
+                  </p>
+                  <a
+                    href="https://metamask.io/download/"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-block px-4 py-2 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 transition-colors"
+                  >
+                    Install MetaMask
+                  </a>
+                </div>
+              )}
 
               <p className="text-xs text-muted-foreground pt-2">
                 <span className="block font-semibold mb-1">Note:</span>

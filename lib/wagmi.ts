@@ -13,10 +13,13 @@ export const arcTestnet = {
 } as const
 
 // Create wagmi config
+// Using injected connector which detects MetaMask, Coinbase Wallet, Brave Wallet, etc.
 export const wagmiConfig = createConfig({
     chains: [arcTestnet],
     connectors: [
-        injected(),
+        injected({
+            shimDisconnect: true,
+        }),
     ],
     storage: createStorage({
         storage: typeof window !== 'undefined' ? window.localStorage : undefined,
