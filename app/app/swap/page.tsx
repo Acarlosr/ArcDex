@@ -9,22 +9,40 @@ import { useAccount } from "wagmi"
 import { ARCDEX, parseTokenAmount } from "@/lib/contracts"
 import { Loader2 } from "lucide-react"
 
+type SwapToken = "USDC" | "EURC" | "USYC"
+
+// Check if a swap pair is available (USYC pairs not deployed yet)
+function isSwapEnabled(from: SwapToken, to: SwapToken): boolean {
+  if (from === "USYC" || to === "USYC") return false // USYC contracts not deployed
+  return from !== to
+}
+
 export default function SwapPage() {
-  const [fromToken, setFromToken] = useState<"USDC" | "EURC">("USDC")
-  const [toToken, setToToken] = useState<"USDC" | "EURC">("EURC")
+  const [fromToken, setFromToken] = useState<SwapToken>("USDC")
+  const [toToken, setToToken] = useState<SwapToken>("EURC")
   const [fromAmount, setFromAmount] = useState("")
+
+  const swapEnabled = isSwapEnabled(fromToken, toToken)
 
   const { isConnected } = useAccount()
 
   // Get real balances from blockchain
   const { formatted: usdcBalance, isLoading: usdcLoading, refetch: refetchUSDC } = useTokenBalance('USDC')
   const { formatted: eurcBalance, isLoading: eurcLoading, refetch: refetchEURC } = useTokenBalance('EURC')
+  const { formatted: usycBalance, isLoading: usycLoading, refetch: refetchUSYC } = useTokenBalance('USYC')
 
-  // Get amount out from contract
-  const { formatted: amountOut, isLoading: quoteLoading } = useGetAmountOut(fromToken, fromAmount)
+  // Get amount out from contract (only for USDC/EURC pairs)
+  const swapFromToken = fromToken === 'USYC' ? 'USDC' : fromToken
+  const { formatted: amountOut, isLoading: quoteLoading } = useGetAmountOut(
+    swapEnabled ? swapFromToken : 'USDC',
+    swapEnabled ? fromAmount : ''
+  )
 
-  // Allowance check
-  const { allowance } = useTokenAllowance(fromToken, ARCDEX.Swap)
+  // Allowance check (only for enabled pairs)
+  const { allowance } = useTokenAllowance(
+    swapEnabled ? swapFromToken : 'USDC',
+    ARCDEX.Swap
+  )
 
   // Approve hook
   const { approve, isPending: approving, isSuccess: approveSuccess } = useApprove()
@@ -32,10 +50,16 @@ export default function SwapPage() {
   // Swap hook
   const { swap, isPending: swapping, isSuccess: swapSuccess, error: swapError } = useSwap()
 
-  const fromBalance = fromToken === 'USDC' ? usdcBalance : eurcBalance
-  const toBalance = toToken === 'USDC' ? usdcBalance : eurcBalance
-  const fromLoading = fromToken === 'USDC' ? usdcLoading : eurcLoading
-  const toLoading = toToken === 'USDC' ? usdcLoading : eurcLoading
+  const getBalance = (token: SwapToken) => {
+    if (token === 'USDC') return { balance: usdcBalance, loading: usdcLoading }
+    if (token === 'EURC') return { balance: eurcBalance, loading: eurcLoading }
+    return { balance: usycBalance, loading: usycLoading }
+  }
+
+  const fromBalance = getBalance(fromToken).balance
+  const toBalance = getBalance(toToken).balance
+  const fromLoading = getBalance(fromToken).loading
+  const toLoading = getBalance(toToken).loading
 
   // Check if approval needed
   const needsApproval = fromAmount && allowance !== undefined &&
@@ -68,15 +92,15 @@ export default function SwapPage() {
   }
 
   const handleApprove = async () => {
-    if (!fromAmount) return
-    await approve(fromToken, ARCDEX.Swap, fromAmount)
+    if (!fromAmount || !swapEnabled) return
+    await approve(swapFromToken, ARCDEX.Swap, fromAmount)
   }
 
   const handleSwap = async () => {
-    if (!fromAmount || !amountOut) return
+    if (!fromAmount || !amountOut || !swapEnabled) return
     // Apply 0.5% slippage
     const minOut = (parseFloat(amountOut.replace(',', '')) * 0.995).toFixed(2)
-    await swap(fromToken, fromAmount, minOut)
+    await swap(swapFromToken, fromAmount, minOut)
   }
 
   return (
@@ -105,19 +129,28 @@ export default function SwapPage() {
           <div className="bg-card rounded-2xl p-8 border border-border glow-border">
             {/* From */}
             <div className="space-y-3 mb-6">
-              <label className="text-sm font-medium text-muted-foreground">From</label>
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-medium text-muted-foreground">From</label>
+                {!swapEnabled && (
+                  <span className="text-xs text-yellow-400 bg-yellow-500/20 px-2 py-0.5 rounded-full">USYC Coming Soon</span>
+                )}
+              </div>
               <div className="flex gap-4">
                 <select
                   value={fromToken}
                   onChange={(e) => {
-                    const newFrom = e.target.value as "USDC" | "EURC"
+                    const newFrom = e.target.value as SwapToken
                     setFromToken(newFrom)
-                    setToToken(newFrom === "USDC" ? "EURC" : "USDC")
+                    // Auto-select appropriate toToken
+                    if (newFrom === "USDC") setToToken("EURC")
+                    else if (newFrom === "EURC") setToToken("USDC")
+                    else if (newFrom === "USYC") setToToken("USDC")
                   }}
                   className="bg-input text-foreground border border-border rounded-xl p-4 w-32 text-lg font-medium"
                 >
                   <option value="USDC">USDC</option>
                   <option value="EURC">EURC</option>
+                  <option value="USYC">USYC ⏳</option>
                 </select>
                 <Input
                   type="number"
@@ -160,14 +193,18 @@ export default function SwapPage() {
                 <select
                   value={toToken}
                   onChange={(e) => {
-                    const newTo = e.target.value as "USDC" | "EURC"
+                    const newTo = e.target.value as SwapToken
                     setToToken(newTo)
-                    setFromToken(newTo === "USDC" ? "EURC" : "USDC")
+                    // Auto-select appropriate fromToken
+                    if (newTo === "USDC") setFromToken(fromToken === "USDC" ? "EURC" : fromToken)
+                    else if (newTo === "EURC") setFromToken(fromToken === "EURC" ? "USDC" : fromToken)
+                    else if (newTo === "USYC") setFromToken(fromToken === "USYC" ? "USDC" : fromToken)
                   }}
                   className="bg-input text-foreground border border-border rounded-xl p-4 w-32 text-lg font-medium"
                 >
                   <option value="USDC">USDC</option>
                   <option value="EURC">EURC</option>
+                  <option value="USYC">USYC ⏳</option>
                 </select>
                 <Input
                   type="text"

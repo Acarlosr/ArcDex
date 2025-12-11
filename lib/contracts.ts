@@ -127,6 +127,54 @@ export const ARCDEX = {
 } as const;
 
 // ============================================================================
+// POOL DEFINITIONS
+// ============================================================================
+
+export type PoolPair = "USDC_EURC" | "USYC_USDC" | "USYC_EURC";
+
+export const POOLS: Record<PoolPair, {
+  name: string;
+  token0: keyof typeof TOKENS;
+  token1: keyof typeof TOKENS;
+  lpToken: string;
+  swapContract: string;
+  enabled: boolean;
+  apr: number;
+  icon: string;
+}> = {
+  USDC_EURC: {
+    name: "USDC / EURC",
+    token0: "USDC",
+    token1: "EURC",
+    lpToken: ARCDEX.LP,
+    swapContract: ARCDEX.Swap,
+    enabled: true,
+    apr: 12.4,
+    icon: "💱",
+  },
+  USYC_USDC: {
+    name: "USYC / USDC",
+    token0: "USYC",
+    token1: "USDC",
+    lpToken: ARCDEX.LP_USYC,
+    swapContract: ARCDEX.SwapUSYC,
+    enabled: false, // Enable after deployment
+    apr: 8.5,
+    icon: "📈",
+  },
+  USYC_EURC: {
+    name: "USYC / EURC",
+    token0: "USYC",
+    token1: "EURC",
+    lpToken: ARCDEX.LP_USYC,
+    swapContract: ARCDEX.SwapUSYC,
+    enabled: false, // Enable after deployment
+    apr: 7.2,
+    icon: "📊",
+  },
+};
+
+// ============================================================================
 // PROTOCOL CONSTANTS
 // ============================================================================
 

@@ -9,7 +9,7 @@ import { useState } from 'react'
 // TOKEN HOOKS
 // ============================================================================
 
-export function useTokenBalance(token: 'USDC' | 'EURC') {
+export function useTokenBalance(token: 'USDC' | 'EURC' | 'USYC') {
     const { address } = useAccount()
     const tokenAddress = TOKENS[token]
 
