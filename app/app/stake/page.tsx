@@ -291,7 +291,10 @@ export default function StakePage() {
 
           {/* Pending Rewards */}
           <div className="bg-card rounded-2xl p-6 border border-border">
-            <h3 className="text-lg font-semibold text-foreground mb-4">Pending Rewards</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-foreground">Pending Rewards</h3>
+              <span className="text-xs text-yellow-400 bg-yellow-500/20 px-2 py-1 rounded-full">Testnet</span>
+            </div>
             <div className="space-y-4">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">USDC Rewards</span>
@@ -302,9 +305,18 @@ export default function StakePage() {
                 <span className="text-accent font-semibold">{eurcRewards}</span>
               </div>
             </div>
+
+            {/* Info about rewards */}
+            <div className="mt-4 p-3 bg-muted/50 rounded-lg text-xs text-muted-foreground">
+              <p className="flex items-center gap-1">
+                <span>ℹ️</span>
+                Rewards acumulam com base no APR. Claim requer treasury configurado.
+              </p>
+            </div>
+
             <Button
               onClick={handleClaimAll}
-              disabled={claiming}
+              disabled={claiming || (usdcRewards === '0.00' && eurcRewards === '0.00')}
               className="w-full mt-4 btn-gradient"
             >
               {claiming ? (
