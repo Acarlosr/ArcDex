@@ -52,6 +52,7 @@ export function Navbar() {
     { label: "Pools", href: "/app/pools" },
     { label: "Payments", href: "/app/payments" },
     { label: "History", href: "/app/history" },
+    { label: "Docs", href: "/app/docs" },
   ]
 
   return (
