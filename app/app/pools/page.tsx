@@ -31,7 +31,7 @@ export default function PoolsPage() {
   const { formatted: usdcBalance, isLoading: usdcLoading, refetch: refetchUSDC } = useTokenBalance('USDC')
   const { formatted: eurcBalance, isLoading: eurcLoading, refetch: refetchEURC } = useTokenBalance('EURC')
   const { formatted: lpBalance, balance: lpBalanceRaw, isLoading: lpLoading, refetch: refetchLP } = useLPBalance()
-  const { formatted: lpTotalSupply, totalSupply: lpTotalSupplyRaw } = useLPTotalSupply()
+  const { totalSupply: lpTotalSupplyRaw } = useLPTotalSupply()
   const { formattedUSDC: poolUSDC, formattedEURC: poolEURC, reserveUSDC, reserveEURC } = useSwapReserves()
 
   // Allowances
@@ -39,7 +39,7 @@ export default function PoolsPage() {
   const { allowance: eurcAllowance } = useTokenAllowance('EURC', ARCDEX.Swap)
 
   // Hooks for operations
-  const { approve, isPending: approving, isSuccess: approveSuccess } = useApprove()
+  const { approve, isPending: approving } = useApprove()
   const { addLiquidity, isPending: adding, isSuccess: addSuccess, error: addError } = useAddLiquidity()
   const { removeLiquidity, isPending: removing, isSuccess: removeSuccess, error: removeError } = useRemoveLiquidity()
 
@@ -110,26 +110,10 @@ export default function PoolsPage() {
 
       {/* Pool Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <StatCard
-          title="Pool USDC"
-          value={poolUSDC || "0.00"}
-          subtitle="USDC in pool"
-        />
-        <StatCard
-          title="Pool EURC"
-          value={poolEURC || "0.00"}
-          subtitle="EURC in pool"
-        />
-        <StatCard
-          title="Your LP"
-          value={lpLoading ? "..." : lpBalance}
-          subtitle="LP token balance"
-        />
-        <StatCard
-          title="Pool Share"
-          value={`${poolShare}%`}
-          subtitle="Your share of pool"
-        />
+        <StatCard title="Pool USDC" value={poolUSDC || "0.00"} subtitle="USDC in pool" />
+        <StatCard title="Pool EURC" value={poolEURC || "0.00"} subtitle="EURC in pool" />
+        <StatCard title="Your LP" value={lpLoading ? "..." : lpBalance} subtitle="LP token balance" />
+        <StatCard title="Pool Share" value={`${poolShare}%`} subtitle="Your share of pool" />
       </div>
 
       {/* Main Pool Interface */}
@@ -141,8 +125,14 @@ export default function PoolsPage() {
             <p className="text-sm text-muted-foreground mb-6">Add liquidity to earn 0.3% on every trade</p>
 
             <div className="space-y-6">
+              {/* USDC Input */}
               <div className="space-y-3">
-                <Label htmlFor="usdc-add" className="text-foreground">USDC Amount</Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="usdc-add" className="text-foreground">USDC Amount</Label>
+                  {usdcAmount && !needsUSDCApproval && (
+                    <span className="text-xs text-green-400">✓ Approved</span>
+                  )}
+                </div>
                 <Input
                   id="usdc-add"
                   type="number"
@@ -169,14 +159,22 @@ export default function PoolsPage() {
                 </div>
               </div>
 
-              <div className="flex justify-center">
-                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
+              {/* Combine Icon */}
+              <div className="flex flex-col items-center gap-1 my-2">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-sky-500/20 to-cyan-400/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold text-xl">
                   +
                 </div>
+                <span className="text-xs text-muted-foreground">Combine tokens</span>
               </div>
 
+              {/* EURC Input */}
               <div className="space-y-3">
-                <Label htmlFor="eurc-add" className="text-foreground">EURC Amount</Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="eurc-add" className="text-foreground">EURC Amount</Label>
+                  {eurcAmount && !needsEURCApproval && (
+                    <span className="text-xs text-green-400">✓ Approved</span>
+                  )}
+                </div>
                 <Input
                   id="eurc-add"
                   type="number"
@@ -200,11 +198,10 @@ export default function PoolsPage() {
                 </div>
               </div>
 
+              {/* LP Estimate */}
               <div className="bg-muted rounded-xl p-4">
                 <p className="text-sm text-muted-foreground">You will receive</p>
-                <p className="text-2xl font-bold text-accent mt-1">
-                  {estimatedLP} LP Shares
-                </p>
+                <p className="text-2xl font-bold text-accent mt-1">{estimatedLP} LP Shares</p>
               </div>
 
               {/* Action Buttons */}
@@ -219,10 +216,7 @@ export default function PoolsPage() {
                   className="w-full btn-gradient h-14 text-lg font-semibold rounded-xl"
                 >
                   {approving ? (
-                    <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Approving...
-                    </>
+                    <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Approving...</>
                   ) : (
                     "Approve USDC"
                   )}
@@ -234,10 +228,7 @@ export default function PoolsPage() {
                   className="w-full btn-gradient h-14 text-lg font-semibold rounded-xl"
                 >
                   {approving ? (
-                    <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Approving...
-                    </>
+                    <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Approving...</>
                   ) : (
                     "Approve EURC"
                   )}
@@ -249,10 +240,7 @@ export default function PoolsPage() {
                   className="w-full btn-gradient h-14 text-lg font-semibold rounded-xl"
                 >
                   {adding ? (
-                    <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Adding Liquidity...
-                    </>
+                    <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Adding Liquidity...</>
                   ) : (
                     "Add Liquidity"
                   )}
@@ -260,9 +248,7 @@ export default function PoolsPage() {
               )}
 
               {addError && (
-                <p className="text-red-400 text-sm text-center">
-                  Error: {addError.message}
-                </p>
+                <p className="text-red-400 text-sm text-center">Error: {addError.message}</p>
               )}
             </div>
           </div>
@@ -279,27 +265,21 @@ export default function PoolsPage() {
                   <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold">$</div>
                   <span className="text-foreground">USDC</span>
                 </div>
-                <span className="text-foreground font-medium">
-                  {usdcLoading ? "..." : usdcBalance}
-                </span>
+                <span className="text-foreground font-medium">{usdcLoading ? "..." : usdcBalance}</span>
               </div>
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold">€</div>
                   <span className="text-foreground">EURC</span>
                 </div>
-                <span className="text-foreground font-medium">
-                  {eurcLoading ? "..." : eurcBalance}
-                </span>
+                <span className="text-foreground font-medium">{eurcLoading ? "..." : eurcBalance}</span>
               </div>
               <div className="flex justify-between items-center border-t border-border pt-3">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sky-500 to-cyan-400 flex items-center justify-center text-white text-xs font-bold">LP</div>
                   <span className="text-foreground">LP Tokens</span>
                 </div>
-                <span className="text-foreground font-medium">
-                  {lpLoading ? "..." : lpBalance}
-                </span>
+                <span className="text-foreground font-medium">{lpLoading ? "..." : lpBalance}</span>
               </div>
             </div>
           </div>
@@ -337,19 +317,14 @@ export default function PoolsPage() {
                 className="w-full border-border text-foreground hover:bg-muted"
               >
                 {removing ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Removing...
-                  </>
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Removing...</>
                 ) : (
                   "Remove Liquidity"
                 )}
               </Button>
 
               {removeError && (
-                <p className="text-red-400 text-xs text-center">
-                  Error: {removeError.message}
-                </p>
+                <p className="text-red-400 text-xs text-center">Error: {removeError.message}</p>
               )}
             </div>
           </div>
