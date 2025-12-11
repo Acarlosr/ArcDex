@@ -111,15 +111,6 @@ export default function SwapPage() {
           <h1 className="text-3xl font-bold text-foreground">Swap Tokens</h1>
           <p className="text-muted-foreground mt-1">Exchange tokens instantly on Arc Network</p>
         </div>
-        <Button
-          variant="outline"
-          className="border-cyan-400/60 text-cyan-300 hover:bg-cyan-500/10 rounded-lg bg-transparent"
-          asChild
-        >
-          <a href="https://faucet.circle.com" target="_blank" rel="noreferrer">
-            Get Test Tokens
-          </a>
-        </Button>
       </div>
 
       {/* Main Content - Two Column Layout */}
