@@ -1,0 +1,120 @@
+export const ARCDEX_PAYMENTS_ABI = [
+    // Read functions
+    {
+        name: "usdc",
+        type: "function",
+        stateMutability: "view",
+        inputs: [],
+        outputs: [{ type: "address" }],
+    },
+    {
+        name: "eurc",
+        type: "function",
+        stateMutability: "view",
+        inputs: [],
+        outputs: [{ type: "address" }],
+    },
+    {
+        name: "paymentFee",
+        type: "function",
+        stateMutability: "view",
+        inputs: [],
+        outputs: [{ type: "uint256" }],
+    },
+    {
+        name: "feeCollector",
+        type: "function",
+        stateMutability: "view",
+        inputs: [],
+        outputs: [{ type: "address" }],
+    },
+    {
+        name: "totalPayments",
+        type: "function",
+        stateMutability: "view",
+        inputs: [],
+        outputs: [{ type: "uint256" }],
+    },
+    {
+        name: "userPaymentCount",
+        type: "function",
+        stateMutability: "view",
+        inputs: [{ name: "user", type: "address" }],
+        outputs: [{ type: "uint256" }],
+    },
+    {
+        name: "getPaymentCost",
+        type: "function",
+        stateMutability: "view",
+        inputs: [{ name: "amount", type: "uint256" }],
+        outputs: [{ name: "totalCost", type: "uint256" }],
+    },
+    {
+        name: "getBatchPaymentCost",
+        type: "function",
+        stateMutability: "view",
+        inputs: [{ name: "amounts", type: "uint256[]" }],
+        outputs: [{ name: "totalCost", type: "uint256" }],
+    },
+    // Write functions
+    {
+        name: "sendPayment",
+        type: "function",
+        stateMutability: "nonpayable",
+        inputs: [
+            { name: "token", type: "address" },
+            { name: "recipient", type: "address" },
+            { name: "amount", type: "uint256" },
+            { name: "memo", type: "string" },
+        ],
+        outputs: [{ name: "paymentId", type: "uint256" }],
+    },
+    {
+        name: "sendExactPayment",
+        type: "function",
+        stateMutability: "nonpayable",
+        inputs: [
+            { name: "token", type: "address" },
+            { name: "recipient", type: "address" },
+            { name: "amount", type: "uint256" },
+            { name: "memo", type: "string" },
+        ],
+        outputs: [{ name: "paymentId", type: "uint256" }],
+    },
+    {
+        name: "batchPayment",
+        type: "function",
+        stateMutability: "nonpayable",
+        inputs: [
+            { name: "token", type: "address" },
+            { name: "recipients", type: "address[]" },
+            { name: "amounts", type: "uint256[]" },
+        ],
+        outputs: [{ name: "batchId", type: "uint256" }],
+    },
+    // Events
+    {
+        name: "PaymentSent",
+        type: "event",
+        inputs: [
+            { name: "paymentId", type: "uint256", indexed: true },
+            { name: "sender", type: "address", indexed: true },
+            { name: "recipient", type: "address", indexed: true },
+            { name: "token", type: "address", indexed: false },
+            { name: "amount", type: "uint256", indexed: false },
+            { name: "fee", type: "uint256", indexed: false },
+            { name: "memo", type: "string", indexed: false },
+        ],
+    },
+    {
+        name: "BatchPaymentSent",
+        type: "event",
+        inputs: [
+            { name: "batchId", type: "uint256", indexed: true },
+            { name: "sender", type: "address", indexed: true },
+            { name: "token", type: "address", indexed: false },
+            { name: "totalAmount", type: "uint256", indexed: false },
+            { name: "recipientCount", type: "uint256", indexed: false },
+        ],
+    },
+] as const
