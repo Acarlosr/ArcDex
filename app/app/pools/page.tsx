@@ -1,16 +1,102 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { StatCard } from "@/components/stat-card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
+import { Loader2 } from "lucide-react"
+import { useAccount } from "wagmi"
+import {
+  useTokenBalance,
+  useLPBalance,
+  useLPTotalSupply,
+  useSwapReserves,
+  useAddLiquidity,
+  useRemoveLiquidity,
+  useApprove,
+  useTokenAllowance
+} from "@/hooks/use-contracts"
+import { ARCDEX, parseTokenAmount } from "@/lib/contracts"
 
 export default function PoolsPage() {
   const [liquidityPercentage, setLiquidityPercentage] = useState(50)
   const [usdcAmount, setUsdcAmount] = useState("")
   const [eurcAmount, setEurcAmount] = useState("")
+
+  const { isConnected } = useAccount()
+
+  // Get real balances
+  const { formatted: usdcBalance, isLoading: usdcLoading, refetch: refetchUSDC } = useTokenBalance('USDC')
+  const { formatted: eurcBalance, isLoading: eurcLoading, refetch: refetchEURC } = useTokenBalance('EURC')
+  const { formatted: lpBalance, balance: lpBalanceRaw, isLoading: lpLoading, refetch: refetchLP } = useLPBalance()
+  const { formatted: lpTotalSupply, totalSupply: lpTotalSupplyRaw } = useLPTotalSupply()
+  const { formattedUSDC: poolUSDC, formattedEURC: poolEURC, reserveUSDC, reserveEURC } = useSwapReserves()
+
+  // Allowances
+  const { allowance: usdcAllowance } = useTokenAllowance('USDC', ARCDEX.Swap)
+  const { allowance: eurcAllowance } = useTokenAllowance('EURC', ARCDEX.Swap)
+
+  // Hooks for operations
+  const { approve, isPending: approving, isSuccess: approveSuccess } = useApprove()
+  const { addLiquidity, isPending: adding, isSuccess: addSuccess, error: addError } = useAddLiquidity()
+  const { removeLiquidity, isPending: removing, isSuccess: removeSuccess, error: removeError } = useRemoveLiquidity()
+
+  // Calculate pool share
+  const poolShare = lpBalanceRaw && lpTotalSupplyRaw && lpTotalSupplyRaw > BigInt(0)
+    ? (Number(lpBalanceRaw) / Number(lpTotalSupplyRaw) * 100).toFixed(2)
+    : "0"
+
+  // Calculate LP tokens to receive
+  const estimatedLP = usdcAmount ? (Number(usdcAmount) * 1.5).toFixed(2) : "0.00"
+
+  // Calculate amounts to receive on remove
+  const lpToRemove = lpBalanceRaw ? (Number(lpBalanceRaw) * liquidityPercentage / 100) : 0
+  const usdcToReceive = reserveUSDC && lpTotalSupplyRaw && lpTotalSupplyRaw > BigInt(0)
+    ? (Number(reserveUSDC) * lpToRemove / Number(lpTotalSupplyRaw) / 1e6).toFixed(2)
+    : "0.00"
+  const eurcToReceive = reserveEURC && lpTotalSupplyRaw && lpTotalSupplyRaw > BigInt(0)
+    ? (Number(reserveEURC) * lpToRemove / Number(lpTotalSupplyRaw) / 1e6).toFixed(2)
+    : "0.00"
+
+  // Check if approvals needed
+  const needsUSDCApproval = usdcAmount && usdcAllowance !== undefined &&
+    parseTokenAmount(usdcAmount) > usdcAllowance
+  const needsEURCApproval = eurcAmount && eurcAllowance !== undefined &&
+    parseTokenAmount(eurcAmount) > eurcAllowance
+
+  // Refetch on success
+  useEffect(() => {
+    if (addSuccess || removeSuccess) {
+      refetchUSDC()
+      refetchEURC()
+      refetchLP()
+      setUsdcAmount("")
+      setEurcAmount("")
+    }
+  }, [addSuccess, removeSuccess, refetchUSDC, refetchEURC, refetchLP])
+
+  const handleAddLiquidity = async () => {
+    if (!usdcAmount || !eurcAmount) return
+    await addLiquidity(usdcAmount, eurcAmount)
+  }
+
+  const handleRemoveLiquidity = async () => {
+    if (!lpBalanceRaw || liquidityPercentage === 0) return
+    const lpAmount = (Number(lpBalanceRaw) * liquidityPercentage / 100 / 1e6).toFixed(6)
+    await removeLiquidity(lpAmount)
+  }
+
+  const handleApproveUSDC = async () => {
+    if (!usdcAmount) return
+    await approve('USDC', ARCDEX.Swap, usdcAmount)
+  }
+
+  const handleApproveEURC = async () => {
+    if (!eurcAmount) return
+    await approve('EURC', ARCDEX.Swap, eurcAmount)
+  }
 
   return (
     <div className="w-full">
@@ -24,10 +110,26 @@ export default function PoolsPage() {
 
       {/* Pool Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <StatCard title="TVL" value="$2.5M" subtitle="Total Value Locked" />
-        <StatCard title="My Liquidity" value="$0.00" subtitle="Your pool share" />
-        <StatCard title="APR" value="12.4%" subtitle="Annual percentage rate" />
-        <StatCard title="Volume (24h)" value="$125K" subtitle="Trading volume" />
+        <StatCard
+          title="Pool USDC"
+          value={poolUSDC || "0.00"}
+          subtitle="USDC in pool"
+        />
+        <StatCard
+          title="Pool EURC"
+          value={poolEURC || "0.00"}
+          subtitle="EURC in pool"
+        />
+        <StatCard
+          title="Your LP"
+          value={lpLoading ? "..." : lpBalance}
+          subtitle="LP token balance"
+        />
+        <StatCard
+          title="Pool Share"
+          value={`${poolShare}%`}
+          subtitle="Your share of pool"
+        />
       </div>
 
       {/* Main Pool Interface */}
@@ -52,7 +154,19 @@ export default function PoolsPage() {
                   }}
                   className="bg-input text-foreground border-border h-14 text-xl rounded-xl"
                 />
-                <p className="text-xs text-muted-foreground">Balance: 0.00 USDC</p>
+                <div className="flex justify-between items-center">
+                  <p className="text-xs text-muted-foreground">
+                    Balance: {usdcLoading ? "..." : usdcBalance} USDC
+                  </p>
+                  {isConnected && (
+                    <button
+                      onClick={() => setUsdcAmount(usdcBalance.replace(',', ''))}
+                      className="text-xs text-cyan-400 hover:text-cyan-300"
+                    >
+                      MAX
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="flex justify-center">
@@ -71,44 +185,121 @@ export default function PoolsPage() {
                   onChange={(e) => setEurcAmount(e.target.value)}
                   className="bg-input text-foreground border-border h-14 text-xl rounded-xl"
                 />
-                <p className="text-xs text-muted-foreground">Balance: 0.00 EURC</p>
+                <div className="flex justify-between items-center">
+                  <p className="text-xs text-muted-foreground">
+                    Balance: {eurcLoading ? "..." : eurcBalance} EURC
+                  </p>
+                  {isConnected && (
+                    <button
+                      onClick={() => setEurcAmount(eurcBalance.replace(',', ''))}
+                      className="text-xs text-cyan-400 hover:text-cyan-300"
+                    >
+                      MAX
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="bg-muted rounded-xl p-4">
                 <p className="text-sm text-muted-foreground">You will receive</p>
                 <p className="text-2xl font-bold text-accent mt-1">
-                  {usdcAmount ? (Number(usdcAmount) * 1.5).toFixed(2) : "0.00"} LP Shares
+                  {estimatedLP} LP Shares
                 </p>
               </div>
 
-              <Button className="w-full btn-gradient h-14 text-lg font-semibold rounded-xl">
-                Add Liquidity
-              </Button>
+              {/* Action Buttons */}
+              {!isConnected ? (
+                <Button className="w-full btn-gradient h-14 text-lg font-semibold rounded-xl" disabled>
+                  Connect Wallet
+                </Button>
+              ) : needsUSDCApproval ? (
+                <Button
+                  onClick={handleApproveUSDC}
+                  disabled={approving}
+                  className="w-full btn-gradient h-14 text-lg font-semibold rounded-xl"
+                >
+                  {approving ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Approving...
+                    </>
+                  ) : (
+                    "Approve USDC"
+                  )}
+                </Button>
+              ) : needsEURCApproval ? (
+                <Button
+                  onClick={handleApproveEURC}
+                  disabled={approving}
+                  className="w-full btn-gradient h-14 text-lg font-semibold rounded-xl"
+                >
+                  {approving ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Approving...
+                    </>
+                  ) : (
+                    "Approve EURC"
+                  )}
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleAddLiquidity}
+                  disabled={adding || !usdcAmount || !eurcAmount}
+                  className="w-full btn-gradient h-14 text-lg font-semibold rounded-xl"
+                >
+                  {adding ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Adding Liquidity...
+                    </>
+                  ) : (
+                    "Add Liquidity"
+                  )}
+                </Button>
+              )}
+
+              {addError && (
+                <p className="text-red-400 text-sm text-center">
+                  Error: {addError.message}
+                </p>
+              )}
             </div>
           </div>
         </div>
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {/* Your Position */}
+          {/* Your Balances */}
           <div className="bg-card rounded-2xl p-6 border border-border">
-            <h3 className="text-lg font-semibold text-foreground mb-4">Your Position</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-4">Your Balances</h3>
             <div className="space-y-4">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">LP Shares</span>
-                <span className="text-foreground font-medium">0.00</span>
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold">$</div>
+                  <span className="text-foreground">USDC</span>
+                </div>
+                <span className="text-foreground font-medium">
+                  {usdcLoading ? "..." : usdcBalance}
+                </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Pool Share</span>
-                <span className="text-foreground font-medium">0%</span>
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold">€</div>
+                  <span className="text-foreground">EURC</span>
+                </div>
+                <span className="text-foreground font-medium">
+                  {eurcLoading ? "..." : eurcBalance}
+                </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">USDC Deposited</span>
-                <span className="text-foreground font-medium">0.00</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">EURC Deposited</span>
-                <span className="text-foreground font-medium">0.00</span>
+              <div className="flex justify-between items-center border-t border-border pt-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sky-500 to-cyan-400 flex items-center justify-center text-white text-xs font-bold">LP</div>
+                  <span className="text-foreground">LP Tokens</span>
+                </div>
+                <span className="text-foreground font-medium">
+                  {lpLoading ? "..." : lpBalance}
+                </span>
               </div>
             </div>
           </div>
@@ -131,56 +322,37 @@ export default function PoolsPage() {
               <div className="grid grid-cols-2 gap-3 bg-input rounded-xl p-4">
                 <div>
                   <p className="text-xs text-muted-foreground">USDC</p>
-                  <p className="text-lg font-bold text-accent">0.00</p>
+                  <p className="text-lg font-bold text-accent">{usdcToReceive}</p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">EURC</p>
-                  <p className="text-lg font-bold text-accent">0.00</p>
+                  <p className="text-lg font-bold text-accent">{eurcToReceive}</p>
                 </div>
               </div>
 
-              <Button variant="outline" className="w-full border-border text-foreground hover:bg-muted">
-                Remove Liquidity
+              <Button
+                variant="outline"
+                onClick={handleRemoveLiquidity}
+                disabled={removing || !lpBalanceRaw || lpBalanceRaw === BigInt(0)}
+                className="w-full border-border text-foreground hover:bg-muted"
+              >
+                {removing ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Removing...
+                  </>
+                ) : (
+                  "Remove Liquidity"
+                )}
               </Button>
+
+              {removeError && (
+                <p className="text-red-400 text-xs text-center">
+                  Error: {removeError.message}
+                </p>
+              )}
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Pool Activity Table */}
-      <div className="bg-card rounded-2xl p-6 border border-border mt-8">
-        <h3 className="text-lg font-semibold text-foreground mb-4">Recent Pool Activity</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="text-left py-3 text-muted-foreground font-medium">Date</th>
-                <th className="text-left py-3 text-muted-foreground font-medium">Action</th>
-                <th className="text-left py-3 text-muted-foreground font-medium">Pair</th>
-                <th className="text-left py-3 text-muted-foreground font-medium">Amounts</th>
-                <th className="text-left py-3 text-muted-foreground font-medium">Tx Hash</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                { date: "Dec 5, 2024", action: "Add", pair: "USDC/EURC", amounts: "500 USDC, 460 EURC", tx: "0x1234...abcd" },
-                { date: "Dec 3, 2024", action: "Remove", pair: "USDC/EURC", amounts: "250 USDC, 230 EURC", tx: "0x5678...efgh" },
-                { date: "Nov 30, 2024", action: "Add", pair: "USDC/EURC", amounts: "1000 USDC, 920 EURC", tx: "0x9abc...ijkl" },
-              ].map((row, i) => (
-                <tr key={i} className="border-b border-border hover:bg-muted/50">
-                  <td className="py-3 text-foreground">{row.date}</td>
-                  <td className="py-3">
-                    <span className={`px-2 py-1 rounded text-xs ${row.action === 'Add' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-                      {row.action}
-                    </span>
-                  </td>
-                  <td className="py-3 text-foreground">{row.pair}</td>
-                  <td className="py-3 text-foreground">{row.amounts}</td>
-                  <td className="py-3 text-accent text-xs font-mono">{row.tx}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </div>
       </div>
     </div>
