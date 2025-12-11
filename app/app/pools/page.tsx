@@ -143,8 +143,8 @@ export default function PoolsPage() {
                 setAmount1("")
               }}
               className={`relative p-6 rounded-2xl border transition-all text-left ${isSelected
-                  ? 'bg-gradient-to-br from-sky-500/20 to-cyan-400/20 border-cyan-500/50 glow-border'
-                  : 'bg-card border-border hover:border-cyan-500/30'
+                ? 'bg-gradient-to-br from-sky-500/20 to-cyan-400/20 border-cyan-500/50 glow-border'
+                : 'bg-card border-border hover:border-cyan-500/30'
                 } ${!p.enabled ? 'opacity-60' : ''}`}
             >
               {!p.enabled && (
@@ -178,6 +178,120 @@ export default function PoolsPage() {
         <StatCard title="Your LP" value={pool.enabled ? (lpLoading ? "..." : lpBalance) : "—"} subtitle="LP token balance" />
         <StatCard title="Pool Share" value={pool.enabled ? `${poolShare}%` : "—"} subtitle="Your share of pool" />
       </div>
+
+      {/* My Pools Section */}
+      {isConnected && lpBalanceRaw && lpBalanceRaw > BigInt(0) && (
+        <div className="bg-card rounded-2xl p-6 border border-border mb-8">
+          <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+            <span className="text-2xl">💼</span>
+            My Pools
+          </h2>
+
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left py-3 px-4 text-muted-foreground font-medium">Pool</th>
+                  <th className="text-right py-3 px-4 text-muted-foreground font-medium">LP Tokens</th>
+                  <th className="text-right py-3 px-4 text-muted-foreground font-medium">USDC</th>
+                  <th className="text-right py-3 px-4 text-muted-foreground font-medium">EURC</th>
+                  <th className="text-right py-3 px-4 text-muted-foreground font-medium">Share</th>
+                  <th className="text-right py-3 px-4 text-muted-foreground font-medium">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                  <td className="py-4 px-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">💱</span>
+                      <span className="font-medium text-foreground">USDC / EURC</span>
+                    </div>
+                  </td>
+                  <td className="text-right py-4 px-4 font-mono text-foreground">
+                    {lpBalance}
+                  </td>
+                  <td className="text-right py-4 px-4 text-foreground">
+                    {reserveUSDC && lpBalanceRaw && lpTotalSupplyRaw && lpTotalSupplyRaw > BigInt(0)
+                      ? (Number(reserveUSDC) * Number(lpBalanceRaw) / Number(lpTotalSupplyRaw) / 1e6).toFixed(2)
+                      : "0.00"
+                    }
+                  </td>
+                  <td className="text-right py-4 px-4 text-foreground">
+                    {reserveEURC && lpBalanceRaw && lpTotalSupplyRaw && lpTotalSupplyRaw > BigInt(0)
+                      ? (Number(reserveEURC) * Number(lpBalanceRaw) / Number(lpTotalSupplyRaw) / 1e6).toFixed(2)
+                      : "0.00"
+                    }
+                  </td>
+                  <td className="text-right py-4 px-4">
+                    <span className="text-accent font-semibold">{poolShare}%</span>
+                  </td>
+                  <td className="text-right py-4 px-4">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedPool("USDC_EURC")
+                        setLiquidityPercentage(100)
+                        // Scroll to remove section
+                        document.getElementById('remove-liquidity')?.scrollIntoView({ behavior: 'smooth' })
+                      }}
+                      className="border-red-500/50 text-red-400 hover:bg-red-500/10"
+                    >
+                      Remove
+                    </Button>
+                  </td>
+                </tr>
+
+                {/* Placeholder rows for future pools */}
+                {/*
+                <tr className="border-b border-border/50 opacity-50">
+                  <td className="py-4 px-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">📈</span>
+                      <span className="font-medium text-foreground">USYC / USDC</span>
+                    </div>
+                  </td>
+                  <td className="text-right py-4 px-4 text-muted-foreground">—</td>
+                  <td className="text-right py-4 px-4 text-muted-foreground">—</td>
+                  <td className="text-right py-4 px-4 text-muted-foreground">—</td>
+                  <td className="text-right py-4 px-4 text-muted-foreground">—</td>
+                  <td className="text-right py-4 px-4 text-muted-foreground text-xs">Coming Soon</td>
+                </tr>
+                */}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="mt-4 p-4 bg-muted/50 rounded-xl">
+            <div className="flex flex-wrap justify-between items-center gap-4">
+              <div>
+                <p className="text-sm text-muted-foreground">Total Value Deposited</p>
+                <p className="text-2xl font-bold text-foreground">
+                  ${reserveUSDC && reserveEURC && lpBalanceRaw && lpTotalSupplyRaw && lpTotalSupplyRaw > BigInt(0)
+                    ? (
+                      (Number(reserveUSDC) * Number(lpBalanceRaw) / Number(lpTotalSupplyRaw) / 1e6) +
+                      (Number(reserveEURC) * Number(lpBalanceRaw) / Number(lpTotalSupplyRaw) / 1e6)
+                    ).toFixed(2)
+                    : "0.00"
+                  }
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-muted-foreground">Estimated APR Earnings (Year)</p>
+                <p className="text-xl font-bold text-accent">
+                  +${reserveUSDC && reserveEURC && lpBalanceRaw && lpTotalSupplyRaw && lpTotalSupplyRaw > BigInt(0)
+                    ? (
+                      ((Number(reserveUSDC) * Number(lpBalanceRaw) / Number(lpTotalSupplyRaw) / 1e6) +
+                        (Number(reserveEURC) * Number(lpBalanceRaw) / Number(lpTotalSupplyRaw) / 1e6)) * 0.124
+                    ).toFixed(2)
+                    : "0.00"
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Pool Interface */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -370,7 +484,7 @@ export default function PoolsPage() {
 
           {/* Remove Liquidity */}
           {pool.enabled && (
-            <div className="bg-card rounded-2xl p-6 border border-border">
+            <div id="remove-liquidity" className="bg-card rounded-2xl p-6 border border-border">
               <h3 className="text-lg font-semibold text-foreground mb-4">Remove Liquidity</h3>
               <div className="space-y-4">
                 <div>
