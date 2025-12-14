@@ -39,16 +39,16 @@ export default function SwapPage() {
   )
 
   // Allowance check (only for enabled pairs)
-  const { allowance } = useTokenAllowance(
+  const { allowance, refetch: refetchAllowance } = useTokenAllowance(
     swapEnabled ? swapFromToken : 'USDC',
     ARCDEX.Swap
   )
 
   // Approve hook
-  const { approve, isPending: approving, isSuccess: approveSuccess } = useApprove()
+  const { approve, isPending: approving, isSuccess: approveSuccess, hash: approveHash } = useApprove()
 
   // Swap hook
-  const { swap, isPending: swapping, isSuccess: swapSuccess, error: swapError } = useSwap()
+  const { swap, isPending: swapping, isSuccess: swapSuccess, hash: swapHash, error: swapError } = useSwap()
 
   const getBalance = (token: SwapToken) => {
     if (token === 'USDC') return { balance: usdcBalance, loading: usdcLoading }
@@ -65,21 +65,35 @@ export default function SwapPage() {
   const needsApproval = fromAmount && allowance !== undefined &&
     parseTokenAmount(fromAmount) > allowance
 
+  // Refetch allowance when fromToken changes
+  useEffect(() => {
+    refetchAllowance()
+  }, [fromToken, refetchAllowance])
+
   // Refetch balances after successful swap
   useEffect(() => {
-    if (swapSuccess) {
-      refetchUSDC()
-      refetchEURC()
-      setFromAmount("")
+    if (swapSuccess && swapHash) {
+      // Small delay to ensure blockchain state is updated
+      const timer = setTimeout(() => {
+        refetchUSDC()
+        refetchEURC()
+        refetchAllowance()
+        setFromAmount("")
+      }, 1000)
+      return () => clearTimeout(timer)
     }
-  }, [swapSuccess, refetchUSDC, refetchEURC])
+  }, [swapSuccess, swapHash, refetchUSDC, refetchEURC, refetchAllowance])
 
   // Refetch allowance after approval
   useEffect(() => {
-    if (approveSuccess) {
-      // Trigger a re-render to update allowance
+    if (approveSuccess && approveHash) {
+      // Small delay to ensure blockchain state is updated
+      const timer = setTimeout(() => {
+        refetchAllowance()
+      }, 1000)
+      return () => clearTimeout(timer)
     }
-  }, [approveSuccess])
+  }, [approveSuccess, approveHash, refetchAllowance])
 
   const handleSwapTokens = () => {
     setFromToken(toToken)

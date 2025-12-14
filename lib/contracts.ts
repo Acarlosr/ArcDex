@@ -21,6 +21,10 @@ export const CHAIN_CONFIG = {
   testnet: true,
 } as const;
 
+// ArcScan Explorer URLs
+export const ARCSCAN_URL = "https://testnet.arcscan.app" as const;
+export const ARCSCAN_API = "https://testnet.arcscan.app/api" as const;
+
 // ============================================================================
 // STABLECOINS
 // ============================================================================

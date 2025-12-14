@@ -9,12 +9,12 @@ export default function LandingPage() {
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-gradient-to-b from-[#020617]/80 to-transparent backdrop-blur-sm border-b border-cyan-500/10">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center">
               <span className="text-white font-bold text-sm">ARC</span>
             </div>
             <span className="text-lg font-semibold text-white">ARCDex</span>
-          </div>
+          </Link>
           <div className="hidden md:flex items-center gap-8">
             <a href="#features" className="text-slate-300 hover:text-cyan-400 transition-colors">
               Features

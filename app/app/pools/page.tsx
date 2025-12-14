@@ -49,19 +49,19 @@ export default function PoolsPage() {
   const token1Balance = getBalance(pool.token1)
 
   // Allowances (only for enabled pools)
-  const { allowance: token0Allowance } = useTokenAllowance(
+  const { allowance: token0Allowance, refetch: refetchToken0Allowance } = useTokenAllowance(
     pool.token0 as 'USDC' | 'EURC',
     pool.swapContract
   )
-  const { allowance: token1Allowance } = useTokenAllowance(
+  const { allowance: token1Allowance, refetch: refetchToken1Allowance } = useTokenAllowance(
     pool.token1 as 'USDC' | 'EURC',
     pool.swapContract
   )
 
   // Hooks for operations
-  const { approve, isPending: approving } = useApprove()
-  const { addLiquidity, isPending: adding, isSuccess: addSuccess, error: addError } = useAddLiquidity()
-  const { removeLiquidity, isPending: removing, isSuccess: removeSuccess, error: removeError } = useRemoveLiquidity()
+  const { approve, isPending: approving, isSuccess: approveSuccess, hash: approveHash } = useApprove()
+  const { addLiquidity, isPending: adding, isSuccess: addSuccess, hash: addHash, error: addError } = useAddLiquidity()
+  const { removeLiquidity, isPending: removing, isSuccess: removeSuccess, hash: removeHash, error: removeError } = useRemoveLiquidity()
 
   // Calculate pool share
   const poolShare = lpBalanceRaw && lpTotalSupplyRaw && lpTotalSupplyRaw > BigInt(0)
@@ -86,17 +86,39 @@ export default function PoolsPage() {
   const needsToken1Approval = pool.enabled && amount1 && token1Allowance !== undefined &&
     parseTokenAmount(amount1) > token1Allowance
 
+  // Refetch allowances when pool changes
+  useEffect(() => {
+    refetchToken0Allowance()
+    refetchToken1Allowance()
+  }, [selectedPool, refetchToken0Allowance, refetchToken1Allowance])
+
+  // Refetch allowances after approval
+  useEffect(() => {
+    if (approveSuccess && approveHash) {
+      const timer = setTimeout(() => {
+        refetchToken0Allowance()
+        refetchToken1Allowance()
+      }, 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [approveSuccess, approveHash, refetchToken0Allowance, refetchToken1Allowance])
+
   // Refetch on success
   useEffect(() => {
-    if (addSuccess || removeSuccess) {
-      refetchUSDC()
-      refetchEURC()
-      refetchUSYC()
-      refetchLP()
-      setAmount0("")
-      setAmount1("")
+    if ((addSuccess && addHash) || (removeSuccess && removeHash)) {
+      const timer = setTimeout(() => {
+        refetchUSDC()
+        refetchEURC()
+        refetchUSYC()
+        refetchLP()
+        refetchToken0Allowance()
+        refetchToken1Allowance()
+        setAmount0("")
+        setAmount1("")
+      }, 1000)
+      return () => clearTimeout(timer)
     }
-  }, [addSuccess, removeSuccess, refetchUSDC, refetchEURC, refetchUSYC, refetchLP])
+  }, [addSuccess, addHash, removeSuccess, removeHash, refetchUSDC, refetchEURC, refetchUSYC, refetchLP, refetchToken0Allowance, refetchToken1Allowance])
 
   const handleAddLiquidity = async () => {
     if (!amount0 || !amount1 || !pool.enabled) return

@@ -62,10 +62,10 @@ export default function StakePage() {
   const { formatted: totalStakedEURC } = useTotalStaked('EURC')
 
   // Allowance
-  const { allowance } = useTokenAllowance(selectedToken, ARCDEX.Staking)
+  const { allowance, refetch: refetchAllowance } = useTokenAllowance(selectedToken, ARCDEX.Staking)
 
   // Operations
-  const { approve, isPending: approving, isSuccess: approveSuccess } = useApprove()
+  const { approve, isPending: approving, isSuccess: approveSuccess, hash: approveHash } = useApprove()
   const { stake, isPending: staking, isSuccess: stakeSuccess, error: stakeError } = useStake()
   const { unstake, isPending: unstaking, isSuccess: unstakeSuccess, error: unstakeError } = useUnstake()
   const { claimAllRewards, isPending: claiming, isSuccess: claimSuccess } = useClaimRewards()
@@ -73,6 +73,22 @@ export default function StakePage() {
   // Check if approval needed
   const needsApproval = stakeAmount && allowance !== undefined &&
     parseTokenAmount(stakeAmount) > allowance
+
+  // Refetch allowance when token changes
+  useEffect(() => {
+    refetchAllowance()
+  }, [selectedToken, refetchAllowance])
+
+  // Refetch allowance after approval (using hash as trigger for each new approval)
+  useEffect(() => {
+    if (approveSuccess && approveHash) {
+      // Small delay to ensure blockchain state is updated
+      const timer = setTimeout(() => {
+        refetchAllowance()
+      }, 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [approveSuccess, approveHash, refetchAllowance])
 
   // Refetch all on success
   useEffect(() => {
@@ -83,10 +99,11 @@ export default function StakePage() {
       refetchStakedEURC()
       refetchUSDCRewards()
       refetchEURCRewards()
+      refetchAllowance()
       setStakeAmount("")
       setUnstakeAmount("")
     }
-  }, [stakeSuccess, unstakeSuccess, claimSuccess, refetchUSDC, refetchEURC, refetchStakedUSDC, refetchStakedEURC, refetchUSDCRewards, refetchEURCRewards])
+  }, [stakeSuccess, unstakeSuccess, claimSuccess, refetchUSDC, refetchEURC, refetchStakedUSDC, refetchStakedEURC, refetchUSDCRewards, refetchEURCRewards, refetchAllowance])
 
   // Calculate estimated earnings
   const estimatedEarnings = stakeAmount && totalAPR

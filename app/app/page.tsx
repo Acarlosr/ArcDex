@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { ArrowRight, Zap, TrendingUp, Droplets, Send } from "lucide-react"
+import { ArrowRight, Zap, TrendingUp, Droplets, Send, PieChart } from "lucide-react"
 
 export default function AppHome() {
   return (
@@ -13,9 +13,9 @@ export default function AppHome() {
           <p className="text-slate-400">Trade, stake, provide liquidity, and send payments securely and efficiently.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-12">
           <Link href="/app/swap" className="group">
-            <div className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 rounded-xl p-6 border border-cyan-500/30 hover:border-cyan-400/60 transition-all hover:shadow-lg hover:shadow-cyan-500/20">
+            <div className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 rounded-xl p-6 border border-cyan-500/30 hover:border-cyan-400/60 transition-all hover:shadow-lg hover:shadow-cyan-500/20 h-full">
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center mb-4 group-hover:shadow-lg group-hover:shadow-cyan-500/50 transition-all">
                 <Zap className="w-6 h-6 text-white" />
               </div>
@@ -29,7 +29,7 @@ export default function AppHome() {
           </Link>
 
           <Link href="/app/stake" className="group">
-            <div className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 rounded-xl p-6 border border-cyan-500/30 hover:border-cyan-400/60 transition-all hover:shadow-lg hover:shadow-cyan-500/20">
+            <div className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 rounded-xl p-6 border border-cyan-500/30 hover:border-cyan-400/60 transition-all hover:shadow-lg hover:shadow-cyan-500/20 h-full">
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center mb-4 group-hover:shadow-lg group-hover:shadow-cyan-500/50 transition-all">
                 <TrendingUp className="w-6 h-6 text-white" />
               </div>
@@ -43,7 +43,7 @@ export default function AppHome() {
           </Link>
 
           <Link href="/app/pools" className="group">
-            <div className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 rounded-xl p-6 border border-cyan-500/30 hover:border-cyan-400/60 transition-all hover:shadow-lg hover:shadow-cyan-500/20">
+            <div className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 rounded-xl p-6 border border-cyan-500/30 hover:border-cyan-400/60 transition-all hover:shadow-lg hover:shadow-cyan-500/20 h-full">
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center mb-4 group-hover:shadow-lg group-hover:shadow-cyan-500/50 transition-all">
                 <Droplets className="w-6 h-6 text-white" />
               </div>
@@ -57,7 +57,7 @@ export default function AppHome() {
           </Link>
 
           <Link href="/app/payments" className="group">
-            <div className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 rounded-xl p-6 border border-cyan-500/30 hover:border-cyan-400/60 transition-all hover:shadow-lg hover:shadow-cyan-500/20">
+            <div className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 rounded-xl p-6 border border-cyan-500/30 hover:border-cyan-400/60 transition-all hover:shadow-lg hover:shadow-cyan-500/20 h-full">
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center mb-4 group-hover:shadow-lg group-hover:shadow-cyan-500/50 transition-all">
                 <Send className="w-6 h-6 text-white" />
               </div>
@@ -69,7 +69,22 @@ export default function AppHome() {
               </div>
             </div>
           </Link>
+
+          <Link href="/app/portfolio" className="group">
+            <div className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 rounded-xl p-6 border border-cyan-500/30 hover:border-cyan-400/60 transition-all hover:shadow-lg hover:shadow-cyan-500/20 h-full">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center mb-4 group-hover:shadow-lg group-hover:shadow-cyan-500/50 transition-all">
+                <PieChart className="w-6 h-6 text-white" />
+              </div>
+              <h2 className="text-lg font-bold text-white mb-2">Portfolio</h2>
+              <p className="text-slate-300 text-sm mb-4">Track your assets, balances, and transaction history.</p>
+              <div className="flex items-center gap-2 text-cyan-400 group-hover:translate-x-1 transition-transform">
+                <span className="text-sm font-semibold">View Portfolio</span>
+                <ArrowRight className="w-4 h-4" />
+              </div>
+            </div>
+          </Link>
         </div>
+
 
         {/* Network Info Card */}
         <div className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 rounded-xl p-8 border border-cyan-500/30">
