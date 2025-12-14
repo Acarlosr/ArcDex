@@ -104,6 +104,34 @@ Send P2P stablecoin payments with optional memo:
 User → approve(token) → sendPayment(recipient, amount, memo)
 ```
 
+### 5. Portfolio
+
+Track your assets and activity on Arc Network:
+
+| Feature | Description |
+|---------|-------------|
+| **Token Balances** | Real-time ERC-20 balances for USDC, EURC, USYC |
+| **Net Worth** | Estimated total value in USD |
+| **Transactions** | Recent activity from ArcScan API |
+| **Portfolio Chart** | Deterministic value visualization |
+
+**Pricing:**
+- Primary: CoinGecko API for real-time prices
+- Fallback: Stablecoin defaults (USDC=1.00, EURC=1.00, USYC=1.00)
+- Badge: "Estimated" shown when using fallback prices
+
+**Transactions Tab:**
+- Fetches last 10 transactions from ArcScan API
+- Displays: hash, timestamp, status, type (Swap/Stake/LP/Transfer)
+- Each transaction links to ArcScan explorer
+- Fallback: prominent "View on Explorer" button if API fails
+
+**Chart:**
+- Generates deterministic data based on wallet address
+- Periods: 24H, 7D, 30D with appropriate labels
+- Shows placeholder when wallet disconnected
+
+
 ---
 
 ## 🏗️ Architecture
@@ -180,6 +208,13 @@ User → approve(token) → sendPayment(recipient, amount, memo)
 4. Click "Approve" then "Stake"
 5. View your position and pending rewards
 
+### View Portfolio
+1. Go to `/app/portfolio`
+2. See token balances and estimated USD value
+3. View recent transactions with status and type
+4. Monitor portfolio value chart over time
+5. Click "Refresh" to update data
+
 ---
 
 ## 🔐 Security Considerations
@@ -201,6 +236,7 @@ ArcDex/
 │   │   ├── pools/         # Liquidity pools
 │   │   ├── stake/         # Staking vault
 │   │   ├── payments/      # P2P payments
+│   │   ├── portfolio/     # Portfolio dashboard
 │   │   └── history/       # Transaction history
 │   └── layout.tsx         # Root layout
 ├── components/            # React components
