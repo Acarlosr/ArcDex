@@ -1,10 +1,75 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useAccount } from "wagmi"
 import { useTokenBalance } from "@/hooks/use-contracts"
-import { Loader2, RefreshCw, Wallet } from "lucide-react"
+import { Loader2, RefreshCw, Wallet, ExternalLink, ArrowUpRight, ArrowDownLeft, FileCode } from "lucide-react"
 import { Button } from "@/components/ui/button"
+
+// ArcScan API configuration
+const ARCSCAN_API = "https://testnet.arcscan.app/api"
+const ARCSCAN_URL = "https://testnet.arcscan.app"
+
+// Transaction type from ArcScan API (Etherscan-compatible)
+interface ArcScanTx {
+    hash: string
+    timeStamp: string
+    from: string
+    to: string
+    value: string
+    isError: string
+    functionName?: string
+    methodId?: string
+    blockNumber: string
+}
+
+// Format timestamp to relative time
+function formatRelativeTime(timestamp: string): string {
+    const date = new Date(parseInt(timestamp) * 1000)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
+
+    if (diffMins < 1) return 'Just now'
+    if (diffMins < 60) return `${diffMins}m ago`
+    if (diffHours < 24) return `${diffHours}h ago`
+    if (diffDays < 7) return `${diffDays}d ago`
+
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+// Format hash for display
+function formatHash(hash: string): string {
+    return `${hash.slice(0, 6)}...${hash.slice(-4)}`
+}
+
+// Get transaction type based on function name
+function getTxType(tx: ArcScanTx, userAddress: string): { type: string; icon: 'sent' | 'received' | 'contract' } {
+    const from = tx.from.toLowerCase()
+    const to = tx.to?.toLowerCase() || ''
+    const user = userAddress.toLowerCase()
+    const fn = tx.functionName?.toLowerCase() || ''
+
+    // Check for known function names
+    if (fn.includes('swap')) return { type: 'Swap', icon: 'contract' }
+    if (fn.includes('stake') || fn.includes('unstake')) return { type: 'Stake', icon: 'contract' }
+    if (fn.includes('addliquidity') || fn.includes('removeliquidity')) return { type: 'LP', icon: 'contract' }
+    if (fn.includes('approve')) return { type: 'Approve', icon: 'contract' }
+    if (fn.includes('transfer')) return { type: 'Transfer', icon: from === user ? 'sent' : 'received' }
+
+    // Check if it's a contract call
+    if (tx.functionName || (tx.methodId && tx.methodId !== '0x')) {
+        return { type: tx.functionName?.split('(')[0] || 'Contract', icon: 'contract' }
+    }
+
+    // Simple transfer
+    if (from === user) return { type: 'Sent', icon: 'sent' }
+    if (to === user) return { type: 'Received', icon: 'received' }
+
+    return { type: 'Unknown', icon: 'contract' }
+}
 
 // Token configuration for display
 const TOKEN_CONFIG = [
@@ -193,6 +258,180 @@ function TokenRow({
                     </>
                 )}
             </div>
+        </div>
+    )
+}
+
+// Transactions List Component
+function TransactionsList({ address }: { address: string }) {
+    const [transactions, setTransactions] = useState<ArcScanTx[]>([])
+    const [isLoading, setIsLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+
+    const fetchTransactions = useCallback(async () => {
+        if (!address) return
+
+        setIsLoading(true)
+        setError(null)
+
+        try {
+            const url = `${ARCSCAN_API}?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=10&sort=desc`
+            const response = await fetch(url)
+            const data = await response.json()
+
+            if (data.status === '1' && Array.isArray(data.result)) {
+                setTransactions(data.result)
+            } else if (data.message === 'No transactions found') {
+                setTransactions([])
+            } else {
+                setTransactions([])
+            }
+        } catch (err) {
+            console.error('Failed to fetch transactions:', err)
+            setError('Could not load transactions')
+        } finally {
+            setIsLoading(false)
+        }
+    }, [address])
+
+    useEffect(() => {
+        fetchTransactions()
+    }, [fetchTransactions])
+
+    // Loading state
+    if (isLoading) {
+        return (
+            <div className="text-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-cyan-400 mx-auto mb-4" />
+                <p className="text-muted-foreground">Loading transactions...</p>
+            </div>
+        )
+    }
+
+    // Error state with fallback
+    if (error) {
+        return (
+            <div className="text-center py-12">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+                    <span className="text-3xl">⚠️</span>
+                </div>
+                <p className="text-foreground font-medium mb-2">{error}</p>
+                <p className="text-sm text-muted-foreground mb-4">
+                    View your transactions directly on the explorer
+                </p>
+                <a
+                    href={`${ARCSCAN_URL}/address/${address}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-accent text-background rounded-lg font-medium hover:opacity-90 transition-opacity"
+                >
+                    View on ArcScan <ExternalLink className="w-4 h-4" />
+                </a>
+            </div>
+        )
+    }
+
+    // Empty state
+    if (transactions.length === 0) {
+        return (
+            <div className="text-center py-12">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+                    <span className="text-3xl">📋</span>
+                </div>
+                <p className="text-foreground font-medium mb-2">No Transactions Yet</p>
+                <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-4">
+                    Your transaction history will appear here once you make your first transaction.
+                </p>
+                <a
+                    href={`${ARCSCAN_URL}/address/${address}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 text-cyan-400 hover:underline text-sm"
+                >
+                    View on ArcScan <ExternalLink className="w-3 h-3" />
+                </a>
+            </div>
+        )
+    }
+
+    return (
+        <div className="space-y-4">
+            {/* Header with Refresh */}
+            <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">Last 10 transactions</p>
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={fetchTransactions}
+                    className="text-muted-foreground hover:text-foreground"
+                >
+                    <RefreshCw className="w-3 h-3 mr-1" /> Refresh
+                </Button>
+            </div>
+
+            {/* Transaction List */}
+            <div className="space-y-2">
+                {transactions.map((tx) => {
+                    const { type, icon } = getTxType(tx, address)
+                    const isSuccess = tx.isError === '0'
+
+                    return (
+                        <a
+                            key={tx.hash}
+                            href={`${ARCSCAN_URL}/tx/${tx.hash}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border hover:border-cyan-500/30 transition-colors group"
+                        >
+                            <div className="flex items-center gap-3">
+                                {/* Icon */}
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${icon === 'sent' ? 'bg-orange-500/20 text-orange-400' :
+                                        icon === 'received' ? 'bg-green-500/20 text-green-400' :
+                                            'bg-purple-500/20 text-purple-400'
+                                    }`}>
+                                    {icon === 'sent' ? <ArrowUpRight className="w-5 h-5" /> :
+                                        icon === 'received' ? <ArrowDownLeft className="w-5 h-5" /> :
+                                            <FileCode className="w-5 h-5" />}
+                                </div>
+
+                                {/* Info */}
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <p className="font-medium text-foreground">{type}</p>
+                                        <span className={`text-xs px-1.5 py-0.5 rounded ${isSuccess ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+                                            }`}>
+                                            {isSuccess ? 'Success' : 'Failed'}
+                                        </span>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground font-mono">
+                                        {formatHash(tx.hash)}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Right side */}
+                            <div className="text-right flex items-center gap-3">
+                                <p className="text-sm text-muted-foreground">
+                                    {formatRelativeTime(tx.timeStamp)}
+                                </p>
+                                <ExternalLink className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
+                        </a>
+                    )
+                })}
+            </div>
+
+            {/* Footer link */}
+            <p className="text-xs text-muted-foreground text-center pt-2">
+                <a
+                    href={`${ARCSCAN_URL}/address/${address}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-cyan-400 hover:underline inline-flex items-center gap-1"
+                >
+                    View all on ArcScan <ExternalLink className="w-3 h-3" />
+                </a>
+            </p>
         </div>
     )
 }
@@ -477,19 +716,19 @@ export default function PortfolioPage() {
                             </div>
                         )}
                         {activeTab === "transactions" && (
-                            <div className="text-center py-12">
-                                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-                                    <span className="text-3xl">📋</span>
+                            !isConnected ? (
+                                <div className="text-center py-12">
+                                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+                                        <Wallet className="w-8 h-8 text-muted-foreground" />
+                                    </div>
+                                    <p className="text-foreground font-medium mb-2">Wallet Not Connected</p>
+                                    <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+                                        Connect your wallet to view your transaction history.
+                                    </p>
                                 </div>
-                                <p className="text-foreground font-medium mb-2">Transaction History</p>
-                                <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-                                    View your recent transactions in the{" "}
-                                    <a href="/app/history" className="text-cyan-400 hover:underline">
-                                        History
-                                    </a>{" "}
-                                    page for detailed activity.
-                                </p>
-                            </div>
+                            ) : (
+                                <TransactionsList address={address!} />
+                            )
                         )}
                     </div>
                 </div>
