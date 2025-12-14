@@ -51,6 +51,7 @@ export function Navbar() {
     { label: "Swap", href: "/app/swap" },
     { label: "Pools", href: "/app/pools" },
     { label: "Payments", href: "/app/payments" },
+    { label: "Portfolio", href: "/app/portfolio" },
     { label: "History", href: "/app/history" },
     { label: "Docs", href: "/app/docs" },
   ]
