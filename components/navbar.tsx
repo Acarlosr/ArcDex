@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Droplet, Loader2, Copy, Check, ExternalLink } from "lucide-react"
@@ -8,6 +8,46 @@ import { useAccount, useConnect, useDisconnect } from "wagmi"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useTokenBalance } from "@/hooks/use-contracts"
+
+// Only show EVM-compatible wallets (filter out Solana, Cosmos, etc)
+const EVM_WALLET_IDS = [
+  'injected',
+  'metaMask',
+  'metamask',
+  'io.metamask',
+  'io.metamask.mobile',
+  'coinbase',
+  'coinbaseWallet',
+  'com.coinbase.wallet',
+  'brave',
+  'com.brave.wallet',
+  'rabby',
+  'io.rabby',
+  'okx',
+  'com.okex.wallet',
+  'trust',
+  'com.trustwallet.app',
+  'rainbow',
+  'me.rainbow',
+  'zerion',
+  'io.zerion.wallet',
+  'frame',
+  'walletConnect',
+]
+
+// Wallets to explicitly exclude (non-EVM)
+const EXCLUDED_WALLETS = [
+  'phantom',
+  'app.phantom',
+  'keplr',
+  'backpack',
+  'app.backpack',
+  'solflare',
+  'glow',
+  'slope',
+  'haha', // HaHa wallet is Solana
+  'app.haha',
+]
 
 export function Navbar() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -21,8 +61,29 @@ export function Navbar() {
   const { formatted: usdcBalance } = useTokenBalance('USDC')
   const { formatted: eurcBalance } = useTokenBalance('EURC')
 
+  // Filter connectors to only show EVM wallets
+  const evmConnectors = useMemo(() => {
+    return connectors.filter(connector => {
+      const id = connector.id.toLowerCase()
+      const name = connector.name.toLowerCase()
+
+      // Exclude known non-EVM wallets
+      const isExcluded = EXCLUDED_WALLETS.some(excluded =>
+        id.includes(excluded) || name.includes(excluded)
+      )
+      if (isExcluded) return false
+
+      // Include if it's in our EVM list or is the generic injected connector
+      const isEVM = EVM_WALLET_IDS.some(evmId =>
+        id.includes(evmId.toLowerCase()) || name.includes(evmId.toLowerCase())
+      ) || id === 'injected'
+
+      return isEVM
+    })
+  }, [connectors])
+
   const handleConnect = (connectorId: string) => {
-    const connector = connectors.find((c) => c.id === connectorId)
+    const connector = evmConnectors.find((c) => c.id === connectorId)
     if (connector) {
       connect({ connector })
       setIsDialogOpen(false)
@@ -196,7 +257,7 @@ export function Navbar() {
                 <>
                   <button
                     onClick={() => {
-                      const injectedConnector = connectors.find(c => c.id === 'injected')
+                      const injectedConnector = evmConnectors.find(c => c.id === 'injected')
                       if (injectedConnector) {
                         connect({ connector: injectedConnector })
                         setIsDialogOpen(false)
@@ -211,7 +272,7 @@ export function Navbar() {
                     <span className="ml-auto text-xs text-green-400">● Detected</span>
                   </button>
 
-                  {connectors.filter(c => c.id !== 'injected').map((connector) => (
+                  {evmConnectors.filter(c => c.id !== 'injected').map((connector) => (
                     <button
                       key={connector.id}
                       onClick={() => handleConnect(connector.id)}

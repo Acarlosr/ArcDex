@@ -176,8 +176,8 @@ function PaymentHistory({ address }: { address: string | undefined }) {
             <div>
               <div className="flex items-center gap-2">
                 <span className={`text-xs px-2 py-0.5 rounded ${tx.isError === '0'
-                    ? 'bg-green-500/20 text-green-400'
-                    : 'bg-red-500/20 text-red-400'
+                  ? 'bg-green-500/20 text-green-400'
+                  : 'bg-red-500/20 text-red-400'
                   }`}>
                   {tx.isError === '0' ? 'Confirmed' : 'Failed'}
                 </span>
@@ -329,8 +329,8 @@ export default function PaymentsPage() {
 
     return (
       <div className={`rounded-lg p-4 ${txStatus === "confirmed" ? "bg-green-500/10 border border-green-500/30" :
-          txStatus === "failed" ? "bg-red-500/10 border border-red-500/30" :
-            "bg-yellow-500/10 border border-yellow-500/30"
+        txStatus === "failed" ? "bg-red-500/10 border border-red-500/30" :
+          "bg-yellow-500/10 border border-yellow-500/30"
         }`}>
         <div className="flex items-center gap-3">
           {txStatus === "signing" && (
