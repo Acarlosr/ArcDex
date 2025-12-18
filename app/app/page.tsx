@@ -1,16 +1,47 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
-import { ArrowRight, Zap, TrendingUp, Droplets, Send, PieChart } from "lucide-react"
+import { ArrowRight, Zap, TrendingUp, Droplets, Send, PieChart, Rocket, HelpCircle } from "lucide-react"
+import { OnboardingModal } from "@/components/onboarding-modal"
+import { Button } from "@/components/ui/button"
 
 export default function AppHome() {
+  const [showOnboarding, setShowOnboarding] = useState(false)
+
   return (
     <main className="min-h-screen bg-gradient-to-b from-[#0A304F] via-[#114B6E] to-[#D1D5DB] text-slate-50">
+      <OnboardingModal open={showOnboarding} onOpenChange={setShowOnboarding} />
+
       <div className="max-w-6xl mx-auto px-4 py-12">
-        <div className="mb-12">
-          <h1 className="text-5xl font-bold text-white mb-2">ARCDex V2</h1>
-          <p className="text-xl text-slate-300 mb-2">The most advanced DeFi platform on Arc Network</p>
-          <p className="text-slate-400">Trade, stake, provide liquidity, and send payments securely and efficiently.</p>
+        {/* Testnet Banner */}
+        <div className="mb-6 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-lg p-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="px-2 py-0.5 bg-amber-500 text-white text-xs font-bold rounded">TESTNET</span>
+            <span className="text-amber-200 text-sm">You are using Arc Network Testnet. All data is for testing purposes only.</span>
+          </div>
+          <button
+            onClick={() => setShowOnboarding(true)}
+            className="text-amber-400 text-sm font-medium hover:text-amber-300 flex items-center gap-1"
+          >
+            <HelpCircle className="w-4 h-4" />
+            How to Test
+          </button>
+        </div>
+
+        <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-5xl font-bold text-white mb-2">ARCDex V2</h1>
+            <p className="text-xl text-slate-300 mb-2">The most advanced DeFi platform on Arc Network</p>
+            <p className="text-slate-400">Trade, stake, provide liquidity, and send payments securely and efficiently.</p>
+          </div>
+          <Button
+            onClick={() => setShowOnboarding(true)}
+            className="bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-900 font-bold hover:from-cyan-300 hover:to-blue-400 flex items-center gap-2 px-6 py-3 text-base"
+          >
+            <Rocket className="w-5 h-5" />
+            Start Here
+          </Button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-12">
@@ -111,23 +142,33 @@ export default function AppHome() {
           </div>
         </div>
 
-        {/* Quick Stats */}
-        <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-blue-600/10 rounded-lg p-4 border border-cyan-500/20">
-            <p className="text-xs text-slate-400 mb-1">Total Value Locked</p>
-            <p className="text-2xl font-bold text-cyan-400">$2.4M</p>
+        {/* Quick Stats - Demo Data */}
+        <div className="mt-12">
+          <div className="flex items-center gap-2 mb-4">
+            <h3 className="text-sm font-semibold text-slate-300">Platform Metrics</h3>
+            <span className="px-2 py-0.5 bg-slate-600 text-slate-300 text-xs font-medium rounded">DEMO DATA</span>
           </div>
-          <div className="bg-blue-600/10 rounded-lg p-4 border border-cyan-500/20">
-            <p className="text-xs text-slate-400 mb-1">24h Trading Volume</p>
-            <p className="text-2xl font-bold text-cyan-400">$340K</p>
-          </div>
-          <div className="bg-blue-600/10 rounded-lg p-4 border border-cyan-500/20">
-            <p className="text-xs text-slate-400 mb-1">Active Users</p>
-            <p className="text-2xl font-bold text-cyan-400">2.8K</p>
-          </div>
-          <div className="bg-blue-600/10 rounded-lg p-4 border border-cyan-500/20">
-            <p className="text-xs text-slate-400 mb-1">Active Pools</p>
-            <p className="text-2xl font-bold text-cyan-400">12</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-blue-600/10 rounded-lg p-4 border border-cyan-500/20">
+              <p className="text-xs text-slate-400 mb-1">Total Value Locked</p>
+              <p className="text-2xl font-bold text-cyan-400">$2.4M</p>
+              <p className="text-[10px] text-slate-500 mt-1">Sample testnet metric</p>
+            </div>
+            <div className="bg-blue-600/10 rounded-lg p-4 border border-cyan-500/20">
+              <p className="text-xs text-slate-400 mb-1">24h Trading Volume</p>
+              <p className="text-2xl font-bold text-cyan-400">$340K</p>
+              <p className="text-[10px] text-slate-500 mt-1">Sample testnet metric</p>
+            </div>
+            <div className="bg-blue-600/10 rounded-lg p-4 border border-cyan-500/20">
+              <p className="text-xs text-slate-400 mb-1">Active Users</p>
+              <p className="text-2xl font-bold text-cyan-400">2.8K</p>
+              <p className="text-[10px] text-slate-500 mt-1">Sample testnet metric</p>
+            </div>
+            <div className="bg-blue-600/10 rounded-lg p-4 border border-cyan-500/20">
+              <p className="text-xs text-slate-400 mb-1">Active Pools</p>
+              <p className="text-2xl font-bold text-cyan-400">12</p>
+              <p className="text-[10px] text-slate-500 mt-1">Sample testnet metric</p>
+            </div>
           </div>
         </div>
       </div>

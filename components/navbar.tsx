@@ -112,9 +112,8 @@ export function Navbar() {
     { label: "Swap", href: "/app/swap" },
     { label: "Pools", href: "/app/pools" },
     { label: "Payments", href: "/app/payments" },
-    { label: "Portfolio", href: "/app/portfolio" },
+    { label: "Contracts", href: "/app/contracts" },
     { label: "History", href: "/app/history" },
-    { label: "Docs", href: "/app/docs" },
   ]
 
   return (
@@ -252,69 +251,84 @@ export function Navbar() {
             </div>
           ) : (
             <div className="space-y-4">
-              {/* Check if MetaMask or other wallet is detected */}
-              {typeof window !== 'undefined' && (window as unknown as { ethereum?: unknown }).ethereum ? (
-                <>
-                  <button
-                    onClick={() => {
-                      const injectedConnector = evmConnectors.find(c => c.id === 'injected')
-                      if (injectedConnector) {
-                        connect({ connector: injectedConnector })
-                        setIsDialogOpen(false)
-                      }
-                    }}
-                    className="w-full p-4 rounded-xl bg-gradient-to-r from-orange-500/20 to-orange-600/20 hover:from-orange-500/30 hover:to-orange-600/30 text-foreground text-sm font-medium transition-all border border-orange-500/30 flex items-center gap-3"
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center">
-                      <span className="text-white font-bold text-sm">M</span>
-                    </div>
-                    <span>MetaMask</span>
-                    <span className="ml-auto text-xs text-green-400">● Detected</span>
-                  </button>
-
-                  {evmConnectors.filter(c => c.id !== 'injected').map((connector) => (
-                    <button
-                      key={connector.id}
-                      onClick={() => handleConnect(connector.id)}
-                      className="w-full p-3 rounded-lg bg-muted hover:bg-muted/80 text-foreground text-sm font-medium transition-colors border border-border"
-                    >
-                      {connector.name}
-                    </button>
-                  ))}
-                </>
-              ) : (
-                <div className="text-center py-6">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-                    <span className="text-3xl">🦊</span>
-                  </div>
-                  <p className="text-foreground font-medium mb-2">No Wallet Detected</p>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Please install MetaMask to connect to this app.
-                  </p>
-                  <a
-                    href="https://metamask.io/download/"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-block px-4 py-2 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 transition-colors"
-                  >
-                    Install MetaMask
-                  </a>
+              {/* WalletConnect - Primary Option (Always Visible) */}
+              <button
+                onClick={() => {
+                  const wcConnector = connectors.find(c => c.id === 'walletConnect')
+                  if (wcConnector) {
+                    connect({ connector: wcConnector })
+                  }
+                }}
+                className="w-full p-4 rounded-xl bg-gradient-to-r from-blue-500/20 to-cyan-500/20 hover:from-blue-500/30 hover:to-cyan-500/30 text-foreground text-sm font-medium transition-all border border-cyan-500/30 flex items-center gap-3"
+              >
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center">
+                  <span className="text-white font-bold text-xs">WC</span>
                 </div>
-              )}
+                <div className="text-left">
+                  <span className="block font-semibold">WalletConnect</span>
+                  <span className="text-xs text-muted-foreground">Mobile & QR Code</span>
+                </div>
+                <span className="ml-auto text-xs text-cyan-400">Recommended</span>
+              </button>
 
-              <p className="text-xs text-muted-foreground pt-2">
-                <span className="block font-semibold mb-1">Note:</span>
-                Make sure your wallet is configured for Arc Testnet (Chain ID: 5042002).
-                Get testnet USDC from the{" "}
+              {/* Browser Wallet - Always Visible */}
+              <button
+                onClick={() => {
+                  const injectedConnector = connectors.find(c => c.id === 'injected')
+                  if (injectedConnector) {
+                    connect({ connector: injectedConnector })
+                    setIsDialogOpen(false)
+                  }
+                }}
+                className="w-full p-3 rounded-lg bg-muted hover:bg-muted/80 text-foreground text-sm font-medium transition-colors border border-border flex items-center gap-3"
+              >
+                <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">🦊</span>
+                </div>
+                <div className="text-left">
+                  <span className="block">Browser Wallet</span>
+                  <span className="text-xs text-muted-foreground">MetaMask, Rabby, etc.</span>
+                </div>
+              </button>
+
+              {/* Arc Testnet Info */}
+              <div className="bg-muted rounded-lg p-3 space-y-2">
+                <p className="text-xs font-semibold text-foreground">Arc Testnet Setup</p>
+                <div className="flex flex-col gap-2 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Network:</span>
+                    <span className="text-foreground font-mono">Arc Testnet</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Chain ID:</span>
+                    <span className="text-foreground font-mono">5042002</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">RPC:</span>
+                    <span className="text-foreground font-mono text-[10px]">rpc.testnet.arc.network</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Faucet Links */}
+              <div className="flex gap-2">
                 <a
                   href="https://faucet.circle.com"
                   target="_blank"
                   rel="noreferrer"
-                  className="text-cyan-400 hover:underline"
+                  className="flex-1 px-3 py-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-medium hover:bg-cyan-500/20 transition-colors text-center"
                 >
-                  Circle Faucet
-                </a>.
-              </p>
+                  💧 USDC Faucet
+                </a>
+                <a
+                  href="https://explorer.testnet.arc.network"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex-1 px-3 py-2 rounded-lg bg-muted border border-border text-muted-foreground text-xs font-medium hover:bg-muted/80 transition-colors text-center"
+                >
+                  🔍 Explorer
+                </a>
+              </div>
             </div>
           )}
         </DialogContent>

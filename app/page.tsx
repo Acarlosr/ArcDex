@@ -78,23 +78,28 @@ export default function LandingPage() {
             </a>
           </div>
 
-          {/* Live Stats */}
-          <div id="stats" className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
-            <div className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 rounded-lg p-4">
-              <p className="text-slate-400 text-sm mb-1">TVL</p>
-              <p className="text-2xl font-bold text-cyan-400">$2.4M</p>
+          {/* Live Stats - Demo Data */}
+          <div id="stats" className="max-w-3xl mx-auto">
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <span className="px-2 py-0.5 bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-medium rounded">DEMO METRICS</span>
             </div>
-            <div className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 rounded-lg p-4">
-              <p className="text-slate-400 text-sm mb-1">24h Volume</p>
-              <p className="text-2xl font-bold text-cyan-400">$340K</p>
-            </div>
-            <div className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 rounded-lg p-4">
-              <p className="text-slate-400 text-sm mb-1">Users</p>
-              <p className="text-2xl font-bold text-cyan-400">2.8K</p>
-            </div>
-            <div className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 rounded-lg p-4">
-              <p className="text-slate-400 text-sm mb-1">Pools</p>
-              <p className="text-2xl font-bold text-cyan-400">12</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 rounded-lg p-4">
+                <p className="text-slate-400 text-sm mb-1">TVL</p>
+                <p className="text-2xl font-bold text-cyan-400">$2.4M</p>
+              </div>
+              <div className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 rounded-lg p-4">
+                <p className="text-slate-400 text-sm mb-1">24h Volume</p>
+                <p className="text-2xl font-bold text-cyan-400">$340K</p>
+              </div>
+              <div className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 rounded-lg p-4">
+                <p className="text-slate-400 text-sm mb-1">Users</p>
+                <p className="text-2xl font-bold text-cyan-400">2.8K</p>
+              </div>
+              <div className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 rounded-lg p-4">
+                <p className="text-slate-400 text-sm mb-1">Pools</p>
+                <p className="text-2xl font-bold text-cyan-400">12</p>
+              </div>
             </div>
           </div>
         </div>
