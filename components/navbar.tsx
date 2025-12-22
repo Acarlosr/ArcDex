@@ -5,11 +5,15 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Droplet, Loader2, Copy, Check, ExternalLink, Smartphone } from "lucide-react"
 import { useAccount, useConnect, useDisconnect } from "wagmi"
-import { useAppKit } from '@reown/appkit/react'
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useTokenBalance } from "@/hooks/use-contracts"
-import { WALLET_DEEP_LINKS } from "@/lib/wagmi"
+
+// Deep link URLs for mobile wallets
+const WALLET_DEEP_LINKS = {
+  metamask: 'https://metamask.app.link/dapp/www.arc-dex.xyz/app',
+  trust: 'https://link.trustwallet.com/open_url?coin_id=60&url=https://www.arc-dex.xyz/app',
+}
 
 export function Navbar() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -22,12 +26,10 @@ export function Navbar() {
   const { address, isConnected, isConnecting } = useAccount()
   const { connect, connectors, isPending } = useConnect()
   const { disconnect } = useDisconnect()
-  const { open: openAppKit } = useAppKit()
 
   const { formatted: usdcBalance } = useTokenBalance('USDC')
   const { formatted: eurcBalance } = useTokenBalance('EURC')
 
-  // Detect mobile and injected provider on client side
   useEffect(() => {
     const ua = navigator.userAgent.toLowerCase()
     const mobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(ua)
@@ -35,13 +37,14 @@ export function Navbar() {
     setHasInjectedProvider(!!(window as any).ethereum)
   }, [])
 
-  // Open AppKit modal (handles QR on desktop, deep links on mobile)
   const handleWalletConnect = () => {
-    setIsDialogOpen(false) // Close our dialog
-    openAppKit() // Open AppKit modal
+    const wcConnector = connectors.find(c => c.id === 'walletConnect')
+    if (wcConnector) {
+      connect({ connector: wcConnector })
+      setIsDialogOpen(false)
+    }
   }
 
-  // Injected wallet handler - only call if provider exists
   const handleInjectedConnect = () => {
     if (!hasInjectedProvider) return
     const injectedConnector = connectors.find(c => c.id === 'injected')
@@ -81,7 +84,6 @@ export function Navbar() {
     { label: "History", href: "/app/history" },
   ]
 
-  // Determine what to show for browser wallet
   const showBrowserWalletButton = !isMobile || hasInjectedProvider
   const showMobileDeepLinks = isMobile && !hasInjectedProvider
 
@@ -177,7 +179,7 @@ export function Navbar() {
             </div>
           ) : (
             <div className="space-y-4">
-              {/* WalletConnect via AppKit - Shows QR on desktop, deep links on mobile */}
+              {/* WalletConnect */}
               <button
                 onClick={handleWalletConnect}
                 className="w-full p-4 rounded-xl bg-gradient-to-r from-blue-500/20 to-cyan-500/20 hover:from-blue-500/30 hover:to-cyan-500/30 text-foreground text-sm font-medium transition-all border border-cyan-500/30 flex items-center gap-3"
@@ -191,12 +193,10 @@ export function Navbar() {
                     {isMobile ? 'Connect your mobile wallet' : 'Scan QR with mobile wallet'}
                   </span>
                 </div>
-                <span className="ml-auto text-xs text-cyan-400">
-                  {isMobile ? '✓ Recommended' : 'Recommended'}
-                </span>
+                <span className="ml-auto text-xs text-cyan-400">Recommended</span>
               </button>
 
-              {/* Browser Wallet - Desktop OR Mobile inside wallet browser */}
+              {/* Browser Wallet */}
               {showBrowserWalletButton && (
                 <button
                   onClick={handleInjectedConnect}
@@ -209,13 +209,13 @@ export function Navbar() {
                     <span className="block">Browser Wallet</span>
                     <span className="text-xs text-muted-foreground">MetaMask, Rabby, etc.</span>
                   </div>
-                  {isMobile && hasInjectedProvider && (
+                  {hasInjectedProvider && (
                     <span className="ml-auto text-xs text-green-400">✓ Detected</span>
                   )}
                 </button>
               )}
 
-              {/* Mobile Deep Links - Fallback when outside wallet browser */}
+              {/* Mobile Deep Links */}
               {showMobileDeepLinks && (
                 <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-3">
                   <div className="flex items-center gap-2 text-sm text-foreground">
@@ -224,33 +224,17 @@ export function Navbar() {
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <a
-                      href={WALLET_DEEP_LINKS.metamask}
-                      className="flex items-center gap-3 p-3 rounded-lg bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 transition-colors"
-                    >
-                      <div className="w-6 h-6 rounded bg-orange-500 flex items-center justify-center">
-                        <span className="text-white text-xs">🦊</span>
-                      </div>
+                    <a href={WALLET_DEEP_LINKS.metamask} className="flex items-center gap-3 p-3 rounded-lg bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 transition-colors">
                       <span className="text-sm font-medium text-foreground">Open in MetaMask</span>
                       <ExternalLink className="ml-auto h-4 w-4 text-muted-foreground" />
                     </a>
-
-                    <a
-                      href={WALLET_DEEP_LINKS.trustwallet}
-                      className="flex items-center gap-3 p-3 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 transition-colors"
-                    >
-                      <div className="w-6 h-6 rounded bg-blue-500 flex items-center justify-center">
-                        <span className="text-white text-xs">🛡️</span>
-                      </div>
+                    <a href={WALLET_DEEP_LINKS.trust} className="flex items-center gap-3 p-3 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 transition-colors">
                       <span className="text-sm font-medium text-foreground">Open in Trust Wallet</span>
                       <ExternalLink className="ml-auto h-4 w-4 text-muted-foreground" />
                     </a>
                   </div>
 
-                  <button
-                    onClick={copyDappLink}
-                    className="w-full flex items-center justify-center gap-2 p-2 rounded-lg border border-border hover:bg-muted transition-colors text-sm text-muted-foreground"
-                  >
+                  <button onClick={copyDappLink} className="w-full flex items-center justify-center gap-2 p-2 rounded-lg border border-border hover:bg-muted transition-colors text-sm text-muted-foreground">
                     {copiedLink ? (
                       <><Check className="h-4 w-4 text-green-400" /><span className="text-green-400">Link copied!</span></>
                     ) : (
@@ -259,25 +243,6 @@ export function Navbar() {
                   </button>
                 </div>
               )}
-
-              {/* Arc Testnet Info */}
-              <div className="bg-muted rounded-lg p-3 space-y-2">
-                <p className="text-xs font-semibold text-foreground">Arc Testnet Setup</p>
-                <div className="flex flex-col gap-2 text-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Network:</span>
-                    <span className="text-foreground font-mono">Arc Testnet</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Chain ID:</span>
-                    <span className="text-foreground font-mono">5042002</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">RPC:</span>
-                    <span className="text-foreground font-mono text-[10px]">rpc.testnet.arc.network</span>
-                  </div>
-                </div>
-              </div>
 
               {/* Faucet Links */}
               <div className="flex gap-2">

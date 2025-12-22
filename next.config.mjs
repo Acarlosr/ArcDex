@@ -6,34 +6,38 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Fix for WalletConnect/Reown packages with Turbopack
+  // Fix for WalletConnect packages
   serverExternalPackages: [
     'thread-stream',
     'pino',
     'pino-pretty',
-    '@solana/kit',
-    '@solana-program/system',
-    '@solana-program/token',
-    '@coinbase/cdp-sdk',
   ],
-  // Enable Turbopack with empty config
+  // Enable Turbopack (required for Next.js 16)
   turbopack: {},
   // Webpack fallbacks and externals
-  webpack: (config) => {
+  webpack: (config, { isServer }) => {
     config.resolve.fallback = {
       fs: false,
       net: false,
       tls: false,
       crypto: false,
     };
+
+    // Externalize optional wagmi connector dependencies
     config.externals.push(
       'pino-pretty',
       'lokijs',
       'encoding',
+      // Optional wagmi connectors that we don't use
+      'porto',
+      '@safe-global/safe-apps-sdk',
+      '@metamask/sdk',
       '@solana/kit',
       '@solana-program/system',
       '@solana-program/token',
+      '@coinbase/cdp-sdk',
     );
+
     return config;
   },
 }
