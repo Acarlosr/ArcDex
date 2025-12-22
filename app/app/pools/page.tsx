@@ -19,6 +19,7 @@ import {
   useTokenAllowance
 } from "@/hooks/use-contracts"
 import { ARCDEX, POOLS, PoolPair, parseTokenAmount } from "@/lib/contracts"
+import { MobileWalletHint } from "@/components/mobile-wallet-hint"
 
 export default function PoolsPage() {
   const [selectedPool, setSelectedPool] = useState<PoolPair>("USDC_EURC")
@@ -150,6 +151,8 @@ export default function PoolsPage() {
           <p className="text-muted-foreground mt-1">Provide liquidity to pools and earn trading fees.</p>
         </div>
       </div>
+
+      <MobileWalletHint />
 
       {/* Pool Selector Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">

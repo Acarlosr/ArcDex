@@ -20,6 +20,7 @@ import {
   useTokenAllowance
 } from "@/hooks/use-contracts"
 import { ARCDEX, parseTokenAmount } from "@/lib/contracts"
+import { MobileWalletHint } from "@/components/mobile-wallet-hint"
 
 export default function StakePage() {
   const [selectedToken, setSelectedToken] = useState<"USDC" | "EURC">("USDC")
@@ -150,6 +151,8 @@ export default function StakePage() {
           <p className="text-muted-foreground mt-1">Stake your USDC or EURC to earn annual yield on Arc Testnet.</p>
         </div>
       </div>
+
+      <MobileWalletHint />
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

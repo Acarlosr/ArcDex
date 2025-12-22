@@ -8,6 +8,7 @@ import { useTokenBalance, useGetAmountOut, useSwap, useApprove, useTokenAllowanc
 import { useAccount } from "wagmi"
 import { ARCDEX, parseTokenAmount, ARCSCAN_URL, ARCSCAN_API } from "@/lib/contracts"
 import { Loader2, ExternalLink, CheckCircle2, XCircle, RefreshCw } from "lucide-react"
+import { MobileWalletHint } from "@/components/mobile-wallet-hint"
 
 type SwapToken = "USDC" | "EURC" | "USYC"
 
@@ -154,8 +155,8 @@ function SwapHistory({ address }: { address: string | undefined }) {
             )}
             <div>
               <span className={`text-xs px-1.5 py-0.5 rounded ${tx.isError === '0'
-                  ? 'bg-green-500/20 text-green-400'
-                  : 'bg-red-500/20 text-red-400'
+                ? 'bg-green-500/20 text-green-400'
+                : 'bg-red-500/20 text-red-400'
                 }`}>
                 {tx.isError === '0' ? 'Confirmed' : 'Failed'}
               </span>
@@ -293,6 +294,8 @@ export default function SwapPage() {
           <p className="text-muted-foreground mt-1">Exchange tokens instantly on Arc Network</p>
         </div>
       </div>
+
+      <MobileWalletHint />
 
       {/* Main Content - Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

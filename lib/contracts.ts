@@ -114,16 +114,16 @@ export const PAYMENTS = {
 
 export const ARCDEX = {
   // LP Token for liquidity providers
-  LP: "0x823f387a392bdc1ef57bc30cc005be7e6d067f13" as const,
+  LP: "0x5dc0ff7148cd906817e6d07cf2317fedd0f04a03" as const,
 
   // AMM Swap contract (USDC/EURC)
-  Swap: "0x50bb26da53555585c606280435469bfb15cac4cf" as const,
+  Swap: "0x6e25a59770b243113efd205b8722fe2aa942ba21" as const,
 
   // Staking vault for yield
-  Staking: "0x5d1ddbafd6a11131154a635563699230f0b9229b" as const,
+  Staking: "0xe58b6a269ab1c65e62203bd131ef5935214ce726" as const,
 
   // P2P Payments
-  Payments: "0x515683c9399445df4a38915c2130cc498aba4319" as const,
+  Payments: "0x9dd9ce65012b595a9dae8014ea6d1f4a8cc21a68" as const,
 
   // USYC Pools (deploy and update addresses)
   LP_USYC: "" as const, // TODO: Update after deploy

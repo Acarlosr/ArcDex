@@ -1,91 +1,52 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Droplet, Loader2, Copy, Check, ExternalLink } from "lucide-react"
+import { Droplet, Loader2, Copy, Check, ExternalLink, Smartphone } from "lucide-react"
 import { useAccount, useConnect, useDisconnect } from "wagmi"
+import { useAppKit } from '@reown/appkit/react'
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useTokenBalance } from "@/hooks/use-contracts"
-
-// Only show EVM-compatible wallets (filter out Solana, Cosmos, etc)
-const EVM_WALLET_IDS = [
-  'injected',
-  'metaMask',
-  'metamask',
-  'io.metamask',
-  'io.metamask.mobile',
-  'coinbase',
-  'coinbaseWallet',
-  'com.coinbase.wallet',
-  'brave',
-  'com.brave.wallet',
-  'rabby',
-  'io.rabby',
-  'okx',
-  'com.okex.wallet',
-  'trust',
-  'com.trustwallet.app',
-  'rainbow',
-  'me.rainbow',
-  'zerion',
-  'io.zerion.wallet',
-  'frame',
-  'walletConnect',
-]
-
-// Wallets to explicitly exclude (non-EVM)
-const EXCLUDED_WALLETS = [
-  'phantom',
-  'app.phantom',
-  'keplr',
-  'backpack',
-  'app.backpack',
-  'solflare',
-  'glow',
-  'slope',
-  'haha', // HaHa wallet is Solana
-  'app.haha',
-]
+import { WALLET_DEEP_LINKS } from "@/lib/wagmi"
 
 export function Navbar() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [copiedLink, setCopiedLink] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [hasInjectedProvider, setHasInjectedProvider] = useState(false)
   const pathname = usePathname()
 
   const { address, isConnected, isConnecting } = useAccount()
   const { connect, connectors, isPending } = useConnect()
   const { disconnect } = useDisconnect()
+  const { open: openAppKit } = useAppKit()
 
   const { formatted: usdcBalance } = useTokenBalance('USDC')
   const { formatted: eurcBalance } = useTokenBalance('EURC')
 
-  // Filter connectors to only show EVM wallets
-  const evmConnectors = useMemo(() => {
-    return connectors.filter(connector => {
-      const id = connector.id.toLowerCase()
-      const name = connector.name.toLowerCase()
+  // Detect mobile and injected provider on client side
+  useEffect(() => {
+    const ua = navigator.userAgent.toLowerCase()
+    const mobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(ua)
+    setIsMobile(mobile)
+    setHasInjectedProvider(!!(window as any).ethereum)
+  }, [])
 
-      // Exclude known non-EVM wallets
-      const isExcluded = EXCLUDED_WALLETS.some(excluded =>
-        id.includes(excluded) || name.includes(excluded)
-      )
-      if (isExcluded) return false
+  // Open AppKit modal (handles QR on desktop, deep links on mobile)
+  const handleWalletConnect = () => {
+    setIsDialogOpen(false) // Close our dialog
+    openAppKit() // Open AppKit modal
+  }
 
-      // Include if it's in our EVM list or is the generic injected connector
-      const isEVM = EVM_WALLET_IDS.some(evmId =>
-        id.includes(evmId.toLowerCase()) || name.includes(evmId.toLowerCase())
-      ) || id === 'injected'
-
-      return isEVM
-    })
-  }, [connectors])
-
-  const handleConnect = (connectorId: string) => {
-    const connector = evmConnectors.find((c) => c.id === connectorId)
-    if (connector) {
-      connect({ connector })
+  // Injected wallet handler - only call if provider exists
+  const handleInjectedConnect = () => {
+    if (!hasInjectedProvider) return
+    const injectedConnector = connectors.find(c => c.id === 'injected')
+    if (injectedConnector) {
+      connect({ connector: injectedConnector })
       setIsDialogOpen(false)
     }
   }
@@ -103,9 +64,13 @@ export function Navbar() {
     }
   }
 
-  const formatAddress = (addr: string) => {
-    return `${addr.slice(0, 6)}...${addr.slice(-4)}`
+  const copyDappLink = () => {
+    navigator.clipboard.writeText('https://www.arc-dex.xyz/app')
+    setCopiedLink(true)
+    setTimeout(() => setCopiedLink(false), 2000)
   }
+
+  const formatAddress = (addr: string) => `${addr.slice(0, 6)}...${addr.slice(-4)}`
 
   const navItems = [
     { label: "Stake", href: "/app/stake" },
@@ -116,42 +81,36 @@ export function Navbar() {
     { label: "History", href: "/app/history" },
   ]
 
+  // Determine what to show for browser wallet
+  const showBrowserWalletButton = !isMobile || hasInjectedProvider
+  const showMobileDeepLinks = isMobile && !hasInjectedProvider
+
   return (
     <>
       <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          {/* Logo */}
           <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sky-500 to-cyan-400" />
             <span className="text-xl font-bold text-foreground">ARCDex V2</span>
           </Link>
 
-          {/* Navigation Items */}
           <div className="hidden md:flex items-center gap-8">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`text-sm transition-colors ${pathname === item.href ? "text-accent font-semibold" : "text-muted-foreground hover:text-foreground"
-                  }`}
+                className={`text-sm transition-colors ${pathname === item.href ? "text-accent font-semibold" : "text-muted-foreground hover:text-foreground"}`}
               >
                 {item.label}
               </Link>
             ))}
           </div>
 
-          {/* Connect Wallet Button */}
           <div className="flex items-center gap-3">
             <div className="relative group">
-              <a
-                href="https://faucet.circle.com"
-                target="_blank"
-                rel="noreferrer"
-                className="text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer"
-              >
+              <a href="https://faucet.circle.com" target="_blank" rel="noreferrer" className="text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer">
                 <Droplet size={20} />
               </a>
-              {/* Tooltip */}
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-foreground text-background text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                 faucet
               </div>
@@ -160,24 +119,13 @@ export function Navbar() {
             <span className="text-sm text-muted-foreground font-medium">Arc Testnet</span>
 
             {isConnected && address ? (
-              <Button
-                onClick={() => setIsDialogOpen(true)}
-                variant="outline"
-                className="border-cyan-500/30 text-foreground hover:bg-muted"
-              >
+              <Button onClick={() => setIsDialogOpen(true)} variant="outline" className="border-cyan-500/30 text-foreground hover:bg-muted">
                 {formatAddress(address)}
               </Button>
             ) : (
-              <Button
-                onClick={() => setIsDialogOpen(true)}
-                className="btn-gradient"
-                disabled={isConnecting || isPending}
-              >
+              <Button onClick={() => setIsDialogOpen(true)} className="btn-gradient" disabled={isConnecting || isPending}>
                 {isConnecting || isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Connecting...
-                  </>
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Connecting...</>
                 ) : (
                   "Connect Wallet"
                 )}
@@ -187,7 +135,6 @@ export function Navbar() {
         </div>
       </nav>
 
-      {/* Wallet Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="bg-card border-border">
           <DialogHeader>
@@ -198,37 +145,21 @@ export function Navbar() {
 
           {isConnected && address ? (
             <div className="space-y-4">
-              {/* Address */}
               <div className="bg-muted rounded-lg p-4">
                 <p className="text-xs text-muted-foreground mb-2">Address</p>
                 <div className="flex items-center justify-between">
                   <span className="text-foreground font-mono text-sm">{formatAddress(address)}</span>
                   <div className="flex gap-2">
-                    <button
-                      onClick={copyAddress}
-                      className="p-1.5 rounded hover:bg-background transition-colors"
-                      title="Copy address"
-                    >
-                      {copied ? (
-                        <Check className="h-4 w-4 text-green-400" />
-                      ) : (
-                        <Copy className="h-4 w-4 text-muted-foreground" />
-                      )}
+                    <button onClick={copyAddress} className="p-1.5 rounded hover:bg-background transition-colors" title="Copy address">
+                      {copied ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4 text-muted-foreground" />}
                     </button>
-                    <a
-                      href={`https://explorer.testnet.arc.network/address/${address}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="p-1.5 rounded hover:bg-background transition-colors"
-                      title="View on explorer"
-                    >
+                    <a href={`https://explorer.testnet.arc.network/address/${address}`} target="_blank" rel="noreferrer" className="p-1.5 rounded hover:bg-background transition-colors" title="View on explorer">
                       <ExternalLink className="h-4 w-4 text-muted-foreground" />
                     </a>
                   </div>
                 </div>
               </div>
 
-              {/* Balances */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-muted rounded-lg p-3">
                   <p className="text-xs text-muted-foreground mb-1">USDC Balance</p>
@@ -240,25 +171,15 @@ export function Navbar() {
                 </div>
               </div>
 
-              {/* Disconnect */}
-              <Button
-                onClick={handleDisconnect}
-                variant="outline"
-                className="w-full border-destructive text-destructive hover:bg-destructive/10"
-              >
+              <Button onClick={handleDisconnect} variant="outline" className="w-full border-destructive text-destructive hover:bg-destructive/10">
                 Disconnect
               </Button>
             </div>
           ) : (
             <div className="space-y-4">
-              {/* WalletConnect - Primary Option (Always Visible) */}
+              {/* WalletConnect via AppKit - Shows QR on desktop, deep links on mobile */}
               <button
-                onClick={() => {
-                  const wcConnector = connectors.find(c => c.id === 'walletConnect')
-                  if (wcConnector) {
-                    connect({ connector: wcConnector })
-                  }
-                }}
+                onClick={handleWalletConnect}
                 className="w-full p-4 rounded-xl bg-gradient-to-r from-blue-500/20 to-cyan-500/20 hover:from-blue-500/30 hover:to-cyan-500/30 text-foreground text-sm font-medium transition-all border border-cyan-500/30 flex items-center gap-3"
               >
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center">
@@ -266,30 +187,78 @@ export function Navbar() {
                 </div>
                 <div className="text-left">
                   <span className="block font-semibold">WalletConnect</span>
-                  <span className="text-xs text-muted-foreground">Mobile & QR Code</span>
+                  <span className="text-xs text-muted-foreground">
+                    {isMobile ? 'Connect your mobile wallet' : 'Scan QR with mobile wallet'}
+                  </span>
                 </div>
-                <span className="ml-auto text-xs text-cyan-400">Recommended</span>
+                <span className="ml-auto text-xs text-cyan-400">
+                  {isMobile ? '✓ Recommended' : 'Recommended'}
+                </span>
               </button>
 
-              {/* Browser Wallet - Always Visible */}
-              <button
-                onClick={() => {
-                  const injectedConnector = connectors.find(c => c.id === 'injected')
-                  if (injectedConnector) {
-                    connect({ connector: injectedConnector })
-                    setIsDialogOpen(false)
-                  }
-                }}
-                className="w-full p-3 rounded-lg bg-muted hover:bg-muted/80 text-foreground text-sm font-medium transition-colors border border-border flex items-center gap-3"
-              >
-                <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">🦊</span>
+              {/* Browser Wallet - Desktop OR Mobile inside wallet browser */}
+              {showBrowserWalletButton && (
+                <button
+                  onClick={handleInjectedConnect}
+                  className="w-full p-3 rounded-lg bg-muted hover:bg-muted/80 text-foreground text-sm font-medium transition-colors border border-border flex items-center gap-3"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">🦊</span>
+                  </div>
+                  <div className="text-left">
+                    <span className="block">Browser Wallet</span>
+                    <span className="text-xs text-muted-foreground">MetaMask, Rabby, etc.</span>
+                  </div>
+                  {isMobile && hasInjectedProvider && (
+                    <span className="ml-auto text-xs text-green-400">✓ Detected</span>
+                  )}
+                </button>
+              )}
+
+              {/* Mobile Deep Links - Fallback when outside wallet browser */}
+              {showMobileDeepLinks && (
+                <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-3">
+                  <div className="flex items-center gap-2 text-sm text-foreground">
+                    <Smartphone className="h-4 w-4 text-cyan-400" />
+                    <span className="font-medium">Or open in wallet browser</span>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <a
+                      href={WALLET_DEEP_LINKS.metamask}
+                      className="flex items-center gap-3 p-3 rounded-lg bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 transition-colors"
+                    >
+                      <div className="w-6 h-6 rounded bg-orange-500 flex items-center justify-center">
+                        <span className="text-white text-xs">🦊</span>
+                      </div>
+                      <span className="text-sm font-medium text-foreground">Open in MetaMask</span>
+                      <ExternalLink className="ml-auto h-4 w-4 text-muted-foreground" />
+                    </a>
+
+                    <a
+                      href={WALLET_DEEP_LINKS.trustwallet}
+                      className="flex items-center gap-3 p-3 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 transition-colors"
+                    >
+                      <div className="w-6 h-6 rounded bg-blue-500 flex items-center justify-center">
+                        <span className="text-white text-xs">🛡️</span>
+                      </div>
+                      <span className="text-sm font-medium text-foreground">Open in Trust Wallet</span>
+                      <ExternalLink className="ml-auto h-4 w-4 text-muted-foreground" />
+                    </a>
+                  </div>
+
+                  <button
+                    onClick={copyDappLink}
+                    className="w-full flex items-center justify-center gap-2 p-2 rounded-lg border border-border hover:bg-muted transition-colors text-sm text-muted-foreground"
+                  >
+                    {copiedLink ? (
+                      <><Check className="h-4 w-4 text-green-400" /><span className="text-green-400">Link copied!</span></>
+                    ) : (
+                      <><Copy className="h-4 w-4" /><span>Copy dApp link</span></>
+                    )}
+                  </button>
                 </div>
-                <div className="text-left">
-                  <span className="block">Browser Wallet</span>
-                  <span className="text-xs text-muted-foreground">MetaMask, Rabby, etc.</span>
-                </div>
-              </button>
+              )}
 
               {/* Arc Testnet Info */}
               <div className="bg-muted rounded-lg p-3 space-y-2">
@@ -312,20 +281,10 @@ export function Navbar() {
 
               {/* Faucet Links */}
               <div className="flex gap-2">
-                <a
-                  href="https://faucet.circle.com"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex-1 px-3 py-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-medium hover:bg-cyan-500/20 transition-colors text-center"
-                >
+                <a href="https://faucet.circle.com" target="_blank" rel="noreferrer" className="flex-1 px-3 py-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-medium hover:bg-cyan-500/20 transition-colors text-center">
                   💧 USDC Faucet
                 </a>
-                <a
-                  href="https://explorer.testnet.arc.network"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex-1 px-3 py-2 rounded-lg bg-muted border border-border text-muted-foreground text-xs font-medium hover:bg-muted/80 transition-colors text-center"
-                >
+                <a href="https://explorer.testnet.arc.network" target="_blank" rel="noreferrer" className="flex-1 px-3 py-2 rounded-lg bg-muted border border-border text-muted-foreground text-xs font-medium hover:bg-muted/80 transition-colors text-center">
                   🔍 Explorer
                 </a>
               </div>

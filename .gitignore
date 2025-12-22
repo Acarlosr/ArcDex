@@ -36,3 +36,14 @@ coverage/
 *.log
 *.zip
 .vercel
+# env (secrets)
+.env
+.env.*
+local.env
+!.env.example
+contracts/arcdex-contracts/local.env
+
+# build/artifacts/backups
+*.pdf
+backups_*/
+contracts/**/broadcast/**/run-*.json

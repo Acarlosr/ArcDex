@@ -14,6 +14,7 @@ import {
   usePaymentFee
 } from "@/hooks/use-contracts"
 import { ARCDEX, parseTokenAmount, ARCSCAN_URL } from "@/lib/contracts"
+import { MobileWalletHint } from "@/components/mobile-wallet-hint"
 
 // ArcScan API for transaction history
 const ARCSCAN_API = "https://testnet.arcscan.app/api"
@@ -405,6 +406,8 @@ export default function PaymentsPage() {
           <h1 className="text-4xl font-bold text-foreground mb-2">Send Payments</h1>
           <p className="text-muted-foreground">Send stablecoins to other addresses on Arc Network.</p>
         </div>
+
+        <MobileWalletHint />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Send Payment Card */}
