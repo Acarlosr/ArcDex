@@ -1,7 +1,7 @@
 'use client'
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { WagmiProvider, createConfig, http, createStorage } from 'wagmi'
+import { WagmiProvider, createConfig, http } from 'wagmi'
 import { injected, walletConnect } from 'wagmi/connectors'
 import { useState, type ReactNode } from 'react'
 import { CHAIN_CONFIG } from '@/lib/contracts'
@@ -19,35 +19,30 @@ const arcTestnet = {
     testnet: CHAIN_CONFIG.testnet,
 } as const
 
-// Metadata for WalletConnect
-const metadata = {
-    name: 'ARCDex V2',
-    description: 'DeFi Trading Platform on Arc Network Testnet',
-    url: 'https://www.arc-dex.xyz',
-    icons: ['https://www.arc-dex.xyz/icon.png'],
-}
-
-// Create wagmi config
+// Create wagmi config - optimized for faster connection
 export const wagmiConfig = createConfig({
     chains: [arcTestnet],
     connectors: [
+        // Injected first for faster MetaMask detection
         injected({
             shimDisconnect: true,
         }),
+        // WalletConnect for mobile
         walletConnect({
             projectId,
-            metadata,
-            showQrModal: true, // Native QR modal
-            qrModalOptions: {
-                themeMode: 'dark',
+            metadata: {
+                name: 'ARCDex V2',
+                description: 'DeFi on Arc Network',
+                url: 'https://www.arc-dex.xyz',
+                icons: ['https://www.arc-dex.xyz/icon.png'],
             },
+            showQrModal: true,
         }),
     ],
-    storage: createStorage({
-        storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-    }),
     transports: {
-        [arcTestnet.id]: http(CHAIN_CONFIG.rpcUrls.default.http[0]),
+        [arcTestnet.id]: http(CHAIN_CONFIG.rpcUrls.default.http[0], {
+            timeout: 10000, // 10 second timeout
+        }),
     },
     ssr: true,
 })
@@ -58,6 +53,7 @@ export function Web3Provider({ children }: { children: ReactNode }) {
             queries: {
                 staleTime: 60 * 1000,
                 refetchOnWindowFocus: false,
+                retry: 2,
             },
         },
     }))
