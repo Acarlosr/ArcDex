@@ -3,7 +3,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { WagmiProvider, createConfig, http } from 'wagmi'
 import { injected, walletConnect } from 'wagmi/connectors'
-import { useState, type ReactNode } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
 import { CHAIN_CONFIG } from '@/lib/contracts'
 
 // WalletConnect Project ID
@@ -19,35 +19,46 @@ const arcTestnet = {
     testnet: CHAIN_CONFIG.testnet,
 } as const
 
-// Create wagmi config - optimized for faster connection
-export const wagmiConfig = createConfig({
-    chains: [arcTestnet],
-    connectors: [
-        // Injected first for faster MetaMask detection
+// Create wagmi config - only injected connector for SSR safety
+function createWagmiConfig() {
+    const connectors = [
         injected({
             shimDisconnect: true,
         }),
-        // WalletConnect for mobile
-        walletConnect({
-            projectId,
-            metadata: {
-                name: 'ARCDex V2',
-                description: 'DeFi on Arc Network',
-                url: 'https://www.arc-dex.xyz',
-                icons: ['https://www.arc-dex.xyz/icon.png'],
-            },
-            showQrModal: true,
-        }),
-    ],
-    transports: {
-        [arcTestnet.id]: http(CHAIN_CONFIG.rpcUrls.default.http[0], {
-            timeout: 10000, // 10 second timeout
-        }),
-    },
-    ssr: true,
-})
+    ]
+
+    // Only add WalletConnect on client side to avoid indexedDB error
+    if (typeof window !== 'undefined') {
+        connectors.push(
+            walletConnect({
+                projectId,
+                metadata: {
+                    name: 'ARCDex V2',
+                    description: 'DeFi on Arc Network',
+                    url: 'https://www.arc-dex.xyz',
+                    icons: ['https://www.arc-dex.xyz/icon.png'],
+                },
+                showQrModal: true,
+            }) as any
+        )
+    }
+
+    return createConfig({
+        chains: [arcTestnet],
+        connectors,
+        transports: {
+            [arcTestnet.id]: http(CHAIN_CONFIG.rpcUrls.default.http[0], {
+                timeout: 10000,
+            }),
+        },
+        ssr: true,
+    })
+}
+
+export const wagmiConfig = createWagmiConfig()
 
 export function Web3Provider({ children }: { children: ReactNode }) {
+    const [mounted, setMounted] = useState(false)
     const [queryClient] = useState(() => new QueryClient({
         defaultOptions: {
             queries: {
@@ -57,6 +68,15 @@ export function Web3Provider({ children }: { children: ReactNode }) {
             },
         },
     }))
+
+    useEffect(() => {
+        setMounted(true)
+    }, [])
+
+    // Prevent hydration mismatch
+    if (!mounted) {
+        return null
+    }
 
     return (
         <WagmiProvider config={wagmiConfig}>
