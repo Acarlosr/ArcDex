@@ -15,6 +15,57 @@ The project is designed as a testnet showcase dApp, with a strong focus on **UX 
 
 ---
 
+## 📋 TL;DR
+
+**ArcDex** is a full-featured DeFi protocol on Arc Network Testnet featuring:
+
+- 🔁 **Token Swaps** — USDC ↔ EURC with on-chain AMM
+- 🌊 **Liquidity Pools** — Add/remove liquidity, earn fees
+- 🥩 **Staking** — Stake tokens and claim rewards
+- 💸 **P2P Payments** — Send stablecoins with minimal fees
+- 📊 **Portfolio Dashboard** — Real-time balances, transaction history, and charts
+
+**Built with:** Next.js 16, React 19, Wagmi v3, Foundry (Solidity)
+
+**Quick Start:**
+```bash
+git clone https://github.com/Acarlosr/ArcDex.git
+cd ArcDex
+npm install
+npm run dev
+```
+
+---
+
+## 🌟 Why Arc Network?
+
+Arc Network is a Layer 1 blockchain optimized for **stablecoin-native DeFi** and **real-world asset (RWA) tokenization**. Here's why builders choose Arc:
+
+### **Native Stablecoin Infrastructure**
+- **USDC as native gas** — No ETH/volatile gas tokens required
+- **Built-in CCTP support** — Cross-chain transfers via Circle's Cross-Chain Transfer Protocol
+- **Stablecoin-first design** — Optimized for USDC, EURC, and yield-bearing tokens like USYC
+
+### **Developer Experience**
+- **EVM-compatible** — Use familiar tools (Foundry, Hardhat, Wagmi)
+- **Fast finality** — Sub-second transaction confirmation
+- **Low fees** — Cost-effective for high-frequency DeFi operations
+- **Testnet available** — Full-featured testnet for development and testing
+
+### **Real-World Asset Focus**
+- **USYC integration** — Tokenized money market funds on-chain
+- **RWA primitives** — Infrastructure for asset tokenization
+- **Regulatory clarity** — Built with compliance in mind
+
+### **Why ArcDex on Arc?**
+ArcDex leverages Arc's stablecoin-native architecture to provide:
+- **Seamless swaps** between stablecoins without gas token conversions
+- **Efficient staking** with USDC/EURC directly
+- **Low-cost payments** optimized for stablecoin transfers
+- **Future RWA support** via USYC and other tokenized assets
+
+---
+
 ## ✨ Key Features
 
 ### 🔁 Token Swaps
@@ -236,4 +287,3 @@ ArcDex is a modular, production-minded DeFi application built for the Arc Networ
 ## 📄 License
 
 MIT License
-
