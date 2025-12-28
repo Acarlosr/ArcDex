@@ -186,7 +186,7 @@ export default function ContractsPage() {
                     <h2 className="text-xl font-bold text-white mb-4">Resources</h2>
                     <div className="grid gap-3 md:grid-cols-3">
                         <a
-                            href="https://explorer.testnet.arc.network"
+                            href="https://testnet.arcscan.app"
                             target="_blank"
                             rel="noreferrer"
                             className="flex items-center gap-2 p-3 rounded-lg bg-muted hover:bg-muted/80 border border-cyan-500/20 transition-colors"

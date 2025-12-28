@@ -155,7 +155,7 @@ export function Navbar() {
                     <button onClick={copyAddress} className="p-1.5 rounded hover:bg-background transition-colors" title="Copy address">
                       {copied ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4 text-muted-foreground" />}
                     </button>
-                    <a href={`https://explorer.testnet.arc.network/address/${address}`} target="_blank" rel="noreferrer" className="p-1.5 rounded hover:bg-background transition-colors" title="View on explorer">
+                    <a href={`https://testnet.arcscan.app/address/${address}`} target="_blank" rel="noreferrer" className="p-1.5 rounded hover:bg-background transition-colors" title="View on explorer">
                       <ExternalLink className="h-4 w-4 text-muted-foreground" />
                     </a>
                   </div>
@@ -249,7 +249,7 @@ export function Navbar() {
                 <a href="https://faucet.circle.com" target="_blank" rel="noreferrer" className="flex-1 px-3 py-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-medium hover:bg-cyan-500/20 transition-colors text-center">
                   💧 USDC Faucet
                 </a>
-                <a href="https://explorer.testnet.arc.network" target="_blank" rel="noreferrer" className="flex-1 px-3 py-2 rounded-lg bg-muted border border-border text-muted-foreground text-xs font-medium hover:bg-muted/80 transition-colors text-center">
+                <a href="https://testnet.arcscan.app" target="_blank" rel="noreferrer" className="flex-1 px-3 py-2 rounded-lg bg-muted border border-border text-muted-foreground text-xs font-medium hover:bg-muted/80 transition-colors text-center">
                   🔍 Explorer
                 </a>
               </div>
