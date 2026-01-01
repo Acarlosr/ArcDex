@@ -298,16 +298,6 @@ export default function SwapPage() {
 
       <MobileWalletHint />
 
-      {/* Price Chart */}
-      <div className="mb-8">
-        <PriceChart
-          title="Exchange Rate"
-          subtitle="24h Vol: $19,157.77 (updates hourly)"
-          type="swap"
-          height={250}
-        />
-      </div>
-
       {/* Main Content - Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Swap Card - Takes 2 columns */}
@@ -501,26 +491,23 @@ export default function SwapPage() {
               </div>
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* Swap History */}
-          <div className="bg-card rounded-2xl p-6 border border-border">
-            <h3 className="text-lg font-semibold text-foreground mb-4">Swap History</h3>
-            <SwapHistory key={refreshKey} address={address} />
-          </div>
+      {/* Chart and History Section - Below Swap Button */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+        {/* Price Chart */}
+        <PriceChart
+          title="Exchange Rate"
+          subtitle="24h Vol: $19,157.77 (updates hourly)"
+          type="swap"
+          height={250}
+        />
 
-          {/* Network Info */}
-          <div className="bg-card rounded-2xl p-6 border border-border">
-            <h3 className="text-lg font-semibold text-foreground mb-4">Network</h3>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold">A</span>
-              </div>
-              <div>
-                <p className="font-medium text-foreground">Arc Testnet</p>
-                <p className="text-sm text-muted-foreground">Chain ID: 5042002</p>
-              </div>
-            </div>
-          </div>
+        {/* Swap History */}
+        <div className="bg-card rounded-2xl p-6 border border-border">
+          <h3 className="text-lg font-semibold text-foreground mb-4">Swap History</h3>
+          <SwapHistory key={refreshKey} address={address} />
         </div>
       </div>
     </div>
