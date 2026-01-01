@@ -22,34 +22,34 @@ function ContractCard({ name, address, description }: ContractCardProps) {
     }
 
     return (
-        <div className="bg-gradient-to-br from-blue-600/10 to-cyan-600/10 rounded-lg p-4 border border-cyan-500/20">
+        <div className="card-professional p-4">
             <div className="flex items-start justify-between mb-2">
-                <h3 className="font-semibold text-white">{name}</h3>
+                <h3 className="font-semibold text-foreground">{name}</h3>
                 <div className="flex gap-1">
                     <button
                         onClick={copyAddress}
-                        className="p-1.5 rounded hover:bg-white/10 transition-colors"
+                        className="p-1.5 rounded hover:bg-muted transition-colors"
                         title="Copy address"
                     >
                         {copied ? (
-                            <Check className="w-4 h-4 text-green-400" />
+                            <Check className="w-4 h-4 text-green-500" />
                         ) : (
-                            <Copy className="w-4 h-4 text-slate-400" />
+                            <Copy className="w-4 h-4 text-muted-foreground" />
                         )}
                     </button>
                     <a
                         href={`${ARCSCAN_URL}/address/${address}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="p-1.5 rounded hover:bg-white/10 transition-colors"
+                        className="p-1.5 rounded hover:bg-muted transition-colors"
                         title="View on ArcScan"
                     >
-                        <ExternalLink className="w-4 h-4 text-cyan-400" />
+                        <ExternalLink className="w-4 h-4 text-primary" />
                     </a>
                 </div>
             </div>
-            <p className="text-xs text-slate-400 mb-2">{description}</p>
-            <code className="text-xs text-cyan-400 font-mono bg-black/20 px-2 py-1 rounded block truncate">
+            <p className="text-xs text-muted-foreground mb-2">{description}</p>
+            <code className="text-xs text-primary font-mono bg-muted px-2 py-1 rounded block truncate">
                 {address}
             </code>
         </div>
@@ -58,12 +58,12 @@ function ContractCard({ name, address, description }: ContractCardProps) {
 
 export default function ContractsPage() {
     return (
-        <main className="min-h-screen bg-gradient-to-b from-[#0A304F] via-[#114B6E] to-[#D1D5DB] text-slate-50">
+        <main className="min-h-screen">
             <div className="max-w-4xl mx-auto px-4 py-12">
                 {/* Back Link */}
                 <Link
                     href="/app"
-                    className="inline-flex items-center gap-1 text-cyan-400 hover:text-cyan-300 mb-6 text-sm"
+                    className="inline-flex items-center gap-1 text-primary hover:text-primary/80 mb-6 text-sm"
                 >
                     <ChevronLeft className="w-4 h-4" />
                     Back to App
@@ -72,18 +72,18 @@ export default function ContractsPage() {
                 {/* Header */}
                 <div className="mb-8">
                     <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center">
-                            <FileCode className="w-5 h-5 text-white" />
+                        <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+                            <FileCode className="w-5 h-5 text-primary-foreground" />
                         </div>
-                        <h1 className="text-3xl font-bold text-white">Contracts & Security</h1>
+                        <h1 className="text-3xl font-bold text-foreground">Contracts & Security</h1>
                     </div>
-                    <p className="text-slate-400">
+                    <p className="text-muted-foreground">
                         All smart contracts deployed on Arc Testnet (Chain ID: 5042002). Verify addresses on ArcScan.
                     </p>
                 </div>
 
                 {/* Security Status */}
-                <div className="mb-8 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-lg p-4">
+                <div className="mb-8 bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
                     <div className="flex items-start gap-3">
                         <Shield className="w-5 h-5 text-amber-400 mt-0.5" />
                         <div>
@@ -98,8 +98,8 @@ export default function ContractsPage() {
 
                 {/* ARCDex Core Contracts */}
                 <section className="mb-8">
-                    <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-cyan-400"></span>
+                    <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-primary"></span>
                         ARCDex Core Contracts
                     </h2>
                     <div className="grid gap-4">
@@ -128,8 +128,8 @@ export default function ContractsPage() {
 
                 {/* Token Addresses */}
                 <section className="mb-8">
-                    <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-green-400"></span>
+                    <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-green-500"></span>
                         Supported Tokens
                     </h2>
                     <div className="grid gap-4">
@@ -153,8 +153,8 @@ export default function ContractsPage() {
 
                 {/* Arc Protocol Contracts */}
                 <section className="mb-8">
-                    <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-blue-400"></span>
+                    <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-blue-500"></span>
                         Arc Protocol Infrastructure
                     </h2>
                     <div className="grid gap-4 md:grid-cols-2">
@@ -183,34 +183,25 @@ export default function ContractsPage() {
 
                 {/* Resources */}
                 <section className="mb-8">
-                    <h2 className="text-xl font-bold text-white mb-4">Resources</h2>
-                    <div className="grid gap-3 md:grid-cols-3">
-                        <a
-                            href="https://testnet.arcscan.app"
-                            target="_blank"
-                            rel="noreferrer"
-                            className="flex items-center gap-2 p-3 rounded-lg bg-muted hover:bg-muted/80 border border-cyan-500/20 transition-colors"
-                        >
-                            <ExternalLink className="w-4 h-4 text-cyan-400" />
-                            <span className="text-sm text-white">Arc Explorer</span>
-                        </a>
+                    <h2 className="text-xl font-bold text-foreground mb-4">Resources</h2>
+                    <div className="grid gap-3 md:grid-cols-2">
                         <a
                             href={ARCSCAN_URL}
                             target="_blank"
                             rel="noreferrer"
-                            className="flex items-center gap-2 p-3 rounded-lg bg-muted hover:bg-muted/80 border border-cyan-500/20 transition-colors"
+                            className="flex items-center gap-2 p-3 rounded-lg bg-card hover:bg-muted border border-border hover:border-primary/30 transition-colors"
                         >
-                            <ExternalLink className="w-4 h-4 text-cyan-400" />
-                            <span className="text-sm text-white">ArcScan</span>
+                            <ExternalLink className="w-4 h-4 text-primary" />
+                            <span className="text-sm text-foreground font-medium">ArcScan</span>
                         </a>
                         <a
                             href="https://docs.arc.network"
                             target="_blank"
                             rel="noreferrer"
-                            className="flex items-center gap-2 p-3 rounded-lg bg-muted hover:bg-muted/80 border border-cyan-500/20 transition-colors"
+                            className="flex items-center gap-2 p-3 rounded-lg bg-card hover:bg-muted border border-border hover:border-primary/30 transition-colors"
                         >
-                            <ExternalLink className="w-4 h-4 text-cyan-400" />
-                            <span className="text-sm text-white">Arc Docs</span>
+                            <ExternalLink className="w-4 h-4 text-primary" />
+                            <span className="text-sm text-foreground font-medium">Arc Docs</span>
                         </a>
                     </div>
                 </section>

@@ -57,9 +57,9 @@ export default function HistoryPage() {
           {isConnected ? (
             <div className="space-y-6">
               {/* Info Box */}
-              <div className="bg-gradient-to-br from-sky-500/10 to-cyan-400/10 border border-cyan-500/30 rounded-xl p-6">
+              <div className="card-professional border-primary/30 rounded-xl p-6">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-cyan-500/20 flex items-center justify-center text-2xl">
+                  <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-2xl">
                     📋
                   </div>
                   <div className="flex-1">

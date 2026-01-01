@@ -168,8 +168,8 @@ export default function PoolsPage() {
                 setAmount1("")
               }}
               className={`relative p-6 rounded-2xl border transition-all text-left ${isSelected
-                ? 'bg-gradient-to-br from-sky-500/20 to-cyan-400/20 border-cyan-500/50 glow-border'
-                : 'bg-card border-border hover:border-cyan-500/30'
+                ? 'bg-primary/10 border-primary glow-border'
+                : 'bg-card border-border hover:border-primary/30'
                 } ${!p.enabled ? 'opacity-60' : ''}`}
             >
               {!p.enabled && (
@@ -369,7 +369,7 @@ export default function PoolsPage() {
 
                 {/* Combine Icon */}
                 <div className="flex flex-col items-center gap-1 my-2">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-sky-500/20 to-cyan-400/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold text-xl">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center text-primary font-bold text-xl">
                     +
                   </div>
                   <span className="text-xs text-muted-foreground">Combine tokens</span>
@@ -499,7 +499,7 @@ export default function PoolsPage() {
               </div>
               <div className="flex justify-between items-center border-t border-border pt-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sky-500 to-cyan-400 flex items-center justify-center text-white text-xs font-bold">LP</div>
+                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold">LP</div>
                   <span className="text-foreground">LP Tokens</span>
                 </div>
                 <span className="text-foreground font-medium">{lpLoading ? "..." : lpBalance}</span>

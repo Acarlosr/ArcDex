@@ -19,7 +19,7 @@ export default function DocsPage() {
         <div className="space-y-12 max-w-4xl mx-auto">
             {/* Header */}
             <div className="text-center space-y-4">
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-sky-400 to-cyan-300 bg-clip-text text-transparent">
+                <h1 className="text-4xl font-bold text-foreground">
                     ArcDex Documentation
                 </h1>
                 <p className="text-xl text-muted-foreground">

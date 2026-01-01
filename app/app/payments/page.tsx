@@ -399,7 +399,7 @@ export default function PaymentsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-[#0A304F] via-[#114B6E] to-[#D1D5DB] text-slate-50 px-4 py-12">
+    <main className="min-h-screen px-4 py-12">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
