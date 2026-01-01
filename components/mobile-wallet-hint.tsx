@@ -1,35 +1,44 @@
 "use client"
 
-import { useIsMobile } from "@/hooks/use-mobile"
-import { useAccount } from "wagmi"
-import { Smartphone, ExternalLink } from "lucide-react"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { useState, useEffect } from "react"
+import { Smartphone, X } from "lucide-react"
 
 export function MobileWalletHint() {
-  const isMobile = useIsMobile()
-  const { isConnected } = useAccount()
+  const [isMobile, setIsMobile] = useState(false)
+  const [dismissed, setDismissed] = useState(false)
 
-  // Only show on mobile when wallet is not connected
-  if (!isMobile || isConnected) {
-    return null
+  useEffect(() => {
+    const ua = navigator.userAgent.toLowerCase()
+    const mobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(ua)
+    setIsMobile(mobile)
+    
+    // Check if already dismissed
+    const wasDismissed = sessionStorage.getItem('mobileHintDismissed')
+    if (wasDismissed) setDismissed(true)
+  }, [])
+
+  const handleDismiss = () => {
+    setDismissed(true)
+    sessionStorage.setItem('mobileHintDismissed', 'true')
   }
 
+  if (!isMobile || dismissed) return null
+
   return (
-    <Alert className="mb-6 border-primary/30 bg-primary/10">
-      <Smartphone className="h-4 w-4 text-primary" />
-      <AlertDescription className="text-sm text-muted-foreground">
-        <span className="font-medium text-foreground">Mobile detected:</span>{" "}
-        For the best experience, open this dApp in your{" "}
-        <span className="text-primary font-medium">MetaMask</span> or{" "}
-        <span className="text-primary font-medium">Trust Wallet</span> browser.
-        <a 
-          href="https://metamask.app.link/dapp/www.arc-dex.xyz"
-          className="inline-flex items-center gap-1 ml-2 text-primary hover:text-primary/80 underline"
-        >
-          Open in MetaMask <ExternalLink className="h-3 w-3" />
-        </a>
-      </AlertDescription>
-    </Alert>
+    <div className="mb-4 bg-primary/10 border border-primary/30 rounded-lg p-3 flex items-start gap-3">
+      <Smartphone className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+      <div className="flex-1">
+        <p className="text-sm text-foreground font-medium">Mobile Wallet Tip</p>
+        <p className="text-xs text-muted-foreground mt-1">
+          For the best experience, open this dApp in your wallet's built-in browser (MetaMask, Trust Wallet, etc.)
+        </p>
+      </div>
+      <button 
+        onClick={handleDismiss}
+        className="p-1 hover:bg-muted rounded transition-colors"
+      >
+        <X className="w-4 h-4 text-muted-foreground" />
+      </button>
+    </div>
   )
 }
-

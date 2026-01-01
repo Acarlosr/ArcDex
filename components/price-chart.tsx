@@ -12,7 +12,7 @@ interface PriceChartProps {
   showTimeframes?: boolean
   height?: number
   color?: string
-  type?: "swap" | "stake" | "pool"
+  type?: "swap" | "apy" | "tvl"
 }
 
 type Timeframe = "1H" | "1D" | "1W" | "1M"
@@ -32,11 +32,11 @@ function generateMockData(timeframe: Timeframe, type: string) {
       baseValue = 1.0 // Exchange rate around 1:1
       volatility = 0.02
       break
-    case "stake":
+    case "apy":
       baseValue = 12.5 // APY around 12.5%
       volatility = 0.5
       break
-    case "pool":
+    case "tvl":
       baseValue = 250000 // TVL around $250K
       volatility = 5000
       break
@@ -92,7 +92,7 @@ function generateMockData(timeframe: Timeframe, type: string) {
     
     data.push({
       time: timeLabel,
-      value: Number(currentValue.toFixed(type === "pool" ? 0 : 4)),
+      value: Number(currentValue.toFixed(type === "tvl" ? 0 : 4)),
       fullTime: fullTimeLabel,
     })
   }
@@ -104,9 +104,9 @@ function formatValue(value: number, type: string): string {
   switch (type) {
     case "swap":
       return value.toFixed(4)
-    case "stake":
+    case "apy":
       return `${value.toFixed(2)}%`
-    case "pool":
+    case "tvl":
       return `$${value.toLocaleString()}`
     default:
       return value.toString()
@@ -123,7 +123,7 @@ export function PriceChart({
   color,
   type = "swap"
 }: PriceChartProps) {
-  const [timeframe, setTimeframe] = useState<Timeframe>("1H")
+  const [timeframe, setTimeframe] = useState<Timeframe>("1D")
   
   const data = useMemo(() => generateMockData(timeframe, type), [timeframe, type])
   
@@ -151,11 +151,11 @@ export function PriceChart({
   }
 
   return (
-    <div className="card-professional p-4">
+    <div className="bg-card rounded-xl p-4 border border-border">
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div>
-          <p className="text-sm text-muted-foreground">{title}</p>
+          <p className="text-sm font-medium text-foreground">{title}</p>
           {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
         </div>
         {showTimeframes && (
@@ -222,16 +222,6 @@ export function PriceChart({
           </AreaChart>
         </ResponsiveContainer>
       </div>
-      
-      {/* Current Value Indicator */}
-      <div className="flex items-center justify-end mt-2">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: chartColor }} />
-          <span className="text-sm font-medium" style={{ color: chartColor }}>
-            {formatValue(latestValue, type)}
-          </span>
-        </div>
-      </div>
     </div>
   )
 }
@@ -269,5 +259,3 @@ export function MiniChart({
     </div>
   )
 }
-
-
