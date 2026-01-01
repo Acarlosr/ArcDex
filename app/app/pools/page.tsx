@@ -155,16 +155,6 @@ export default function PoolsPage() {
 
       <MobileWalletHint />
 
-      {/* TVL Chart */}
-      <div className="mb-8">
-        <PriceChart
-          title="Total Value Locked"
-          subtitle="24h Vol: $19,157.77 (updates hourly)"
-          type="tvl"
-          height={250}
-        />
-      </div>
-
       {/* Pool Selector Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         {(Object.keys(POOLS) as PoolPair[]).map((poolKey) => {
@@ -205,14 +195,6 @@ export default function PoolsPage() {
             </button>
           )
         })}
-      </div>
-
-      {/* Pool Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <StatCard title={`Pool ${pool.token0}`} value={pool.enabled ? poolUSDC || "0.00" : "—"} subtitle={`${pool.token0} in pool`} />
-        <StatCard title={`Pool ${pool.token1}`} value={pool.enabled ? poolEURC || "0.00" : "—"} subtitle={`${pool.token1} in pool`} />
-        <StatCard title="Your LP" value={pool.enabled ? (lpLoading ? "..." : lpBalance) : "—"} subtitle="LP token balance" />
-        <StatCard title="Pool Share" value={pool.enabled ? `${poolShare}%` : "—"} subtitle="Your share of pool" />
       </div>
 
       {/* My Pools Section */}
@@ -565,6 +547,24 @@ export default function PoolsPage() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* TVL Chart - Below Add Liquidity Button */}
+      <div className="mt-8 mb-8">
+        <PriceChart
+          title="Total Value Locked"
+          subtitle="24h Vol: $19,157.77 (updates hourly)"
+          type="tvl"
+          height={250}
+        />
+      </div>
+
+      {/* Pool Stats - Below Chart */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard title={`Pool ${pool.token0}`} value={pool.enabled ? poolUSDC || "0.00" : "—"} subtitle={`${pool.token0} in pool`} />
+        <StatCard title={`Pool ${pool.token1}`} value={pool.enabled ? poolEURC || "0.00" : "—"} subtitle={`${pool.token1} in pool`} />
+        <StatCard title="Your LP" value={pool.enabled ? (lpLoading ? "..." : lpBalance) : "—"} subtitle="LP token balance" />
+        <StatCard title="Pool Share" value={pool.enabled ? `${poolShare}%` : "—"} subtitle="Your share of pool" />
       </div>
     </div>
   )
