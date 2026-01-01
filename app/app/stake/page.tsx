@@ -185,8 +185,8 @@ export default function StakePage() {
         />
         <StatCard
           title="APR"
-          value={`${totalAPR}%`}
-          subtitle={`${selectedToken} staking rate`}
+          value={`${totalAPR.toFixed(0)}%`}
+          subtitle="USDC staking rate"
         />
       </div>
 
