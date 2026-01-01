@@ -82,6 +82,7 @@ export function Navbar() {
     { label: "Payments", href: "/app/payments" },
     { label: "Contracts", href: "/app/contracts" },
     { label: "History", href: "/app/history" },
+    { label: "Docs", href: "/app/docs" },
   ]
 
   const showBrowserWalletButton = !isMobile || hasInjectedProvider
