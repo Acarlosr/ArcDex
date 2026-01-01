@@ -125,6 +125,41 @@
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+  
+  /* Grid pattern background for dark theme */
+  .dark body {
+    background-image: 
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-position: 0 0, 0 0;
+    position: relative;
+  }
+  
+  /* Optional: Add subtle perspective effect */
+  .dark body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+      linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 40px 40px;
+    transform: perspective(1000px) rotateX(2deg) translateY(-2%);
+    transform-origin: center top;
+    pointer-events: none;
+    z-index: 0;
+  }
+  
+  /* Ensure content is above the grid */
+  .dark #__next,
+  .dark #__next > * {
+    position: relative;
+    z-index: 1;
+  }
 }
 
 /* Smooth theme transitions */
