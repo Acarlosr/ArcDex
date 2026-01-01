@@ -155,41 +155,6 @@ export default function StakePage() {
 
       <MobileWalletHint />
 
-      {/* APY Chart */}
-      <div className="mb-8">
-        <PriceChart
-          title="APY Evolution"
-          subtitle={`Current: ${totalAPR.toFixed(2)}% APR`}
-          currentValue={`${totalAPR.toFixed(2)}%`}
-          type="apy"
-          height={250}
-        />
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <StatCard
-          title="Total USDC Staked"
-          value={totalStakedUSDC}
-          subtitle="In staking contract"
-        />
-        <StatCard
-          title="Total EURC Staked"
-          value={totalStakedEURC}
-          subtitle="In staking contract"
-        />
-        <StatCard
-          title="Your Staked"
-          value={`$${totalStakedValue.toFixed(2)}`}
-          subtitle="USDC + EURC value"
-        />
-        <StatCard
-          title="APR"
-          value={`${totalAPR.toFixed(0)}%`}
-          subtitle="USDC staking rate"
-        />
-      </div>
-
       {/* Staking Panel */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Stake Card */}
@@ -404,6 +369,41 @@ export default function StakePage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* APY Chart - Below Stake Button */}
+      <div className="mt-8 mb-8">
+        <PriceChart
+          title="APY Evolution"
+          subtitle={`Current: ${totalAPR.toFixed(2)}% APR`}
+          currentValue={`${totalAPR.toFixed(2)}%`}
+          type="apy"
+          height={250}
+        />
+      </div>
+
+      {/* Stats - Below Chart */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard
+          title="Total USDC Staked"
+          value={totalStakedUSDC}
+          subtitle="In staking contract"
+        />
+        <StatCard
+          title="Total EURC Staked"
+          value={totalStakedEURC}
+          subtitle="In staking contract"
+        />
+        <StatCard
+          title="Your Staked"
+          value={`$${totalStakedValue.toFixed(2)}`}
+          subtitle="USDC + EURC value"
+        />
+        <StatCard
+          title="APR"
+          value={`${totalAPR.toFixed(0)}%`}
+          subtitle="USDC staking rate"
+        />
       </div>
     </div>
   )
