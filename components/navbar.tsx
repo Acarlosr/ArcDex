@@ -94,7 +94,7 @@ export function Navbar() {
     <>
       <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Logo href="/app" size="md" />
+          <Logo href="/" size="md" />
 
           <div className="hidden md:flex items-center gap-8">
             {navItems.map((item) => (
