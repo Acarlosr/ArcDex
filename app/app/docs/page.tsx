@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ExternalLink, Copy, Check, BookOpen, Zap, FileCode, DollarSign, Gift, Users, HelpCircle } from "lucide-react"

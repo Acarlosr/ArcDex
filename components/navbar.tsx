@@ -8,6 +8,8 @@ import { useAccount, useConnect, useDisconnect } from "wagmi"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useTokenBalance } from "@/hooks/use-contracts"
+import { Logo } from "@/components/logo"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 // Deep link URLs for mobile wallets
 const WALLET_DEEP_LINKS = {
@@ -92,10 +94,7 @@ export function Navbar() {
     <>
       <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sky-500 to-cyan-400" />
-            <span className="text-xl font-bold text-foreground">ARCDex V2</span>
-          </Link>
+          <Logo href="/app" size="md" />
 
           <div className="hidden md:flex items-center gap-8">
             {navItems.map((item) => (
@@ -110,8 +109,9 @@ export function Navbar() {
           </div>
 
           <div className="flex items-center gap-3">
+            <ThemeToggle />
             <div className="relative group">
-              <a href="https://faucet.circle.com" target="_blank" rel="noreferrer" className="text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer">
+              <a href="https://faucet.circle.com" target="_blank" rel="noreferrer" className="text-primary hover:text-primary/80 transition-colors cursor-pointer">
                 <Droplet size={20} />
               </a>
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-foreground text-background text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
@@ -122,11 +122,11 @@ export function Navbar() {
             <span className="text-sm text-muted-foreground font-medium">Arc Testnet</span>
 
             {isConnected && address ? (
-              <Button onClick={() => setIsDialogOpen(true)} variant="outline" className="border-cyan-500/30 text-foreground hover:bg-muted">
+              <Button onClick={() => setIsDialogOpen(true)} variant="outline" className="border-border text-foreground hover:bg-muted">
                 {formatAddress(address)}
               </Button>
             ) : (
-              <Button onClick={() => setIsDialogOpen(true)} className="btn-gradient" disabled={isConnecting || isPending}>
+              <Button onClick={() => setIsDialogOpen(true)} className="bg-primary text-primary-foreground hover:bg-primary/90" disabled={isConnecting || isPending}>
                 {isConnecting || isPending ? (
                   <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Connecting...</>
                 ) : (
@@ -183,10 +183,10 @@ export function Navbar() {
               {/* WalletConnect */}
               <button
                 onClick={handleWalletConnect}
-                className="w-full p-4 rounded-xl bg-gradient-to-r from-blue-500/20 to-cyan-500/20 hover:from-blue-500/30 hover:to-cyan-500/30 text-foreground text-sm font-medium transition-all border border-cyan-500/30 flex items-center gap-3"
+                className="w-full p-4 rounded-xl bg-primary/10 hover:bg-primary/20 text-foreground text-sm font-medium transition-all border border-primary/30 flex items-center gap-3"
               >
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center">
-                  <span className="text-white font-bold text-xs">WC</span>
+                <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+                  <span className="text-primary-foreground font-bold text-xs">WC</span>
                 </div>
                 <div className="text-left">
                   <span className="block font-semibold">WalletConnect</span>
@@ -194,7 +194,7 @@ export function Navbar() {
                     {isMobile ? 'Connect your mobile wallet' : 'Scan QR with mobile wallet'}
                   </span>
                 </div>
-                <span className="ml-auto text-xs text-cyan-400">Recommended</span>
+                <span className="ml-auto text-xs text-primary">Recommended</span>
               </button>
 
               {/* Browser Wallet */}
@@ -220,7 +220,7 @@ export function Navbar() {
               {showMobileDeepLinks && (
                 <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-3">
                   <div className="flex items-center gap-2 text-sm text-foreground">
-                    <Smartphone className="h-4 w-4 text-cyan-400" />
+                    <Smartphone className="h-4 w-4 text-primary" />
                     <span className="font-medium">Or open in wallet browser</span>
                   </div>
 
@@ -247,7 +247,7 @@ export function Navbar() {
 
               {/* Faucet Links */}
               <div className="flex gap-2">
-                <a href="https://faucet.circle.com" target="_blank" rel="noreferrer" className="flex-1 px-3 py-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-medium hover:bg-cyan-500/20 transition-colors text-center">
+                <a href="https://faucet.circle.com" target="_blank" rel="noreferrer" className="flex-1 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20 text-primary text-xs font-medium hover:bg-primary/20 transition-colors text-center">
                   💧 USDC Faucet
                 </a>
                 <a href="https://testnet.arcscan.app" target="_blank" rel="noreferrer" className="flex-1 px-3 py-2 rounded-lg bg-muted border border-border text-muted-foreground text-xs font-medium hover:bg-muted/80 transition-colors text-center">
