@@ -40,9 +40,6 @@ export default function LandingPage() {
 
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-4 relative">
-        {/* Subtle background pattern */}
-        <div className="absolute inset-0 bg-grid opacity-50 pointer-events-none" />
-        
         <div className="max-w-5xl mx-auto text-center relative">
           <div className="inline-block mb-6 px-4 py-2 rounded-full border border-primary/30 bg-primary/5">
             <span className="text-primary text-sm font-semibold flex items-center gap-2">
@@ -87,19 +84,19 @@ export default function LandingPage() {
               </span>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="card-professional p-5 text-center">
+              <div className="bg-card border border-border rounded-lg p-5 text-center">
                 <p className="text-3xl font-bold text-primary mb-1">$2.4M</p>
                 <p className="text-muted-foreground text-sm">Total Value Locked</p>
               </div>
-              <div className="card-professional p-5 text-center">
+              <div className="bg-card border border-border rounded-lg p-5 text-center">
                 <p className="text-3xl font-bold text-primary mb-1">$340K</p>
                 <p className="text-muted-foreground text-sm">24h Volume</p>
               </div>
-              <div className="card-professional p-5 text-center">
+              <div className="bg-card border border-border rounded-lg p-5 text-center">
                 <p className="text-3xl font-bold text-primary mb-1">2.8K</p>
                 <p className="text-muted-foreground text-sm">Active Users</p>
               </div>
-              <div className="card-professional p-5 text-center">
+              <div className="bg-card border border-border rounded-lg p-5 text-center">
                 <p className="text-3xl font-bold text-primary mb-1">12</p>
                 <p className="text-muted-foreground text-sm">Active Pools</p>
               </div>
@@ -111,21 +108,22 @@ export default function LandingPage() {
       <section id="how-it-works" className="py-20 px-4 border-t border-border">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">How It Works</h2>
+            <h2 className="text-4xl font-bold text-foreground mb-4">How It Works</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Everything you need for DeFi trading, yield generation, and cross-border payments
+              Everything you need for advanced DeFi trading, yield generation, and cross-border payments
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-8">
             {/* Swaps */}
-            <div className="group card-professional p-8">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+            <div className="group bg-card border border-border rounded-xl p-8 hover:border-primary/40 transition-all">
+              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-all">
                 <Zap className="w-6 h-6 text-primary" />
               </div>
               <h3 className="text-xl font-semibold text-foreground mb-2">Instant Swaps</h3>
-              <p className="text-muted-foreground mb-4 leading-relaxed">
-                Swap between USDC, EURC, and other tokens with minimal slippage and instant settlement.
+              <p className="text-muted-foreground mb-4">
+                Swap between USDC, EURC, and other tokens with minimal slippage and instant settlement. Perfect for
+                traders who want fast execution and competitive rates.
               </p>
               <Link
                 href="/app/swap"
@@ -136,13 +134,14 @@ export default function LandingPage() {
             </div>
 
             {/* Staking */}
-            <div className="group card-professional p-8">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+            <div className="group bg-card border border-border rounded-xl p-8 hover:border-primary/40 transition-all">
+              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-all">
                 <TrendingUp className="w-6 h-6 text-primary" />
               </div>
               <h3 className="text-xl font-semibold text-foreground mb-2">Yield Staking</h3>
-              <p className="text-muted-foreground mb-4 leading-relaxed">
-                Stake your tokens in secure vaults and earn up to 25% APY with daily compounding rewards.
+              <p className="text-muted-foreground mb-4">
+                Stake your tokens in our secure vaults and earn up to 25% APY. Fully automated yield farming with daily
+                compounding rewards and no minimum lock-up periods.
               </p>
               <Link
                 href="/app/stake"
@@ -153,30 +152,33 @@ export default function LandingPage() {
             </div>
 
             {/* Liquidity Pools */}
-            <div className="group card-professional p-8">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+            <div className="group bg-card border border-border rounded-xl p-8 hover:border-primary/40 transition-all">
+              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-all">
                 <Droplets className="w-6 h-6 text-primary" />
               </div>
               <h3 className="text-xl font-semibold text-foreground mb-2">Liquidity Pools</h3>
-              <p className="text-muted-foreground mb-4 leading-relaxed">
-                Provide liquidity to earn a share of all trading fees proportional to your contribution.
+              <p className="text-muted-foreground mb-4">
+                Provide liquidity to earn a share of all trading fees. Contribute to multiple pools and earn passive
+                income proportional to your liquidity contribution.
               </p>
               <Link
                 href="/app/pools"
                 className="text-primary hover:text-primary/80 text-sm font-semibold flex items-center gap-2 group/link"
               >
-                Provide Liquidity <ChevronRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
+                Provide Liquidity{" "}
+                <ChevronRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
               </Link>
             </div>
 
             {/* Payments */}
-            <div className="group card-professional p-8">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+            <div className="group bg-card border border-border rounded-xl p-8 hover:border-primary/40 transition-all">
+              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-all">
                 <Send className="w-6 h-6 text-primary" />
               </div>
               <h3 className="text-xl font-semibold text-foreground mb-2">Fast Payments</h3>
-              <p className="text-muted-foreground mb-4 leading-relaxed">
-                Send stablecoins globally with near-zero fees and instant settlement.
+              <p className="text-muted-foreground mb-4">
+                Send stablecoins globally with near-zero fees and instant settlement. Perfect for cross-border
+                transfers, payouts, and remittances on Arc Network.
               </p>
               <Link
                 href="/app/payments"
@@ -190,68 +192,48 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 px-4 border-t border-border bg-muted/20">
+      <section id="features" className="py-20 px-4 border-t border-border">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">Why ARCDex?</h2>
+            <h2 className="text-4xl font-bold text-foreground mb-4">Why Choose ARCDex?</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Built for traders and developers who demand performance
+              Enterprise-grade features designed for traders and liquidity providers
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
-            <div className="card-professional p-6">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                <Bolt className="w-5 h-5 text-primary" />
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">High Performance</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                Built on Arc Network's optimized infrastructure for sub-second transactions.
+            <div className="bg-card border border-border rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-foreground mb-2">⚡ High Performance</h3>
+              <p className="text-muted-foreground">
+                Built on Arc Network's optimized infrastructure for fast transactions and minimal latency.
               </p>
             </div>
-            <div className="card-professional p-6">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                <Shield className="w-5 h-5 text-primary" />
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">Battle-Tested</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                Smart contracts following best security practices with multi-sig governance.
+            <div className="bg-card border border-border rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-foreground mb-2">🔒 Secure & Audited</h3>
+              <p className="text-muted-foreground">
+                Smart contracts audited by leading security firms with multi-signature governance.
               </p>
             </div>
-            <div className="card-professional p-6">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                <span className="text-primary font-bold text-sm">0.3%</span>
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">Low Fees</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                Minimal swap fees and near-zero gas costs on Arc Network.
+            <div className="bg-card border border-border rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-foreground mb-2">💰 Low Fees</h3>
+              <p className="text-muted-foreground">
+                Minimal gas fees and competitive spreads on every trade and liquidity operation.
               </p>
             </div>
-            <div className="card-professional p-6">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                <Globe className="w-5 h-5 text-primary" />
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">24/7 Access</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                Trade and manage positions anytime, anywhere, without restrictions.
+            <div className="bg-card border border-border rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-foreground mb-2">🌍 24/7 Access</h3>
+              <p className="text-muted-foreground">
+                Trade and manage positions anytime with no trading hours or market restrictions.
               </p>
             </div>
-            <div className="card-professional p-6">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                <span className="text-primary font-bold text-sm">API</span>
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">Developer Friendly</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                Open smart contracts with full documentation for integration.
-              </p>
+            <div className="bg-card border border-border rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-foreground mb-2">📊 Advanced Tools</h3>
+              <p className="text-muted-foreground">Professional-grade charting, analytics, and trading history tracking.</p>
             </div>
-            <div className="card-professional p-6">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                <span className="text-primary font-bold">⚡</span>
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">Instant Settlement</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                All transactions settle immediately with full on-chain transparency.
+            <div className="bg-card border border-border rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-foreground mb-2">🤝 Community</h3>
+              <p className="text-muted-foreground">
+                Join thousands of traders and liquidity providers in our growing ecosystem.
               </p>
             </div>
           </div>
@@ -261,9 +243,9 @@ export default function LandingPage() {
       {/* CTA Section */}
       <section className="py-20 px-4 border-t border-border">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">Ready to Start?</h2>
+          <h2 className="text-4xl font-bold text-foreground mb-4">Ready to Start Trading?</h2>
           <p className="text-muted-foreground mb-8">
-            Join traders on Arc Network Testnet. Get testnet USDC and start trading in minutes.
+            Join thousands of traders already using ARCDex for seamless DeFi access on Arc Network Testnet.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
@@ -273,55 +255,88 @@ export default function LandingPage() {
               Launch App
             </Link>
             <a
-              href="https://faucet.circle.com"
+              href="https://www.arc.network/litepaper"
               target="_blank"
               rel="noreferrer"
               className="px-8 py-4 rounded-lg border border-border text-foreground font-semibold hover:bg-muted hover:border-primary/30 transition-all"
             >
-              Get Testnet USDC
+              Read Litepaper
             </a>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border py-12 px-4 bg-muted/20">
+      <footer className="border-t border-border py-12 px-4 mt-20">
         <div className="max-w-5xl mx-auto">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
-              <Logo showText={true} href="/" size="sm" />
-              <p className="text-muted-foreground text-sm mt-4">DeFi trading on Arc Network Testnet.</p>
+              <div className="flex items-center gap-2 mb-4">
+                <Logo size="sm" href="/" />
+              </div>
+              <p className="text-muted-foreground text-sm">The premier DeFi platform on Arc Network Testnet.</p>
             </div>
             <div>
               <h4 className="font-semibold text-foreground mb-4">Product</h4>
               <div className="space-y-2 text-sm text-muted-foreground">
-                <a href="/app/swap" className="hover:text-primary transition-colors block">Swap</a>
-                <a href="/app/stake" className="hover:text-primary transition-colors block">Stake</a>
-                <a href="/app/pools" className="hover:text-primary transition-colors block">Pools</a>
-                <a href="/app/payments" className="hover:text-primary transition-colors block">Payments</a>
+                <Link href="/app/swap" className="hover:text-primary transition-colors block">
+                  Swap
+                </Link>
+                <Link href="/app/stake" className="hover:text-primary transition-colors block">
+                  Stake
+                </Link>
+                <Link href="/app/pools" className="hover:text-primary transition-colors block">
+                  Pools
+                </Link>
+                <Link href="/app/payments" className="hover:text-primary transition-colors block">
+                  Payments
+                </Link>
               </div>
             </div>
             <div>
-              <h4 className="font-semibold text-foreground mb-4">Resources</h4>
+              <h4 className="font-semibold text-foreground mb-4">Docs</h4>
               <div className="space-y-2 text-sm text-muted-foreground">
-                <a href="/app/docs" className="hover:text-primary transition-colors block">Documentation</a>
-                <a href="https://testnet.arcscan.app" target="_blank" rel="noreferrer" className="hover:text-primary transition-colors block">ArcScan</a>
-                <a href="https://faucet.circle.com" target="_blank" rel="noreferrer" className="hover:text-primary transition-colors block">USDC Faucet</a>
+                <Link href="/app/docs" className="hover:text-primary transition-colors block">
+                  Documentation
+                </Link>
+                <a href="#" className="hover:text-primary transition-colors block">
+                  API Reference
+                </a>
+                <a href="https://www.arc.network/litepaper" target="_blank" rel="noreferrer" className="hover:text-primary transition-colors block">
+                  Litepaper
+                </a>
+                <a href="#" className="hover:text-primary transition-colors block">
+                  Security
+                </a>
               </div>
             </div>
             <div>
               <h4 className="font-semibold text-foreground mb-4">Community</h4>
               <div className="space-y-2 text-sm text-muted-foreground">
-                <a href="https://x.com/ArcStablecoins" target="_blank" rel="noreferrer" className="hover:text-primary transition-colors block">Twitter</a>
-                <a href="https://discord.gg/buildonarc" target="_blank" rel="noreferrer" className="hover:text-primary transition-colors block">Discord</a>
+                <a href="https://x.com/ArcStablecoins" target="_blank" rel="noreferrer" className="hover:text-primary transition-colors block">
+                  Twitter
+                </a>
+                <a href="https://discord.gg/buildonarc" target="_blank" rel="noreferrer" className="hover:text-primary transition-colors block">
+                  Discord
+                </a>
+                <a href="https://github.com/Acarlosr/ArcDex" target="_blank" rel="noreferrer" className="hover:text-primary transition-colors block">
+                  GitHub
+                </a>
               </div>
             </div>
           </div>
           <div className="border-t border-border pt-8 flex flex-col md:flex-row items-center justify-between text-muted-foreground text-sm">
-            <p>© 2025 ARCDex. Built on Arc Network.</p>
+            <p>© 2025 ARCDex. Built on Arc Network Testnet.</p>
             <div className="flex gap-6 mt-4 md:mt-0">
-              <a href="#" className="hover:text-primary transition-colors">Terms</a>
-              <a href="#" className="hover:text-primary transition-colors">Privacy</a>
+              <a href="#" className="hover:text-primary transition-colors">
+                Terms
+              </a>
+              <a href="#" className="hover:text-primary transition-colors">
+                Privacy
+              </a>
+              <a href="#" className="hover:text-primary transition-colors">
+                Status
+              </a>
             </div>
           </div>
         </div>

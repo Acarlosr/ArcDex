@@ -5,17 +5,8 @@ import "./globals.css"
 import { Web3Provider } from "@/components/web3-provider"
 import { ThemeProvider } from "@/components/theme-provider"
 
-const inter = Inter({ 
-  subsets: ["latin"],
-  variable: "--font-sans",
-  display: "swap",
-})
-
-const jetbrainsMono = JetBrains_Mono({ 
-  subsets: ["latin"],
-  variable: "--font-mono",
-  display: "swap",
-})
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
+const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" })
 
 export const metadata: Metadata = {
   title: "ARCDex V2 - DeFi Trading on Arc Network",
@@ -29,13 +20,13 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
           enableSystem
-          disableTransitionOnChange={false}
+          disableTransitionOnChange
         >
           <Web3Provider>{children}</Web3Provider>
         </ThemeProvider>

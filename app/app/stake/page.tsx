@@ -21,7 +21,6 @@ import {
 } from "@/hooks/use-contracts"
 import { ARCDEX, parseTokenAmount } from "@/lib/contracts"
 import { MobileWalletHint } from "@/components/mobile-wallet-hint"
-import { PriceChart } from "@/components/price-chart"
 
 export default function StakePage() {
   const [selectedToken, setSelectedToken] = useState<"USDC" | "EURC">("USDC")
@@ -176,16 +175,6 @@ export default function StakePage() {
           title="APR"
           value={`${totalAPR}%`}
           subtitle={`${selectedToken} staking rate`}
-        />
-      </div>
-
-      {/* APY Evolution Chart */}
-      <div className="mb-8">
-        <PriceChart
-          title="APY Evolution"
-          subtitle="Historical staking yields"
-          type="stake"
-          height={180}
         />
       </div>
 

@@ -28,11 +28,8 @@ const nextConfig = {
       'pino-pretty',
       'lokijs',
       'encoding',
-      'utf-8-validate',
-      'bufferutil',
       // Optional wagmi connectors that we don't use
       'porto',
-      'porto/internal',
       '@safe-global/safe-apps-sdk',
       '@metamask/sdk',
       '@solana/kit',
@@ -40,13 +37,6 @@ const nextConfig = {
       '@solana-program/token',
       '@coinbase/cdp-sdk',
     );
-
-    // Ignore porto connector errors
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      'porto/internal': false,
-      'porto': false,
-    };
 
     return config;
   },

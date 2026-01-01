@@ -2,8 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { WagmiProvider, createConfig, http } from 'wagmi'
-import { injected } from 'wagmi/connectors'
-import { walletConnect } from '@wagmi/connectors'
+import { injected, walletConnect } from 'wagmi/connectors'
 import { useState, useEffect, type ReactNode } from 'react'
 import { CHAIN_CONFIG } from '@/lib/contracts'
 

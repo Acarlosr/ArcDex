@@ -10,7 +10,7 @@ export default function PaymentsPage() {
   const [amount, setAmount] = useState("")
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <main className="min-h-screen bg-gradient-to-b from-[#0A304F] via-[#114B6E] to-[#D1D5DB] text-slate-50">
       <div className="space-y-8">
         <div>
           <h1 className="text-4xl font-bold text-foreground mb-2">Send Payments</h1>

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arc Testnet RPC Test</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0f1c;
+            color: #06b6d4;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #3b82f6;
+        }
+        .test {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .success {
+            color: #10b981;
+        }
+        .error {
+            color: #ef4444;
+        }
+        .warning {
+            color: #f59e0b;
+        }
+        button {
+            background: linear-gradient(to right, #06b6d4, #3b82f6);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+        }
+        button:hover {
+            opacity: 0.8;
+        }
+        pre {
+            background: #0f172a;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Arc Testnet RPC Connection Test</h1>
+    
+    <div class="test">
+        <h3>Test 1: RPC Endpoint Accessibility</h3>
+        <button onclick="testRPC()">Run Test</button>
+        <div id="rpc-result"></div>
+    </div>
+
+    <div class="test">
+        <h3>Test 2: Chain ID Verification</h3>
+        <button onclick="testChainId()">Run Test</button>
+        <div id="chain-result"></div>
+    </div>
+
+    <div class="test">
+        <h3>Test 3: Block Number</h3>
+        <button onclick="testBlockNumber()">Run Test</button>
+        <div id="block-result"></div>
+    </div>
+
+    <div class="test">
+        <h3>Test 4: MetaMask Detection</h3>
+        <button onclick="testMetaMask()">Run Test</button>
+        <div id="metamask-result"></div>
+    </div>
+
+    <div class="test">
+        <h3>Test 5: Network Switch</h3>
+        <button onclick="switchNetwork()">Switch to Arc Testnet</button>
+        <div id="switch-result"></div>
+    </div>
+
+    <div class="test">
+        <h3>Run All Tests</h3>
+        <button onclick="runAllTests()">Run All</button>
+    </div>
+
+    <script>
+        const RPC_URL = 'https://rpc.testnet.arc.network';
+        const CHAIN_ID = 5042002;
+        const CHAIN_ID_HEX = '0x4cbbd2';
+
+        async function testRPC() {
+            const result = document.getElementById('rpc-result');
+            result.innerHTML = '<p>Testing...</p>';
+            
+            try {
+                const response = await fetch(RPC_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        jsonrpc: '2.0',
+                        method: 'eth_chainId',
+                        params: [],
+                        id: 1
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.result) {
+                    result.innerHTML = `
+                        <p class="success">✅ RPC is accessible!</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    result.innerHTML = `
+                        <p class="error">❌ RPC returned unexpected response</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                result.innerHTML = `
+                    <p class="error">❌ RPC connection failed!</p>
+                    <pre>${error.message}</pre>
+                    <p class="warning">⚠️ Check your internet connection or firewall settings</p>
+                `;
+            }
+        }
+
+        async function testChainId() {
+            const result = document.getElementById('chain-result');
+            result.innerHTML = '<p>Testing...</p>';
+            
+            try {
+                const response = await fetch(RPC_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        jsonrpc: '2.0',
+                        method: 'eth_chainId',
+                        params: [],
+                        id: 1
+                    })
+                });
+
+                const data = await response.json();
+                const chainId = parseInt(data.result, 16);
+                
+                if (chainId === CHAIN_ID) {
+                    result.innerHTML = `
+                        <p class="success">✅ Chain ID matches!</p>
+                        <p>Expected: ${CHAIN_ID} (${CHAIN_ID_HEX})</p>
+                        <p>Got: ${chainId} (${data.result})</p>
+                    `;
+                } else {
+                    result.innerHTML = `
+                        <p class="error">❌ Chain ID mismatch!</p>
+                        <p>Expected: ${CHAIN_ID} (${CHAIN_ID_HEX})</p>
+                        <p>Got: ${chainId} (${data.result})</p>
+                        <p class="warning">⚠️ Update CHAIN_CONFIG.id in lib/contracts.ts</p>
+                    `;
+                }
+            } catch (error) {
+                result.innerHTML = `<p class="error">❌ Test failed: ${error.message}</p>`;
+            }
+        }
+
+        async function testBlockNumber() {
+            const result = document.getElementById('block-result');
+            result.innerHTML = '<p>Testing...</p>';
+            
+            try {
+                const response = await fetch(RPC_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        jsonrpc: '2.0',
+                        method: 'eth_blockNumber',
+                        params: [],
+                        id: 1
+                    })
+                });
+
+                const data = await response.json();
+                const blockNumber = parseInt(data.result, 16);
+                
+                result.innerHTML = `
+                    <p class="success">✅ RPC is syncing!</p>
+                    <p>Current Block: ${blockNumber.toLocaleString()}</p>
+                    <p>Hex: ${data.result}</p>
+                `;
+            } catch (error) {
+                result.innerHTML = `<p class="error">❌ Test failed: ${error.message}</p>`;
+            }
+        }
+
+        async function testMetaMask() {
+            const result = document.getElementById('metamask-result');
+            
+            if (typeof window.ethereum !== 'undefined') {
+                result.innerHTML = `
+                    <p class="success">✅ MetaMask detected!</p>
+                    <p>Provider: ${window.ethereum.isMetaMask ? 'MetaMask' : 'Other'}</p>
+                    <p>Chain ID: ${window.ethereum.chainId || 'Not connected'}</p>
+                `;
+            } else {
+                result.innerHTML = `
+                    <p class="error">❌ No wallet detected</p>
+                    <p class="warning">⚠️ Install MetaMask: <a href="https://metamask.io" target="_blank">metamask.io</a></p>
+                `;
+            }
+        }
+
+        async function switchNetwork() {
+            const result = document.getElementById('switch-result');
+            result.innerHTML = '<p>Requesting network switch...</p>';
+            
+            if (typeof window.ethereum === 'undefined') {
+                result.innerHTML = '<p class="error">❌ No wallet detected</p>';
+                return;
+            }
+
+            try {
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: CHAIN_ID_HEX }],
+                });
+                result.innerHTML = '<p class="success">✅ Switched to Arc Testnet!</p>';
+            } catch (switchError) {
+                // Chain not added, try to add it
+                if (switchError.code === 4902) {
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [{
+                                chainId: CHAIN_ID_HEX,
+                                chainName: 'Arc Testnet',
+                                nativeCurrency: {
+                                    name: 'USDC',
+                                    symbol: 'USDC',
+                                    decimals: 18
+                                },
+                                rpcUrls: [RPC_URL],
+                                blockExplorerUrls: ['https://testnet.arcscan.app']
+                            }],
+                        });
+                        result.innerHTML = '<p class="success">✅ Arc Testnet added and switched!</p>';
+                    } catch (addError) {
+                        result.innerHTML = `<p class="error">❌ Failed to add network: ${addError.message}</p>`;
+                    }
+                } else {
+                    result.innerHTML = `<p class="error">❌ Failed to switch: ${switchError.message}</p>`;
+                }
+            }
+        }
+
+        async function runAllTests() {
+            await testRPC();
+            await new Promise(r => setTimeout(r, 500));
+            await testChainId();
+            await new Promise(r => setTimeout(r, 500));
+            await testBlockNumber();
+            await new Promise(r => setTimeout(r, 500));
+            await testMetaMask();
+        }
+
+        // Auto-run on load
+        window.addEventListener('load', () => {
+            console.log('🧪 RPC Test Page Loaded');
+            console.log('RPC URL:', RPC_URL);
+            console.log('Chain ID:', CHAIN_ID, '(', CHAIN_ID_HEX, ')');
+        });
+    </script>
+</body>
+</html>
+

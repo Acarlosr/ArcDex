@@ -40,7 +40,7 @@
   --sidebar-ring: oklch(0.55 0.2 175);
 }
 
-/* Dark Theme - Hackathon/Developer Style */
+/* Dark Theme - Hackathon/Developer Style - PURE BLACK */
 .dark {
   --background: oklch(0.08 0.005 260);
   --foreground: oklch(0.92 0.01 260);
@@ -190,12 +190,4 @@ body {
 ::selection {
   background: oklch(0.72 0.17 175 / 0.3);
   color: inherit;
-}
-
-/* Subtle grid pattern for dark mode */
-.dark .bg-grid {
-  background-image: 
-    linear-gradient(to right, oklch(0.2 0.01 260 / 0.3) 1px, transparent 1px),
-    linear-gradient(to bottom, oklch(0.2 0.01 260 / 0.3) 1px, transparent 1px);
-  background-size: 40px 40px;
 }
