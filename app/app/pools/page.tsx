@@ -20,6 +20,7 @@ import {
 } from "@/hooks/use-contracts"
 import { ARCDEX, POOLS, PoolPair, parseTokenAmount } from "@/lib/contracts"
 import { MobileWalletHint } from "@/components/mobile-wallet-hint"
+import { PriceChart } from "@/components/price-chart"
 
 export default function PoolsPage() {
   const [selectedPool, setSelectedPool] = useState<PoolPair>("USDC_EURC")
@@ -153,6 +154,16 @@ export default function PoolsPage() {
       </div>
 
       <MobileWalletHint />
+
+      {/* TVL Chart */}
+      <div className="mb-8">
+        <PriceChart
+          title="Total Value Locked"
+          subtitle="24h Vol: $19,157.77 (updates hourly)"
+          type="tvl"
+          height={250}
+        />
+      </div>
 
       {/* Pool Selector Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">

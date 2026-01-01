@@ -9,6 +9,7 @@ import { useAccount } from "wagmi"
 import { ARCDEX, parseTokenAmount, ARCSCAN_URL, ARCSCAN_API } from "@/lib/contracts"
 import { Loader2, ExternalLink, CheckCircle2, XCircle, RefreshCw } from "lucide-react"
 import { MobileWalletHint } from "@/components/mobile-wallet-hint"
+import { PriceChart } from "@/components/price-chart"
 
 type SwapToken = "USDC" | "EURC" | "USYC"
 
@@ -296,6 +297,16 @@ export default function SwapPage() {
       </div>
 
       <MobileWalletHint />
+
+      {/* Price Chart */}
+      <div className="mb-8">
+        <PriceChart
+          title="Exchange Rate"
+          subtitle="24h Vol: $19,157.77 (updates hourly)"
+          type="swap"
+          height={250}
+        />
+      </div>
 
       {/* Main Content - Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
