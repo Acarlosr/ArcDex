@@ -1,11 +1,21 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
+import { Inter, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
 import { Web3Provider } from "@/components/web3-provider"
+import { ThemeProvider } from "@/components/theme-provider"
 
-const _geist = Geist({ subsets: ["latin"] })
-const _geistMono = Geist_Mono({ subsets: ["latin"] })
+const inter = Inter({ 
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+})
+
+const jetbrainsMono = JetBrains_Mono({ 
+  subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
+})
 
 export const metadata: Metadata = {
   title: "ARCDex V2 - DeFi Trading on Arc Network",
@@ -19,11 +29,17 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className={`font-sans antialiased`}>
-        <Web3Provider>{children}</Web3Provider>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange={false}
+        >
+          <Web3Provider>{children}</Web3Provider>
+        </ThemeProvider>
       </body>
     </html>
   )
 }
-

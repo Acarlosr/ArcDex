@@ -325,7 +325,7 @@ function TokenRow({
     const value = numericBalance * price
 
     return (
-        <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border hover:border-cyan-500/20 transition-colors">
+        <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border hover:border-primary/20 transition-colors">
             <div className="flex items-center gap-3">
                 <div className={`w-10 h-10 rounded-full ${config.bgColor} flex items-center justify-center text-white font-bold`}>
                     {config.icon}
@@ -397,7 +397,7 @@ function TransactionsList({ address }: { address: string }) {
     if (isLoading) {
         return (
             <div className="text-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-cyan-400 mx-auto mb-4" />
+                <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
                 <p className="text-muted-foreground">Loading transactions...</p>
             </div>
         )
@@ -441,7 +441,7 @@ function TransactionsList({ address }: { address: string }) {
                     href={`${ARCSCAN_URL}/address/${address}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-2 text-cyan-400 hover:underline text-sm"
+                    className="inline-flex items-center gap-2 text-primary hover:underline text-sm"
                 >
                     View on ArcScan <ExternalLink className="w-3 h-3" />
                 </a>
@@ -476,7 +476,7 @@ function TransactionsList({ address }: { address: string }) {
                             href={`${ARCSCAN_URL}/tx/${tx.hash}`}
                             target="_blank"
                             rel="noreferrer"
-                            className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border hover:border-cyan-500/30 transition-colors group"
+                            className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border hover:border-primary/30 transition-colors group"
                         >
                             <div className="flex items-center gap-3">
                                 {/* Icon */}
@@ -522,7 +522,7 @@ function TransactionsList({ address }: { address: string }) {
                     href={`${ARCSCAN_URL}/address/${address}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-cyan-400 hover:underline inline-flex items-center gap-1"
+                    className="text-primary hover:underline inline-flex items-center gap-1"
                 >
                     View all on ArcScan <ExternalLink className="w-3 h-3" />
                 </a>
@@ -614,7 +614,7 @@ export default function PortfolioPage() {
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 {/* Total Balance (USD) Card */}
-                <div className="bg-card rounded-2xl p-6 border border-border hover:border-cyan-500/30 transition-colors">
+                <div className="bg-card rounded-2xl p-6 border border-border hover:border-primary/30 transition-colors">
                     <div className="flex items-center gap-2 mb-2">
                         <p className="text-sm text-muted-foreground">Total Balance</p>
                         {isEstimated && (
@@ -635,7 +635,7 @@ export default function PortfolioPage() {
                 </div>
 
                 {/* USDC Balance Card */}
-                <div className="bg-card rounded-2xl p-6 border border-border hover:border-cyan-500/30 transition-colors">
+                <div className="bg-card rounded-2xl p-6 border border-border hover:border-primary/30 transition-colors">
                     <p className="text-sm text-muted-foreground mb-2">USDC Balance</p>
                     <p className="text-2xl font-bold text-foreground mb-1 font-mono">
                         {!isConnected ? "—" : usdcLoading ? "..." : usdcBalance}
@@ -646,7 +646,7 @@ export default function PortfolioPage() {
                 </div>
 
                 {/* EURC Balance Card */}
-                <div className="bg-card rounded-2xl p-6 border border-border hover:border-cyan-500/30 transition-colors">
+                <div className="bg-card rounded-2xl p-6 border border-border hover:border-primary/30 transition-colors">
                     <p className="text-sm text-muted-foreground mb-2">EURC Balance</p>
                     <p className="text-2xl font-bold text-foreground mb-1 font-mono">
                         {!isConnected ? "—" : eurcLoading ? "..." : eurcBalance}
@@ -657,7 +657,7 @@ export default function PortfolioPage() {
                 </div>
 
                 {/* USYC Balance Card */}
-                <div className="bg-card rounded-2xl p-6 border border-border hover:border-cyan-500/30 transition-colors">
+                <div className="bg-card rounded-2xl p-6 border border-border hover:border-primary/30 transition-colors">
                     <p className="text-sm text-muted-foreground mb-2">USYC Balance</p>
                     <p className="text-2xl font-bold text-foreground mb-1 font-mono">
                         {!isConnected ? "—" : usycLoading ? "..." : usycBalance}
@@ -721,7 +721,7 @@ export default function PortfolioPage() {
                     <div className="bg-card rounded-2xl p-6 border border-border">
                         <h3 className="text-lg font-semibold text-foreground mb-4">Network</h3>
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sky-500 to-cyan-400 flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
                                 <span className="text-white font-bold">A</span>
                             </div>
                             <div>
@@ -839,7 +839,7 @@ export default function PortfolioPage() {
                                         })}
                                         <p className="text-xs text-muted-foreground text-center pt-2">
                                             Showing Arc Testnet balances • Get tokens from{" "}
-                                            <a href="https://faucet.circle.com" target="_blank" rel="noreferrer" className="text-cyan-400 hover:underline">
+                                            <a href="https://faucet.circle.com" target="_blank" rel="noreferrer" className="text-primary hover:underline">
                                                 Circle Faucet
                                             </a>
                                         </p>

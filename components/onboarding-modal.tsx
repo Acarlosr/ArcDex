@@ -113,7 +113,7 @@ export function OnboardingModal({ open, onOpenChange }: OnboardingModalProps) {
             <DialogContent className="bg-card border-border max-w-md">
                 <DialogHeader>
                     <DialogTitle className="text-foreground flex items-center gap-2">
-                        <span className="text-cyan-400">🚀</span> How to Test ARCDex
+                        <span className="text-primary">🚀</span> How to Test ARCDex
                     </DialogTitle>
                 </DialogHeader>
 
@@ -122,7 +122,7 @@ export function OnboardingModal({ open, onOpenChange }: OnboardingModalProps) {
                     {STEPS.map((_, idx) => (
                         <div
                             key={idx}
-                            className={`h-1 flex-1 rounded-full transition-colors ${idx <= currentStep ? "bg-cyan-400" : "bg-muted"
+                            className={`h-1 flex-1 rounded-full transition-colors ${idx <= currentStep ? "bg-primary" : "bg-muted"
                                 }`}
                         />
                     ))}
@@ -131,8 +131,8 @@ export function OnboardingModal({ open, onOpenChange }: OnboardingModalProps) {
                 {/* Step Content */}
                 <div className="space-y-4">
                     <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-500/30 flex items-center justify-center">
-                            <Icon className="w-6 h-6 text-cyan-400" />
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/30 flex items-center justify-center">
+                            <Icon className="w-6 h-6 text-primary" />
                         </div>
                         <div>
                             <p className="text-xs text-muted-foreground">Step {step.id} of {STEPS.length}</p>
@@ -157,7 +157,7 @@ export function OnboardingModal({ open, onOpenChange }: OnboardingModalProps) {
                         <Button
                             onClick={step.action.onClick}
                             variant="outline"
-                            className="w-full border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10"
+                            className="w-full border-primary/30 text-primary hover:bg-primary/10"
                         >
                             {step.action.label}
                         </Button>
@@ -169,7 +169,7 @@ export function OnboardingModal({ open, onOpenChange }: OnboardingModalProps) {
                             href={step.link.url}
                             target="_blank"
                             rel="noreferrer"
-                            className="flex items-center justify-center gap-2 w-full px-4 py-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-sm font-medium hover:bg-cyan-500/20 transition-colors"
+                            className="flex items-center justify-center gap-2 w-full px-4 py-2 rounded-lg bg-primary/10 border border-primary/20 text-primary text-sm font-medium hover:bg-primary/20 transition-colors"
                         >
                             {step.link.label}
                             <ExternalLink className="w-4 h-4" />

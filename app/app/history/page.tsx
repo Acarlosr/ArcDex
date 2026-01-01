@@ -27,7 +27,7 @@ export default function HistoryPage() {
         </div>
         <Button
           variant="outline"
-          className="border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10"
+          className="border-primary/50 text-primary hover:bg-primary/10"
           onClick={() => window.open(addressExplorerUrl, '_blank')}
         >
           <ExternalLink className="w-4 h-4 mr-2" />
@@ -57,9 +57,9 @@ export default function HistoryPage() {
           {isConnected ? (
             <div className="space-y-6">
               {/* Info Box */}
-              <div className="bg-gradient-to-br from-sky-500/10 to-cyan-400/10 border border-cyan-500/30 rounded-xl p-6">
+              <div className="bg-primary/5 border border-primary/20 rounded-xl p-6">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-cyan-500/20 flex items-center justify-center text-2xl">
+                  <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-2xl">
                     📋
                   </div>
                   <div className="flex-1">
@@ -124,7 +124,7 @@ export default function HistoryPage() {
                     href={`${EXPLORER_URL}/address/${ARCDEX.Swap}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-cyan-400 font-mono hover:underline"
+                    className="text-xs text-primary font-mono hover:underline"
                   >
                     {ARCDEX.Swap}
                   </a>
@@ -135,7 +135,7 @@ export default function HistoryPage() {
                     href={`${EXPLORER_URL}/address/${ARCDEX.Staking}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-cyan-400 font-mono hover:underline"
+                    className="text-xs text-primary font-mono hover:underline"
                   >
                     {ARCDEX.Staking}
                   </a>
@@ -146,7 +146,7 @@ export default function HistoryPage() {
                     href={`${EXPLORER_URL}/address/${ARCDEX.LP}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-cyan-400 font-mono hover:underline"
+                    className="text-xs text-primary font-mono hover:underline"
                   >
                     {ARCDEX.LP}
                   </a>
@@ -157,7 +157,7 @@ export default function HistoryPage() {
                     href={`${EXPLORER_URL}/address/${ARCDEX.Payments}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-cyan-400 font-mono hover:underline"
+                    className="text-xs text-primary font-mono hover:underline"
                   >
                     {ARCDEX.Payments}
                   </a>

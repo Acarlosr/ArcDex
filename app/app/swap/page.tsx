@@ -9,6 +9,7 @@ import { useAccount } from "wagmi"
 import { ARCDEX, parseTokenAmount, ARCSCAN_URL, ARCSCAN_API } from "@/lib/contracts"
 import { Loader2, ExternalLink, CheckCircle2, XCircle, RefreshCw } from "lucide-react"
 import { MobileWalletHint } from "@/components/mobile-wallet-hint"
+import { PriceChart } from "@/components/price-chart"
 
 type SwapToken = "USDC" | "EURC" | "USYC"
 
@@ -145,7 +146,7 @@ function SwapHistory({ address }: { address: string | undefined }) {
           href={`${ARCSCAN_URL}/tx/${tx.hash}`}
           target="_blank"
           rel="noreferrer"
-          className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border hover:border-cyan-500/30 transition-colors cursor-pointer"
+          className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border hover:border-primary/30 transition-colors cursor-pointer"
         >
           <div className="flex items-center gap-2">
             {tx.isError === '0' ? (
@@ -164,7 +165,7 @@ function SwapHistory({ address }: { address: string | undefined }) {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground">{formatRelativeTime(tx.timeStamp)}</span>
-            <ExternalLink className="w-3 h-3 text-cyan-400" />
+            <ExternalLink className="w-3 h-3 text-primary" />
           </div>
         </a>
       ))}
@@ -173,7 +174,7 @@ function SwapHistory({ address }: { address: string | undefined }) {
           href={`${ARCSCAN_URL}/address/${address}`}
           target="_blank"
           rel="noreferrer"
-          className="text-cyan-400 hover:underline text-xs inline-flex items-center gap-1"
+          className="text-primary hover:underline text-xs inline-flex items-center gap-1"
         >
           View all on ArcScan <ExternalLink className="w-3 h-3" />
         </a>
@@ -342,7 +343,7 @@ export default function SwapPage() {
                 {isConnected && (
                   <button
                     onClick={handleMaxClick}
-                    className="text-xs text-cyan-400 hover:text-cyan-300"
+                    className="text-xs text-primary hover:text-primary/80"
                   >
                     MAX
                   </button>
@@ -472,7 +473,7 @@ export default function SwapPage() {
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold">$</div>
+                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold">$</div>
                   <span className="text-foreground">USDC</span>
                 </div>
                 <span className="text-foreground font-medium">
@@ -481,7 +482,7 @@ export default function SwapPage() {
               </div>
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold">€</div>
+                  <div className="w-8 h-8 rounded-full bg-primary/80 flex items-center justify-center text-primary-foreground text-xs font-bold">€</div>
                   <span className="text-foreground">EURC</span>
                 </div>
                 <span className="text-foreground font-medium">
@@ -490,26 +491,23 @@ export default function SwapPage() {
               </div>
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* Swap History */}
-          <div className="bg-card rounded-2xl p-6 border border-border">
-            <h3 className="text-lg font-semibold text-foreground mb-4">Swap History</h3>
-            <SwapHistory key={refreshKey} address={address} />
-          </div>
+      {/* Chart and History - Below Swap Card */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+        {/* Exchange Rate Chart */}
+        <PriceChart
+          title="USDC/EURC Rate"
+          subtitle="(updates hourly)"
+          type="swap"
+          height={180}
+        />
 
-          {/* Network Info */}
-          <div className="bg-card rounded-2xl p-6 border border-border">
-            <h3 className="text-lg font-semibold text-foreground mb-4">Network</h3>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sky-500 to-cyan-400 flex items-center justify-center">
-                <span className="text-white font-bold">A</span>
-              </div>
-              <div>
-                <p className="font-medium text-foreground">Arc Testnet</p>
-                <p className="text-sm text-muted-foreground">Chain ID: 5042002</p>
-              </div>
-            </div>
-          </div>
+        {/* Swap History */}
+        <div className="bg-card rounded-2xl p-6 border border-border">
+          <h3 className="text-lg font-semibold text-foreground mb-4">Swap History</h3>
+          <SwapHistory key={refreshKey} address={address} />
         </div>
       </div>
     </div>

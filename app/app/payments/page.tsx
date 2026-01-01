@@ -140,7 +140,7 @@ function PaymentHistory({ address }: { address: string | undefined }) {
             href={`${ARCSCAN_URL}/address/${address}`}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 text-cyan-400 hover:underline text-sm"
+            className="inline-flex items-center gap-2 text-primary hover:underline text-sm"
           >
             View on ArcScan <ExternalLink className="w-3 h-3" />
           </a>
@@ -163,7 +163,7 @@ function PaymentHistory({ address }: { address: string | undefined }) {
       {transactions.map((tx) => (
         <div
           key={tx.hash}
-          className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border border-border hover:border-cyan-500/30 transition-colors"
+          className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border border-border hover:border-primary/30 transition-colors"
         >
           <div className="flex items-center gap-3">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${tx.isError === '0' ? 'bg-green-500/20' : 'bg-red-500/20'
@@ -193,7 +193,7 @@ function PaymentHistory({ address }: { address: string | undefined }) {
             href={`${ARCSCAN_URL}/tx/${tx.hash}`}
             target="_blank"
             rel="noreferrer"
-            className="text-cyan-400 hover:underline text-xs flex items-center gap-1"
+            className="text-primary hover:underline text-xs flex items-center gap-1"
           >
             {formatAddress(tx.hash)} <ExternalLink className="w-3 h-3" />
           </a>
@@ -204,7 +204,7 @@ function PaymentHistory({ address }: { address: string | undefined }) {
           href={`${ARCSCAN_URL}/address/${address}`}
           target="_blank"
           rel="noreferrer"
-          className="text-cyan-400 hover:underline text-sm inline-flex items-center gap-1"
+          className="text-primary hover:underline text-sm inline-flex items-center gap-1"
         >
           View all on ArcScan <ExternalLink className="w-3 h-3" />
         </a>
@@ -354,7 +354,7 @@ export default function PaymentsPage() {
                     href={`${ARCSCAN_URL}/tx/${currentTxHash}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-xs text-cyan-400 hover:underline inline-flex items-center gap-1 mt-1"
+                    className="text-xs text-primary hover:underline inline-flex items-center gap-1 mt-1"
                   >
                     View on ArcScan <ExternalLink className="w-3 h-3" />
                   </a>
@@ -372,7 +372,7 @@ export default function PaymentsPage() {
                     href={`${ARCSCAN_URL}/tx/${currentTxHash}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-xs text-cyan-400 hover:underline inline-flex items-center gap-1 mt-1"
+                    className="text-xs text-primary hover:underline inline-flex items-center gap-1 mt-1"
                   >
                     View on ArcScan <ExternalLink className="w-3 h-3" />
                   </a>
@@ -399,7 +399,7 @@ export default function PaymentsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-[#0A304F] via-[#114B6E] to-[#D1D5DB] text-slate-50 px-4 py-12">
+    <main className="min-h-screen bg-background text-foreground px-4 py-12">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
