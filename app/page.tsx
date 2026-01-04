@@ -269,7 +269,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="border-t border-border py-12 px-4 mt-20">
         <div className="max-w-5xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
+          <div className="grid md:grid-cols-3 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <Logo size="sm" href="/" />
@@ -291,23 +291,6 @@ export default function LandingPage() {
                 <Link href="/app/payments" className="hover:text-primary transition-colors block">
                   Payments
                 </Link>
-              </div>
-            </div>
-            <div>
-              <h4 className="font-semibold text-foreground mb-4">Docs</h4>
-              <div className="space-y-2 text-sm text-muted-foreground">
-                <Link href="/app/docs" className="hover:text-primary transition-colors block">
-                  Documentation
-                </Link>
-                <a href="#" className="hover:text-primary transition-colors block">
-                  API Reference
-                </a>
-                <a href="https://www.arc.network/litepaper" target="_blank" rel="noreferrer" className="hover:text-primary transition-colors block">
-                  Litepaper
-                </a>
-                <a href="#" className="hover:text-primary transition-colors block">
-                  Security
-                </a>
               </div>
             </div>
             <div>
