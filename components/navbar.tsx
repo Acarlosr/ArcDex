@@ -78,10 +78,10 @@ export function Navbar() {
   const formatAddress = (addr: string) => `${addr.slice(0, 6)}...${addr.slice(-4)}`
 
   const navItems = [
-    { label: "Stake", href: "/app/stake" },
     { label: "Swap", href: "/app/swap" },
     { label: "Pools", href: "/app/pools" },
     { label: "Payments", href: "/app/payments" },
+    { label: "Stake", href: "/app/stake" },
     { label: "Contracts", href: "/app/contracts" },
     { label: "History", href: "/app/history" },
     { label: "Docs", href: "/app/docs" },

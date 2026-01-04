@@ -47,22 +47,60 @@ export function StakeSection() {
   const { unstake, isPending: isUnstaking, isConfirming: isUnstakingConfirm, isSuccess: unstakeSuccess } = useUnstake()
   const { claimRewards, claimAllRewards, isPending: isClaiming, isConfirming: isClaimingConfirm, isSuccess: claimSuccess } = useClaimRewards()
 
-  // Check if approval needed
+  // Validation helpers
   const parsedStakeAmount = stakeAmount ? BigInt(Math.floor(parseFloat(stakeAmount) * 1e6)) : BigInt(0)
+  const parsedUnstakeAmount = unstakeAmount ? BigInt(Math.floor(parseFloat(unstakeAmount) * 1e6)) : BigInt(0)
+  const balanceBigInt = tokenBalance ? BigInt(Math.floor(parseFloat(tokenBalance) * 1e6)) : BigInt(0)
+  const stakedBalanceBigInt = stakedBalance ? BigInt(Math.floor(parseFloat(stakedBalance) * 1e6)) : BigInt(0)
+
+  // Validation checks
+  const stakeAmountNum = parseFloat(stakeAmount || "0")
+  const unstakeAmountNum = parseFloat(unstakeAmount || "0")
+  const balanceNum = parseFloat(tokenBalance || "0")
+  const stakedBalanceNum = parseFloat(stakedBalance || "0")
+
+  const hasInsufficientBalance = stakeAmountNum > balanceNum
+  const hasInsufficientStaked = unstakeAmountNum > stakedBalanceNum
+  const hasInvalidStakeAmount = stakeAmountNum <= 0 || isNaN(stakeAmountNum)
+  const hasInvalidUnstakeAmount = unstakeAmountNum <= 0 || isNaN(unstakeAmountNum)
   const needsApproval = allowance !== undefined && parsedStakeAmount > BigInt(0) && allowance < parsedStakeAmount
 
-  // Handlers
+  // Handlers with validation
   const handleApprove = async () => {
+    if (!selectedToken || (selectedToken !== "USDC" && selectedToken !== "EURC")) {
+      return
+    }
     await approve(selectedToken, ARCDEX.Staking, "999999999999")
   }
 
   const handleStake = async () => {
-    if (!stakeAmount) return
+    // Validate before staking
+    if (!stakeAmount || hasInvalidStakeAmount) {
+      return
+    }
+    if (hasInsufficientBalance) {
+      return
+    }
+    if (needsApproval) {
+      return
+    }
+    if (selectedToken !== "USDC" && selectedToken !== "EURC") {
+      return
+    }
     await stake(selectedToken, stakeAmount)
   }
 
   const handleUnstake = async () => {
-    if (!unstakeAmount) return
+    // Validate before unstaking
+    if (!unstakeAmount || hasInvalidUnstakeAmount) {
+      return
+    }
+    if (hasInsufficientStaked) {
+      return
+    }
+    if (selectedToken !== "USDC" && selectedToken !== "EURC") {
+      return
+    }
     await unstake(selectedToken, unstakeAmount)
   }
 
@@ -74,9 +112,19 @@ export function StakeSection() {
     await claimAllRewards()
   }
 
+  // Reset amounts when token changes
+  useEffect(() => {
+    setStakeAmount("")
+    setUnstakeAmount("")
+  }, [selectedToken])
+
   // Refresh after actions
   useEffect(() => {
-    if (approveSuccess) refetchAllowance()
+    if (approveSuccess) {
+      refetchAllowance()
+      // Small delay to ensure allowance is updated
+      setTimeout(() => refetchAllowance(), 1000)
+    }
   }, [approveSuccess, refetchAllowance])
 
   useEffect(() => {
@@ -170,25 +218,46 @@ export function StakeSection() {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <Label htmlFor="stake-amount" className="text-foreground">Amount</Label>
-                  <span className="text-xs text-muted-foreground">Balance: {tokenBalance}</span>
+                  <span className="text-xs text-muted-foreground">Balance: {tokenBalance} {selectedToken}</span>
                 </div>
                 <div className="flex gap-2">
                   <Input
                     id="stake-amount"
                     type="number"
+                    step="0.000001"
+                    min="0"
                     placeholder="0.00"
                     value={stakeAmount}
-                    onChange={(e) => setStakeAmount(e.target.value)}
-                    className="bg-input text-foreground border-border flex-1"
+                    onChange={(e) => {
+                      const value = e.target.value
+                      // Allow empty, numbers, and single decimal point
+                      if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                        setStakeAmount(value)
+                      }
+                    }}
+                    className={`bg-input text-foreground border-border flex-1 ${
+                      hasInsufficientBalance ? "border-destructive" : ""
+                    }`}
                   />
                   <Button
                     variant="outline"
                     onClick={() => setStakeAmount(tokenBalance)}
                     className="border-border text-accent hover:bg-muted bg-transparent"
+                    disabled={!tokenBalance || parseFloat(tokenBalance) <= 0}
                   >
                     Max
                   </Button>
                 </div>
+                {hasInsufficientBalance && (
+                  <p className="text-xs text-destructive">
+                    Insufficient balance. You have {tokenBalance} {selectedToken}
+                  </p>
+                )}
+                {hasInvalidStakeAmount && stakeAmount && (
+                  <p className="text-xs text-destructive">
+                    Please enter a valid amount greater than 0
+                  </p>
+                )}
               </div>
 
               <div className="bg-muted rounded-lg p-4 space-y-2">
@@ -212,7 +281,11 @@ export function StakeSection() {
               {!isConnected ? (
                 <Button className="w-full" disabled>Connect Wallet</Button>
               ) : needsApproval ? (
-                <Button className="w-full btn-gradient" onClick={handleApprove} disabled={isLoading}>
+                <Button 
+                  className="w-full btn-gradient" 
+                  onClick={handleApprove} 
+                  disabled={isLoading || !selectedToken || (selectedToken !== "USDC" && selectedToken !== "EURC")}
+                >
                   {isApproving || isApprovingConfirm ? (
                     <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Approving...</>
                   ) : (
@@ -223,7 +296,14 @@ export function StakeSection() {
                 <Button
                   className="w-full btn-gradient"
                   onClick={handleStake}
-                  disabled={isLoading || !stakeAmount || parseFloat(stakeAmount) <= 0}
+                  disabled={
+                    isLoading || 
+                    !stakeAmount || 
+                    hasInvalidStakeAmount || 
+                    hasInsufficientBalance ||
+                    !selectedToken ||
+                    (selectedToken !== "USDC" && selectedToken !== "EURC")
+                  }
                 >
                   {isStaking || isStakingConfirm ? (
                     <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Staking...</>
@@ -231,6 +311,19 @@ export function StakeSection() {
                     "Stake"
                   )}
                 </Button>
+              )}
+
+              {stakeError && (
+                <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
+                  <p className="text-xs text-destructive font-medium mb-1">Transaction Error</p>
+                  <p className="text-xs text-destructive/80">
+                    {stakeError.message?.includes("allowance") 
+                      ? "Insufficient allowance. Please approve the token first."
+                      : stakeError.message?.includes("balance")
+                      ? "Insufficient balance. Please check your token balance."
+                      : stakeError.message?.slice(0, 150) || "Transaction failed. Please try again."}
+                  </p>
+                </div>
               )}
             </TabsContent>
 
@@ -249,25 +342,54 @@ export function StakeSection() {
                   <Input
                     id="unstake-amount"
                     type="number"
+                    step="0.000001"
+                    min="0"
                     placeholder="0.00"
                     value={unstakeAmount}
-                    onChange={(e) => setUnstakeAmount(e.target.value)}
-                    className="bg-input text-foreground border-border flex-1"
+                    onChange={(e) => {
+                      const value = e.target.value
+                      // Allow empty, numbers, and single decimal point
+                      if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                        setUnstakeAmount(value)
+                      }
+                    }}
+                    className={`bg-input text-foreground border-border flex-1 ${
+                      hasInsufficientStaked ? "border-destructive" : ""
+                    }`}
                   />
                   <Button
                     variant="outline"
                     onClick={() => setUnstakeAmount(stakedBalance)}
                     className="border-border text-accent hover:bg-muted bg-transparent"
+                    disabled={!stakedBalance || parseFloat(stakedBalance) <= 0}
                   >
                     Max
                   </Button>
                 </div>
+                {hasInsufficientStaked && (
+                  <p className="text-xs text-destructive">
+                    Insufficient staked balance. You have {stakedBalance} {selectedToken} staked
+                  </p>
+                )}
+                {hasInvalidUnstakeAmount && unstakeAmount && (
+                  <p className="text-xs text-destructive">
+                    Please enter a valid amount greater than 0
+                  </p>
+                )}
               </div>
 
               <Button
                 className="w-full btn-gradient"
                 onClick={handleUnstake}
-                disabled={isLoading || !unstakeAmount || parseFloat(unstakeAmount) <= 0 || !isConnected}
+                disabled={
+                  isLoading || 
+                  !unstakeAmount || 
+                  hasInvalidUnstakeAmount || 
+                  hasInsufficientStaked || 
+                  !isConnected ||
+                  !selectedToken ||
+                  (selectedToken !== "USDC" && selectedToken !== "EURC")
+                }
               >
                 {isUnstaking || isUnstakingConfirm ? (
                   <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Unstaking...</>

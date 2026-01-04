@@ -48,20 +48,6 @@ export default function AppHome() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-12">
-          <Link href="/app/stake" className="group">
-            <div className="card-professional p-6 hover:shadow-lg hover:shadow-primary/10 h-full">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-all">
-                <TrendingUp className="w-6 h-6 text-primary" />
-              </div>
-              <h2 className="text-lg font-bold text-foreground mb-2">Stake & Earn</h2>
-              <p className="text-muted-foreground text-sm mb-4">Earn up to 25% APY by staking tokens in secure vaults.</p>
-              <div className="flex items-center gap-2 text-primary group-hover:translate-x-1 transition-transform">
-                <span className="text-sm font-semibold">Go to Stake</span>
-                <ArrowRight className="w-4 h-4" />
-              </div>
-            </div>
-          </Link>
-
           <Link href="/app/swap" className="group">
             <div className="card-professional p-6 hover:shadow-lg hover:shadow-primary/10 h-full">
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-all">
@@ -99,6 +85,20 @@ export default function AppHome() {
               <p className="text-muted-foreground text-sm mb-4">Send stablecoins globally with near-zero fees.</p>
               <div className="flex items-center gap-2 text-primary group-hover:translate-x-1 transition-transform">
                 <span className="text-sm font-semibold">Send Payment</span>
+                <ArrowRight className="w-4 h-4" />
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/app/stake" className="group">
+            <div className="card-professional p-6 hover:shadow-lg hover:shadow-primary/10 h-full">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-all">
+                <TrendingUp className="w-6 h-6 text-primary" />
+              </div>
+              <h2 className="text-lg font-bold text-foreground mb-2">Stake & Earn</h2>
+              <p className="text-muted-foreground text-sm mb-4">Earn up to 25% APY by staking tokens in secure vaults.</p>
+              <div className="flex items-center gap-2 text-primary group-hover:translate-x-1 transition-transform">
+                <span className="text-sm font-semibold">Go to Stake</span>
                 <ArrowRight className="w-4 h-4" />
               </div>
             </div>
