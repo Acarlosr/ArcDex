@@ -296,7 +296,7 @@ export default function LandingPage() {
             <div>
               <h4 className="font-semibold text-foreground mb-4">Community</h4>
               <div className="space-y-2 text-sm text-muted-foreground">
-                <a href="https://x.com/ArcStablecoins" target="_blank" rel="noreferrer" className="hover:text-primary transition-colors block">
+                <a href="https://x.com/arcdexarc" target="_blank" rel="noreferrer" className="hover:text-primary transition-colors block">
                   Twitter
                 </a>
                 <a href="https://discord.gg/buildonarc" target="_blank" rel="noreferrer" className="hover:text-primary transition-colors block">
