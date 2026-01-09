@@ -70,47 +70,90 @@ export function PoolsSection() {
     ? (lpToRemove * reserveEURC) / BigInt(Math.floor(parseFloat(lpTotalSupply) * 1e6) || 1)
     : BigInt(0)
 
-  // Handlers
-  const handleApproveUsdc = () => approveUsdc("USDC", ARCDEX.Swap, "999999999999")
-  const handleApproveEurc = () => approveEurc("EURC", ARCDEX.Swap, "999999999999")
+  // Handlers with error handling
+  const handleApproveUsdc = async () => {
+    try {
+      await approveUsdc("USDC", ARCDEX.Swap, "999999999999")
+    } catch (error) {
+      console.error("Pools: Approve USDC error", error)
+    }
+  }
+
+  const handleApproveEurc = async () => {
+    try {
+      await approveEurc("EURC", ARCDEX.Swap, "999999999999")
+    } catch (error) {
+      console.error("Pools: Approve EURC error", error)
+    }
+  }
 
   const handleAddLiquidity = async () => {
-    if (!usdcAmount || !eurcAmount) return
-    await addLiquidity(usdcAmount, eurcAmount)
+    if (!usdcAmount || !eurcAmount) {
+      console.warn("Pools: Cannot add liquidity - missing amounts", { usdcAmount, eurcAmount })
+      return
+    }
+    try {
+      await addLiquidity(usdcAmount, eurcAmount)
+    } catch (error) {
+      console.error("Pools: Add liquidity error", error)
+    }
   }
 
   const handleRemoveLiquidity = async () => {
-    if (!rawLpBalance || liquidityPercentage === 0) return
-    const lpAmount = (Number(lpToRemove) / 1e6).toFixed(6)
-    await removeLiquidity(lpAmount)
+    if (!rawLpBalance || liquidityPercentage === 0) {
+      console.warn("Pools: Cannot remove liquidity - invalid amount", { rawLpBalance, liquidityPercentage })
+      return
+    }
+    try {
+      const lpAmount = (Number(lpToRemove) / 1e6).toFixed(6)
+      await removeLiquidity(lpAmount)
+    } catch (error) {
+      console.error("Pools: Remove liquidity error", error)
+    }
   }
 
-  // Refresh after actions
+  // Refresh after actions - batched with delays to avoid race conditions
   useEffect(() => {
-    if (approveUsdcSuccess) refetchUsdcAllowance()
+    if (approveUsdcSuccess) {
+      const timer = setTimeout(() => {
+        refetchUsdcAllowance()
+      }, 1500) // Delay to ensure blockchain state is updated
+      return () => clearTimeout(timer)
+    }
   }, [approveUsdcSuccess, refetchUsdcAllowance])
 
   useEffect(() => {
-    if (approveEurcSuccess) refetchEurcAllowance()
+    if (approveEurcSuccess) {
+      const timer = setTimeout(() => {
+        refetchEurcAllowance()
+      }, 1500) // Delay to ensure blockchain state is updated
+      return () => clearTimeout(timer)
+    }
   }, [approveEurcSuccess, refetchEurcAllowance])
 
   useEffect(() => {
     if (addSuccess) {
-      refetchUsdc()
-      refetchEurc()
-      refetchLp()
-      refetchReserves()
-      setUsdcAmount("")
-      setEurcAmount("")
+      const timer = setTimeout(() => {
+        refetchUsdc()
+        refetchEurc()
+        refetchLp()
+        refetchReserves()
+        setUsdcAmount("")
+        setEurcAmount("")
+      }, 2000) // Delay to ensure blockchain state is updated
+      return () => clearTimeout(timer)
     }
   }, [addSuccess, refetchUsdc, refetchEurc, refetchLp, refetchReserves])
 
   useEffect(() => {
     if (removeSuccess) {
-      refetchUsdc()
-      refetchEurc()
-      refetchLp()
-      refetchReserves()
+      const timer = setTimeout(() => {
+        refetchUsdc()
+        refetchEurc()
+        refetchLp()
+        refetchReserves()
+      }, 2000) // Delay to ensure blockchain state is updated
+      return () => clearTimeout(timer)
     }
   }, [removeSuccess, refetchUsdc, refetchEurc, refetchLp, refetchReserves])
 

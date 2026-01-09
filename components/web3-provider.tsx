@@ -48,7 +48,9 @@ function createWagmiConfig() {
         connectors,
         transports: {
             [arcTestnet.id]: http(CHAIN_CONFIG.rpcUrls.default.http[0], {
-                timeout: 10000,
+                timeout: 20000, // Increased for recording/performance scenarios
+                retryCount: 3,
+                retryDelay: 1000,
             }),
         },
         ssr: true,
@@ -62,9 +64,11 @@ export function Web3Provider({ children }: { children: ReactNode }) {
     const [queryClient] = useState(() => new QueryClient({
         defaultOptions: {
             queries: {
-                staleTime: 60 * 1000,
-                refetchOnWindowFocus: false,
-                retry: 2,
+                staleTime: 5 * 1000, // Reduced for faster updates
+                refetchOnWindowFocus: true, // Enable refetch on focus
+                refetchOnReconnect: true, // Enable refetch on reconnect
+                retry: 3, // Increased retries for resilience
+                retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
             },
         },
     }))

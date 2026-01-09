@@ -65,51 +65,79 @@ export function StakeSection() {
   const hasInvalidUnstakeAmount = unstakeAmountNum <= 0 || isNaN(unstakeAmountNum)
   const needsApproval = allowance !== undefined && parsedStakeAmount > BigInt(0) && allowance < parsedStakeAmount
 
-  // Handlers with validation
+  // Handlers with validation and error handling
   const handleApprove = async () => {
     if (!selectedToken || (selectedToken !== "USDC" && selectedToken !== "EURC")) {
+      console.warn("Stake: Invalid token selected for approval")
       return
     }
-    await approve(selectedToken, ARCDEX.Staking, "999999999999")
+    try {
+      await approve(selectedToken, ARCDEX.Staking, "999999999999")
+    } catch (error) {
+      console.error("Stake: Approve error", error)
+    }
   }
 
   const handleStake = async () => {
-    // Validate before staking
+    // Validate before staking with better error logging
     if (!stakeAmount || hasInvalidStakeAmount) {
+      console.warn("Stake: Invalid stake amount", { stakeAmount, hasInvalidStakeAmount })
       return
     }
     if (hasInsufficientBalance) {
+      console.warn("Stake: Insufficient balance", { stakeAmount, balance: tokenBalance })
       return
     }
     if (needsApproval) {
+      console.warn("Stake: Approval needed before staking")
       return
     }
     if (selectedToken !== "USDC" && selectedToken !== "EURC") {
+      console.warn("Stake: Invalid token", { selectedToken })
       return
     }
-    await stake(selectedToken, stakeAmount)
+    try {
+      await stake(selectedToken, stakeAmount)
+    } catch (error) {
+      console.error("Stake: Stake error", error)
+    }
   }
 
   const handleUnstake = async () => {
-    // Validate before unstaking
+    // Validate before unstaking with better error logging
     if (!unstakeAmount || hasInvalidUnstakeAmount) {
+      console.warn("Stake: Invalid unstake amount", { unstakeAmount, hasInvalidUnstakeAmount })
       return
     }
     if (hasInsufficientStaked) {
+      console.warn("Stake: Insufficient staked balance", { unstakeAmount, stakedBalance })
       return
     }
     if (selectedToken !== "USDC" && selectedToken !== "EURC") {
+      console.warn("Stake: Invalid token", { selectedToken })
       return
     }
-    await unstake(selectedToken, unstakeAmount)
+    try {
+      await unstake(selectedToken, unstakeAmount)
+    } catch (error) {
+      console.error("Stake: Unstake error", error)
+    }
   }
 
   const handleClaim = async () => {
-    await claimRewards(selectedToken)
+    try {
+      await claimRewards(selectedToken)
+    } catch (error) {
+      console.error("Stake: Claim error", error)
+    }
   }
 
   const handleClaimAll = async () => {
-    await claimAllRewards()
+    try {
+      await claimAllRewards()
+    } catch (error) {
+      console.error("Stake: Claim all error", error)
+    }
   }
 
   // Reset amounts when token changes
@@ -118,35 +146,45 @@ export function StakeSection() {
     setUnstakeAmount("")
   }, [selectedToken])
 
-  // Refresh after actions
+  // Refresh after actions - batched with delays to avoid race conditions
   useEffect(() => {
     if (approveSuccess) {
-      refetchAllowance()
-      // Small delay to ensure allowance is updated
-      setTimeout(() => refetchAllowance(), 1000)
+      const timer = setTimeout(() => {
+        refetchAllowance()
+      }, 1500) // Delay to ensure blockchain state is updated
+      return () => clearTimeout(timer)
     }
   }, [approveSuccess, refetchAllowance])
 
   useEffect(() => {
     if (stakeSuccess) {
-      refetchBalance()
-      refetchStaked()
-      setStakeAmount("")
+      const timer = setTimeout(() => {
+        refetchBalance()
+        refetchStaked()
+        setStakeAmount("")
+      }, 2000) // Delay to ensure blockchain state is updated
+      return () => clearTimeout(timer)
     }
   }, [stakeSuccess, refetchBalance, refetchStaked])
 
   useEffect(() => {
     if (unstakeSuccess) {
-      refetchBalance()
-      refetchStaked()
-      setUnstakeAmount("")
+      const timer = setTimeout(() => {
+        refetchBalance()
+        refetchStaked()
+        setUnstakeAmount("")
+      }, 2000) // Delay to ensure blockchain state is updated
+      return () => clearTimeout(timer)
     }
   }, [unstakeSuccess, refetchBalance, refetchStaked])
 
   useEffect(() => {
     if (claimSuccess) {
-      refetchRewards()
-      refetchBalance()
+      const timer = setTimeout(() => {
+        refetchRewards()
+        refetchBalance()
+      }, 2000) // Delay to ensure blockchain state is updated
+      return () => clearTimeout(timer)
     }
   }, [claimSuccess, refetchRewards, refetchBalance])
 

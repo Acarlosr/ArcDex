@@ -47,33 +47,57 @@ export function SwapSection() {
 
   // Handle approve
   const handleApprove = async () => {
-    if (!fromAmount) return
-    // Approve max amount for convenience
-    await approve(fromToken, ARCDEX.Swap, "999999999999")
+    if (!fromAmount) {
+      console.warn("Swap: Cannot approve - no amount specified")
+      return
+    }
+    try {
+      // Approve max amount for convenience
+      await approve(fromToken, ARCDEX.Swap, "999999999999")
+    } catch (error) {
+      console.error("Swap: Approve error", error)
+    }
   }
 
   // Handle swap
   const handleSwap = async () => {
-    if (!fromAmount || !rawAmountOut) return
-    // Calculate min amount with slippage
-    const minOut = (rawAmountOut * BigInt(Math.floor((100 - slippage) * 100))) / BigInt(10000)
-    const minOutFormatted = (Number(minOut) / 1e6).toFixed(6)
-    await swap(fromToken, fromAmount, minOutFormatted)
+    if (!fromAmount) {
+      console.warn("Swap: Cannot swap - no amount specified")
+      return
+    }
+    if (!rawAmountOut) {
+      console.warn("Swap: Cannot swap - no output amount calculated")
+      return
+    }
+    try {
+      // Calculate min amount with slippage
+      const minOut = (rawAmountOut * BigInt(Math.floor((100 - slippage) * 100))) / BigInt(10000)
+      const minOutFormatted = (Number(minOut) / 1e6).toFixed(6)
+      await swap(fromToken, fromAmount, minOutFormatted)
+    } catch (error) {
+      console.error("Swap: Swap error", error)
+    }
   }
 
-  // Refetch after successful approve
+  // Refetch after successful approve - with delay to avoid race conditions
   useEffect(() => {
     if (approveSuccess) {
-      refetchAllowance()
+      const timer = setTimeout(() => {
+        refetchAllowance()
+      }, 1500) // Delay to ensure blockchain state is updated
+      return () => clearTimeout(timer)
     }
   }, [approveSuccess, refetchAllowance])
 
-  // Refetch after successful swap
+  // Refetch after successful swap - batched with delay
   useEffect(() => {
     if (swapSuccess) {
-      refetchFromBalance()
-      refetchToBalance()
-      setFromAmount("")
+      const timer = setTimeout(() => {
+        refetchFromBalance()
+        refetchToBalance()
+        setFromAmount("")
+      }, 2000) // Delay to ensure blockchain state is updated
+      return () => clearTimeout(timer)
     }
   }, [swapSuccess, refetchFromBalance, refetchToBalance])
 
