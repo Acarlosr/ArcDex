@@ -82,6 +82,7 @@ export function Navbar() {
     { label: "Pools", href: "/app/pools" },
     { label: "Payments", href: "/app/payments" },
     { label: "Stake", href: "/app/stake" },
+    { label: "Portfolio", href: "/app/portfolio" },
     { label: "Contracts", href: "/app/contracts" },
     { label: "History", href: "/app/history" },
     { label: "Docs", href: "/app/docs" },
