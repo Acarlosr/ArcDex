@@ -25,7 +25,7 @@ export default function LandingPage() {
           </div>
           <div className="flex items-center gap-3">
             <ThemeToggle />
-            <a href="https://docs.arc.network/arc/concepts/welcome-to-arc" target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium hidden sm:inline">
+            <a href="https://www.arc-dex.xyz/app/docs" target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium hidden sm:inline">
               Docs
             </a>
             <Link
