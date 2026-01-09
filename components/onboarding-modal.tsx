@@ -31,7 +31,7 @@ const STEPS = [
             "Network: Arc Testnet",
             "Chain ID: 5042002",
             "RPC: https://rpc.testnet.arc.network",
-            "Explorer: https://explorer.testnet.arc.network"
+            "Explorer: https://testnet.arcscan.app"
         ],
         action: {
             label: "Add Network",
@@ -45,7 +45,7 @@ const STEPS = [
                                 chainName: "Arc Testnet",
                                 nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 18 },
                                 rpcUrls: ["https://rpc.testnet.arc.network"],
-                                blockExplorerUrls: ["https://explorer.testnet.arc.network"]
+                                blockExplorerUrls: ["https://testnet.arcscan.app"]
                             }]
                         })
                     } catch (error) {

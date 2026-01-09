@@ -239,7 +239,7 @@ export function PaymentsSection() {
                     <td className="py-2 text-muted-foreground">{row.ref}</td>
                     <td className="py-2 text-accent text-xs">
                       <a
-                        href={`https://explorer.testnet.arc.network/tx/${row.tx}`}
+                        href={`https://testnet.arcscan.app/tx/${row.tx}`}
                         target="_blank"
                         rel="noreferrer"
                         className="hover:underline"
