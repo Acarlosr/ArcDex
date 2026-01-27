@@ -307,7 +307,7 @@ export default function StakePage() {
             <div className="mt-4 p-3 bg-muted/50 rounded-lg text-xs text-muted-foreground">
               <p className="flex items-center gap-1">
                 <span>ℹ️</span>
-                Rewards acumulam com base no APR. Claim requer treasury configurado.
+                Rewards accumulate based on APR. Claim requires treasury to be configured.
               </p>
             </div>
 
