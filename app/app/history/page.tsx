@@ -67,9 +67,9 @@ export default function HistoryPage() {
                       View Your Transactions
                     </h3>
                     <p className="text-sm text-muted-foreground mb-4">
-                      Para ver o histórico completo de suas transações no Arc Testnet,
-                      acesse o ArcScan Explorer. Lá você encontrará todas as interações
-                      com os contratos ArcDex, incluindo swaps, stakes e pagamentos.
+                      To view your complete transaction history on Arc Testnet,
+                      visit the ArcScan Explorer. There you will find all interactions
+                      with ArcDex contracts, including swaps, stakes, and payments.
                     </p>
                     <div className="flex flex-wrap gap-3">
                       <Button
@@ -77,7 +77,7 @@ export default function HistoryPage() {
                         className="btn-gradient"
                       >
                         <ExternalLink className="w-4 h-4 mr-2" />
-                        Ver Meu Histórico
+                        View My History
                       </Button>
                       <Button
                         variant="outline"
@@ -100,7 +100,7 @@ export default function HistoryPage() {
 
               {/* Your Address */}
               <div className="bg-muted/50 rounded-xl p-4">
-                <p className="text-sm text-muted-foreground mb-2">Sua Carteira</p>
+                <p className="text-sm text-muted-foreground mb-2">Your Wallet</p>
                 <div className="flex items-center gap-2">
                   <code className="text-foreground font-mono text-sm bg-input px-3 py-2 rounded-lg flex-1 overflow-hidden text-ellipsis">
                     {address}
@@ -172,7 +172,7 @@ export default function HistoryPage() {
               </div>
               <h3 className="text-xl font-semibold text-foreground mb-2">Connect Wallet</h3>
               <p className="text-muted-foreground">
-                Conecte sua carteira para ver seu histórico de transações.
+                Connect your wallet to view your transaction history.
               </p>
             </div>
           )}
