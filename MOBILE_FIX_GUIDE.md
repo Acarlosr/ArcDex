@@ -320,3 +320,5 @@ Se ainda houver problemas:
 **Versão**: 2.1  
 **Status**: ✅ Pronto para deploy
 
+
+

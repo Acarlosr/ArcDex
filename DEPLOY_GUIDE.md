@@ -332,3 +332,5 @@ Depois que o deploy estiver funcionando:
 **Versão**: 2.0  
 **Deploy Target**: Vercel (https://www.arc-dex.xyz/)
 
+
+
