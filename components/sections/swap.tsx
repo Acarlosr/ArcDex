@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useAccount } from "wagmi"
+import { useQueryClient } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -18,6 +19,7 @@ import { ARCDEX, PROTOCOL } from "@/lib/contracts"
 
 export function SwapSection() {
   const { isConnected } = useAccount()
+  const queryClient = useQueryClient()
   const [fromToken, setFromToken] = useState<"USDC" | "EURC">("USDC")
   const [toToken, setToToken] = useState<"USDC" | "EURC">("EURC")
   const [fromAmount, setFromAmount] = useState("")
@@ -79,27 +81,30 @@ export function SwapSection() {
     }
   }
 
-  // Refetch after successful approve - with delay to avoid race conditions
+  // Refetch after successful approve - delay + cache invalidation for reliable update
   useEffect(() => {
     if (approveSuccess) {
-      const timer = setTimeout(() => {
+      const t1 = setTimeout(() => {
+        queryClient.invalidateQueries()
         refetchAllowance()
-      }, 1500) // Delay to ensure blockchain state is updated
-      return () => clearTimeout(timer)
+      }, 2500)
+      return () => clearTimeout(t1)
     }
-  }, [approveSuccess, refetchAllowance])
+  }, [approveSuccess, queryClient, refetchAllowance])
 
-  // Refetch after successful swap - batched with delay
+  // Refetch after successful swap - delay + invalidation so balances/allowance stay in sync
   useEffect(() => {
     if (swapSuccess) {
-      const timer = setTimeout(() => {
+      const t1 = setTimeout(() => {
+        queryClient.invalidateQueries()
         refetchFromBalance()
         refetchToBalance()
+        refetchAllowance()
         setFromAmount("")
-      }, 2000) // Delay to ensure blockchain state is updated
-      return () => clearTimeout(timer)
+      }, 3000)
+      return () => clearTimeout(t1)
     }
-  }, [swapSuccess, refetchFromBalance, refetchToBalance])
+  }, [swapSuccess, queryClient, refetchFromBalance, refetchToBalance, refetchAllowance])
 
   const isLoading = isApproving || isApprovingConfirm || isSwapping || isSwapConfirm
 
