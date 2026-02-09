@@ -32,6 +32,8 @@ export function StakeSection() {
   const [stakeAmount, setStakeAmount] = useState("")
   const [unstakeAmount, setUnstakeAmount] = useState("")
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [approveStatus, setApproveStatus] = useState<"idle" | "pending" | "confirming" | "verified" | "error">("idle")
+  const [approveErrorMsg, setApproveErrorMsg] = useState("")
 
   // Token balances
   const { formatted: tokenBalance, refetch: refetchBalance } = useTokenBalance(selectedToken)
@@ -45,7 +47,7 @@ export function StakeSection() {
   const { formatted: totalStakedEURC } = useTotalStaked("EURC")
 
   // Actions
-  const { approve, isPending: isApproving, isConfirming: isApprovingConfirm, isSuccess: approveSuccess } = useApprove()
+  const { approve, isPending: isApproving, isConfirming: isApprovingConfirm, isSuccess: approveSuccess, error: approveError, reset: resetApprove } = useApprove()
   const { stake, isPending: isStaking, isConfirming: isStakingConfirm, isSuccess: stakeSuccess, error: stakeError } = useStake()
   const { unstake, isPending: isUnstaking, isConfirming: isUnstakingConfirm, isSuccess: unstakeSuccess } = useUnstake()
   const { claimRewards, claimAllRewards, isPending: isClaiming, isConfirming: isClaimingConfirm, isSuccess: claimSuccess } = useClaimRewards()
@@ -78,10 +80,21 @@ export function StakeSection() {
       console.warn("Stake: Invalid token selected for approval")
       return
     }
+    setApproveStatus("pending")
+    setApproveErrorMsg("")
+    resetApprove()
     try {
-      await approve(selectedToken, ARCDEX.Staking, "999999999999")
-    } catch (error) {
+      console.log(`Stake: Approving ${selectedToken} for staking contract...`)
+      const hash = await approve(selectedToken, ARCDEX.Staking, "999999999999")
+      console.log(`Stake: Approve tx submitted: ${hash}`)
+      setApproveStatus("confirming")
+      // The useEffect for approveSuccess will handle the rest
+    } catch (error: any) {
       console.error("Stake: Approve error", error)
+      setApproveStatus("error")
+      setApproveErrorMsg(
+        error?.shortMessage || error?.message?.slice(0, 150) || "Approve transaction failed. Please try again."
+      )
     }
   }
 
@@ -95,15 +108,35 @@ export function StakeSection() {
       console.warn("Stake: Insufficient balance", { stakeAmount, balance: tokenBalance })
       return
     }
-    if (needsApproval) {
-      console.warn("Stake: Approval needed before staking")
-      return
-    }
     if (selectedToken !== "USDC" && selectedToken !== "EURC") {
       console.warn("Stake: Invalid token", { selectedToken })
       return
     }
+
+    // Pre-flight: force a fresh allowance read before sending the tx
+    console.log("Stake: Pre-flight allowance check...")
     try {
+      queryClient.invalidateQueries()
+      const result = await refetchAllowance()
+      const freshAllowance = result?.data as bigint | undefined
+      const required = parsedStakeAmount
+      console.log(`Stake: Fresh allowance = ${freshAllowance}, required = ${required}`)
+
+      if (freshAllowance === undefined || freshAllowance < required) {
+        console.warn("Stake: Allowance still insufficient after fresh read", { freshAllowance, required })
+        setApproveStatus("error")
+        setApproveErrorMsg(
+          `Allowance is still insufficient (${freshAllowance?.toString() ?? "0"} < ${required.toString()}). ` +
+          `Please click "Approve ${selectedToken}" first and confirm in your wallet.`
+        )
+        return
+      }
+    } catch (err) {
+      console.warn("Stake: Pre-flight allowance read failed, proceeding anyway", err)
+    }
+
+    try {
+      console.log(`Stake: Sending stake tx for ${stakeAmount} ${selectedToken}...`)
       await stake(selectedToken, stakeAmount)
     } catch (error) {
       console.error("Stake: Stake error", error)
@@ -157,10 +190,12 @@ export function StakeSection() {
     }
   }
 
-  // Reset amounts when token changes
+  // Reset amounts and approve status when token changes
   useEffect(() => {
     setStakeAmount("")
     setUnstakeAmount("")
+    setApproveStatus("idle")
+    setApproveErrorMsg("")
   }, [selectedToken])
 
   // When opening stake modal, refetch allowance and balance so existing approvals are detected ("já tinha aprovado antes")
@@ -173,16 +208,43 @@ export function StakeSection() {
     }
   }, [isModalOpen, isConnected, queryClient, refetchAllowance, refetchBalance, refetchStaked])
 
-  // Refresh after actions - delay + cache invalidation for reliable state (avoids "sometimes works" RPC/cache issues)
+  // After approve confirmed on-chain: invalidate cache, verify allowance, update status
   useEffect(() => {
     if (approveSuccess) {
-      const t = setTimeout(() => {
+      console.log("Stake: Approve confirmed on-chain, verifying allowance...")
+      setApproveStatus("confirming")
+      const t = setTimeout(async () => {
         queryClient.invalidateQueries()
-        refetchAllowance()
-      }, 2500)
+        try {
+          const result = await refetchAllowance()
+          const freshAllowance = result?.data as bigint | undefined
+          console.log(`Stake: Post-approve allowance = ${freshAllowance}`)
+          if (freshAllowance !== undefined && freshAllowance > BigInt(0)) {
+            setApproveStatus("verified")
+            setApproveErrorMsg("")
+          } else {
+            setApproveStatus("error")
+            setApproveErrorMsg("Approve confirmed but allowance is still 0. The token may not support standard approve. Try again or click Refresh.")
+          }
+        } catch (err) {
+          console.warn("Stake: Post-approve refetch failed", err)
+          setApproveStatus("error")
+          setApproveErrorMsg("Could not verify allowance. Click Refresh and try again.")
+        }
+      }, 3000)
       return () => clearTimeout(t)
     }
   }, [approveSuccess, queryClient, refetchAllowance])
+
+  // If approve hook reports an error, surface it
+  useEffect(() => {
+    if (approveError) {
+      setApproveStatus("error")
+      setApproveErrorMsg(
+        (approveError as any)?.shortMessage || approveError.message?.slice(0, 150) || "Approve failed"
+      )
+    }
+  }, [approveError])
 
   useEffect(() => {
     if (stakeSuccess) {
@@ -400,18 +462,45 @@ export function StakeSection() {
                 </Button>
               )}
 
+              {/* Approve status / errors */}
+              {approveStatus === "confirming" && (
+                <div className="bg-accent/10 border border-accent/20 rounded-lg p-3 flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin text-accent" />
+                  <p className="text-xs text-accent">Approve confirmed, verifying allowance...</p>
+                </div>
+              )}
+              {approveStatus === "verified" && (
+                <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3">
+                  <p className="text-xs text-green-600 font-medium">Allowance verified. You can now stake.</p>
+                </div>
+              )}
+              {(approveStatus === "error" || approveErrorMsg) && (
+                <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
+                  <p className="text-xs text-destructive font-medium mb-1">Approve Error</p>
+                  <p className="text-xs text-destructive/80">{approveErrorMsg || "Approve failed. Please try again."}</p>
+                </div>
+              )}
+
+              {/* Stake tx errors */}
               {stakeError && (
                 <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
-                  <p className="text-xs text-destructive font-medium mb-1">Transaction Error</p>
+                  <p className="text-xs text-destructive font-medium mb-1">Stake Error</p>
                   <p className="text-xs text-destructive/80">
                     {stakeError.message?.includes("allowance") 
-                      ? "Insufficient allowance. Please approve the token first."
+                      ? "Insufficient allowance. Please click Approve first, confirm in wallet, wait for verification, then Stake."
                       : stakeError.message?.includes("balance")
                       ? "Insufficient balance. Please check your token balance."
-                      : stakeError.message?.slice(0, 150) || "Transaction failed. Please try again."}
+                      : stakeError.message?.includes("treasury")
+                      ? "Treasury not configured for rewards. Contact the protocol team."
+                      : (stakeError as any)?.shortMessage || stakeError.message?.slice(0, 150) || "Transaction failed. Please try again."}
                   </p>
                 </div>
               )}
+
+              {/* Debug: current allowance */}
+              <p className="text-xs text-muted-foreground text-center">
+                Current allowance: {allowance !== undefined ? (Number(allowance) / 1e6).toFixed(2) : "loading..."} {selectedToken}
+              </p>
             </TabsContent>
 
             {/* Unstake Tab */}
