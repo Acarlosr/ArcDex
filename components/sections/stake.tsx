@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useAccount } from "wagmi"
+import { useQueryClient } from "@tanstack/react-query"
 import { StatCard } from "@/components/stat-card"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -25,14 +26,16 @@ import { ARCDEX } from "@/lib/contracts"
 
 export function StakeSection() {
   const { isConnected } = useAccount()
+  const queryClient = useQueryClient()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedToken, setSelectedToken] = useState<"USDC" | "EURC">("USDC")
   const [stakeAmount, setStakeAmount] = useState("")
   const [unstakeAmount, setUnstakeAmount] = useState("")
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   // Token balances
   const { formatted: tokenBalance, refetch: refetchBalance } = useTokenBalance(selectedToken)
-  const { allowance, refetch: refetchAllowance } = useTokenAllowance(selectedToken, ARCDEX.Staking)
+  const { allowance, isLoading: allowanceLoading, refetch: refetchAllowance } = useTokenAllowance(selectedToken, ARCDEX.Staking)
 
   // Staking data
   const { formatted: stakedBalance, refetch: refetchStaked } = useStakedBalance(selectedToken)
@@ -63,7 +66,11 @@ export function StakeSection() {
   const hasInsufficientStaked = unstakeAmountNum > stakedBalanceNum
   const hasInvalidStakeAmount = stakeAmountNum <= 0 || isNaN(stakeAmountNum)
   const hasInvalidUnstakeAmount = unstakeAmountNum <= 0 || isNaN(unstakeAmountNum)
-  const needsApproval = allowance !== undefined && parsedStakeAmount > BigInt(0) && allowance < parsedStakeAmount
+  const needsApproval =
+    allowance !== undefined &&
+    parsedStakeAmount > BigInt(0) &&
+    allowance < parsedStakeAmount
+  const allowanceUnknown = allowance === undefined && !!stakeAmount
 
   // Handlers with validation and error handling
   const handleApprove = async () => {
@@ -140,53 +147,78 @@ export function StakeSection() {
     }
   }
 
+  const handleRefreshAllowance = async () => {
+    setIsRefreshing(true)
+    try {
+      queryClient.invalidateQueries()
+      await Promise.all([refetchAllowance(), refetchBalance(), refetchStaked()])
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 500)
+    }
+  }
+
   // Reset amounts when token changes
   useEffect(() => {
     setStakeAmount("")
     setUnstakeAmount("")
   }, [selectedToken])
 
-  // Refresh after actions - batched with delays to avoid race conditions
+  // When opening stake modal, refetch allowance and balance so existing approvals are detected ("já tinha aprovado antes")
+  useEffect(() => {
+    if (isModalOpen && isConnected) {
+      queryClient.invalidateQueries()
+      refetchAllowance()
+      refetchBalance()
+      refetchStaked()
+    }
+  }, [isModalOpen, isConnected, queryClient, refetchAllowance, refetchBalance, refetchStaked])
+
+  // Refresh after actions - delay + cache invalidation for reliable state (avoids "sometimes works" RPC/cache issues)
   useEffect(() => {
     if (approveSuccess) {
-      const timer = setTimeout(() => {
+      const t = setTimeout(() => {
+        queryClient.invalidateQueries()
         refetchAllowance()
-      }, 1500) // Delay to ensure blockchain state is updated
-      return () => clearTimeout(timer)
+      }, 2500)
+      return () => clearTimeout(t)
     }
-  }, [approveSuccess, refetchAllowance])
+  }, [approveSuccess, queryClient, refetchAllowance])
 
   useEffect(() => {
     if (stakeSuccess) {
-      const timer = setTimeout(() => {
+      const t = setTimeout(() => {
+        queryClient.invalidateQueries()
         refetchBalance()
         refetchStaked()
+        refetchAllowance()
         setStakeAmount("")
-      }, 2000) // Delay to ensure blockchain state is updated
-      return () => clearTimeout(timer)
+      }, 3000)
+      return () => clearTimeout(t)
     }
-  }, [stakeSuccess, refetchBalance, refetchStaked])
+  }, [stakeSuccess, queryClient, refetchBalance, refetchStaked, refetchAllowance])
 
   useEffect(() => {
     if (unstakeSuccess) {
-      const timer = setTimeout(() => {
+      const t = setTimeout(() => {
+        queryClient.invalidateQueries()
         refetchBalance()
         refetchStaked()
         setUnstakeAmount("")
-      }, 2000) // Delay to ensure blockchain state is updated
-      return () => clearTimeout(timer)
+      }, 3000)
+      return () => clearTimeout(t)
     }
-  }, [unstakeSuccess, refetchBalance, refetchStaked])
+  }, [unstakeSuccess, queryClient, refetchBalance, refetchStaked])
 
   useEffect(() => {
     if (claimSuccess) {
-      const timer = setTimeout(() => {
+      const t = setTimeout(() => {
+        queryClient.invalidateQueries()
         refetchRewards()
         refetchBalance()
-      }, 2000) // Delay to ensure blockchain state is updated
-      return () => clearTimeout(timer)
+      }, 3000)
+      return () => clearTimeout(t)
     }
-  }, [claimSuccess, refetchRewards, refetchBalance])
+  }, [claimSuccess, queryClient, refetchRewards, refetchBalance])
 
   const isLoading = isApproving || isApprovingConfirm || isStaking || isStakingConfirm ||
     isUnstaking || isUnstakingConfirm || isClaiming || isClaimingConfirm
@@ -254,9 +286,21 @@ export function StakeSection() {
               </div>
 
               <div className="space-y-2">
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center gap-2">
                   <Label htmlFor="stake-amount" className="text-foreground">Amount</Label>
-                  <span className="text-xs text-muted-foreground">Balance: {tokenBalance} {selectedToken}</span>
+                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                    Balance: {tokenBalance} {selectedToken}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-1.5 text-xs text-muted-foreground hover:text-foreground"
+                      onClick={handleRefreshAllowance}
+                      disabled={isRefreshing}
+                    >
+                      {isRefreshing ? "…" : "Refresh"}
+                    </Button>
+                  </span>
                 </div>
                 <div className="flex gap-2">
                   <Input
@@ -318,6 +362,11 @@ export function StakeSection() {
 
               {!isConnected ? (
                 <Button className="w-full" disabled>Connect Wallet</Button>
+              ) : allowanceLoading || (allowanceUnknown && stakeAmount) ? (
+                <Button className="w-full" disabled>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Checking allowance…
+                </Button>
               ) : needsApproval ? (
                 <Button 
                   className="w-full btn-gradient" 

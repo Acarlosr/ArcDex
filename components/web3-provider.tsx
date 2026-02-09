@@ -1,10 +1,19 @@
 'use client'
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { WagmiProvider, createConfig, http } from 'wagmi'
+import { WagmiProvider, createConfig } from 'wagmi'
+import { fallback, http } from 'viem'
 import { injected, walletConnect } from 'wagmi/connectors'
 import { useState, useEffect, type ReactNode } from 'react'
 import { CHAIN_CONFIG } from '@/lib/contracts'
+
+const RPC_OPTS = { timeout: 20000, retryCount: 3, retryDelay: 1000 }
+const ARC_RPC_URLS = [
+  CHAIN_CONFIG.rpcUrls.default.http[0],
+  'https://rpc.blockdaemon.testnet.arc.network',
+  'https://rpc.drpc.testnet.arc.network',
+  'https://rpc.quicknode.testnet.arc.network',
+].filter(Boolean) as string[]
 
 // WalletConnect Project ID
 const projectId = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID || process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '62a5e53db0163b7e29bc8b76c22d04cc'
@@ -47,11 +56,10 @@ function createWagmiConfig() {
         chains: [arcTestnet],
         connectors,
         transports: {
-            [arcTestnet.id]: http(CHAIN_CONFIG.rpcUrls.default.http[0], {
-                timeout: 20000, // Increased for recording/performance scenarios
-                retryCount: 3,
-                retryDelay: 1000,
-            }),
+            [arcTestnet.id]: fallback(
+                ARC_RPC_URLS.map((url) => http(url, RPC_OPTS)),
+                { rank: false }
+            ),
         },
         ssr: true,
     })

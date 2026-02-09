@@ -304,3 +304,5 @@ Nesse caso, verifique se há erros no console antes dos logs customizados.
 
 **Teste agora!** Faça uma transação e observe os logs no console do navegador. 🚀
 
+
+
