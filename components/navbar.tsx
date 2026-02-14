@@ -1,15 +1,16 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Droplet, Loader2, Copy, Check, ExternalLink, Smartphone } from "lucide-react"
+import { Droplet, Loader2, Copy, Check, ExternalLink, Smartphone, AlertCircle } from "lucide-react"
 import { useAccount, useConnect, useDisconnect } from "wagmi"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useTokenBalance } from "@/hooks/use-contracts"
 import { Logo } from "@/components/logo"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { toast } from "sonner"
 
 // Deep link URLs for mobile wallets
 const WALLET_DEEP_LINKS = {
@@ -23,6 +24,7 @@ export function Navbar() {
   const [copiedLink, setCopiedLink] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [hasInjectedProvider, setHasInjectedProvider] = useState(false)
+  const wcPendingStartedAt = useRef<number | null>(null)
   const pathname = usePathname()
 
   const { address, isConnected, isConnecting } = useAccount()
@@ -42,10 +44,29 @@ export function Navbar() {
   const handleWalletConnect = () => {
     const wcConnector = connectors.find(c => c.id === 'walletConnect')
     if (wcConnector) {
+      wcPendingStartedAt.current = Date.now()
       connect({ connector: wcConnector })
       setIsDialogOpen(false)
     }
   }
+
+  // If WalletConnect is pending for too long (modal stuck), suggest Browser Wallet
+  useEffect(() => {
+    if (isConnected) {
+      wcPendingStartedAt.current = null
+      return
+    }
+    if (!isPending || wcPendingStartedAt.current == null) return
+    const t = setTimeout(() => {
+      if (!wcPendingStartedAt.current) return
+      wcPendingStartedAt.current = null
+      toast.error(
+        "WalletConnect is taking too long. Try connecting with Browser Wallet (MetaMask) from the wallet menu.",
+        { duration: 8000 }
+      )
+    }, 12000)
+    return () => clearTimeout(t)
+  }, [isPending, isConnected])
 
   const handleInjectedConnect = () => {
     if (!hasInjectedProvider) return
@@ -197,6 +218,13 @@ export function Navbar() {
                 </div>
                 <span className="ml-auto text-xs text-primary">Recommended</span>
               </button>
+              <div className="flex gap-2 rounded-lg bg-amber-500/10 border border-amber-500/20 p-3 text-left">
+                <AlertCircle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                <div className="text-xs text-amber-200">
+                  <p className="font-medium text-amber-100 mb-0.5">QR or wallet list not loading?</p>
+                  <p className="text-amber-200/90">Use <strong>Browser Wallet (MetaMask)</strong> below, or add this site’s domain in Reown Cloud → Domain allowlist.</p>
+                </div>
+              </div>
 
               {/* Browser Wallet */}
               {showBrowserWalletButton && (
