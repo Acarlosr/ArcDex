@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { StatCard } from "@/components/stat-card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Loader2 } from "lucide-react"
+import { Loader2, RefreshCw, ExternalLink, CheckCircle2, XCircle } from "lucide-react"
 import { useAccount } from "wagmi"
 import {
   useTokenBalance,
@@ -19,16 +19,31 @@ import {
   useApprove,
   useTokenAllowance
 } from "@/hooks/use-contracts"
-import { ARCDEX, parseTokenAmount } from "@/lib/contracts"
+import { ARCDEX, ARCSCAN_API, ARCSCAN_URL, parseTokenAmount } from "@/lib/contracts"
 import { MobileWalletHint } from "@/components/mobile-wallet-hint"
 import { PriceChart } from "@/components/price-chart"
+
+interface StakeTx {
+  hash: string
+  timeStamp: string
+  isError: string
+  txreceipt_status: string
+  functionName: string
+  value: string
+  to: string
+}
 
 export default function StakePage() {
   const [selectedToken, setSelectedToken] = useState<"USDC" | "EURC">("USDC")
   const [stakeAmount, setStakeAmount] = useState("")
   const [unstakeAmount, setUnstakeAmount] = useState("")
 
-  const { isConnected } = useAccount()
+  const { address, isConnected } = useAccount()
+
+  // Transaction history state
+  const [stakeTxs, setStakeTxs] = useState<StakeTx[]>([])
+  const [txLoading, setTxLoading] = useState(false)
+  const [txError, setTxError] = useState<string | null>(null)
 
   // Token balances
   const { formatted: usdcBalance, isLoading: usdcLoading, refetch: refetchUSDC } = useTokenBalance('USDC')
@@ -75,6 +90,48 @@ export default function StakePage() {
   // Check if approval needed
   const needsApproval = stakeAmount && allowance !== undefined &&
     parseTokenAmount(stakeAmount) > allowance
+
+  // Fetch staking transaction history from ArcScan
+  const fetchStakeTxs = useCallback(async () => {
+    if (!address) return
+    setTxLoading(true)
+    setTxError(null)
+    try {
+      const response = await fetch(
+        `${ARCSCAN_API}?module=account&action=txlist&address=${address}&sort=desc&page=1&offset=50`,
+        { signal: AbortSignal.timeout(10000) }
+      )
+      if (!response.ok) throw new Error("API error")
+      const data = await response.json()
+      if (data.status === "1" && Array.isArray(data.result)) {
+        const filtered = data.result
+          .filter((tx: StakeTx & { to?: string }) =>
+            tx.to?.toLowerCase() === ARCDEX.Staking.toLowerCase()
+          )
+          .slice(0, 8)
+        setStakeTxs(filtered)
+      } else {
+        setStakeTxs([])
+      }
+    } catch (err) {
+      console.error("Failed to fetch stake txs:", err)
+      setTxError("Failed to load history")
+    } finally {
+      setTxLoading(false)
+    }
+  }, [address])
+
+  // Fetch on mount and after successful actions
+  useEffect(() => {
+    fetchStakeTxs()
+  }, [fetchStakeTxs])
+
+  useEffect(() => {
+    if (stakeSuccess || unstakeSuccess || claimSuccess || approveSuccess) {
+      const t = setTimeout(() => fetchStakeTxs(), 4000)
+      return () => clearTimeout(t)
+    }
+  }, [stakeSuccess, unstakeSuccess, claimSuccess, approveSuccess, fetchStakeTxs])
 
   // Refetch allowance when token changes
   useEffect(() => {
@@ -368,6 +425,99 @@ export default function StakePage() {
               )}
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Staking Transaction History */}
+      <div className="mt-8">
+        <div className="bg-card rounded-2xl p-6 border border-border">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-foreground">Staking Transaction History</h3>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={fetchStakeTxs}
+              disabled={txLoading}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              {txLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            </Button>
+          </div>
+
+          {!isConnected ? (
+            <p className="text-sm text-muted-foreground text-center py-6">Connect wallet to see transaction history.</p>
+          ) : txLoading && stakeTxs.length === 0 ? (
+            <div className="space-y-2">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="animate-pulse flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 bg-muted rounded-full" />
+                    <div className="w-20 h-3 bg-muted rounded" />
+                  </div>
+                  <div className="w-14 h-3 bg-muted rounded" />
+                </div>
+              ))}
+            </div>
+          ) : txError ? (
+            <div className="text-center py-6">
+              <p className="text-red-400 text-sm mb-2">{txError}</p>
+              <Button variant="outline" size="sm" onClick={fetchStakeTxs}>
+                <RefreshCw className="w-3 h-3 mr-1" /> Retry
+              </Button>
+            </div>
+          ) : stakeTxs.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-6">No staking transactions found yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {stakeTxs.map((tx) => {
+                const isSuccess = tx.txreceipt_status === "1" && tx.isError === "0"
+                const date = new Date(parseInt(tx.timeStamp) * 1000)
+                const method = tx.functionName?.split("(")[0] || "unknown"
+                const methodLabel =
+                  method === "stake" ? "Stake" :
+                  method === "unstake" ? "Unstake" :
+                  method === "claimRewards" ? "Claim" :
+                  method === "claimAllRewards" ? "Claim All" :
+                  method === "approve" ? "Approve" :
+                  method
+
+                return (
+                  <a
+                    key={tx.hash}
+                    href={`${ARCSCAN_URL}/tx/${tx.hash}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/60 transition-colors group"
+                  >
+                    <div className="flex items-center gap-3">
+                      {isSuccess ? (
+                        <CheckCircle2 className="h-5 w-5 text-green-400 shrink-0" />
+                      ) : (
+                        <XCircle className="h-5 w-5 text-red-400 shrink-0" />
+                      )}
+                      <div>
+                        <p className="text-sm font-medium text-foreground flex items-center gap-1.5">
+                          {methodLabel}
+                          <span className={`text-xs px-1.5 py-0.5 rounded ${isSuccess ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}>
+                            {isSuccess ? "Success" : "Failed"}
+                          </span>
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {date.toLocaleDateString()} {date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground font-mono">
+                        {tx.hash.slice(0, 6)}...{tx.hash.slice(-4)}
+                      </span>
+                      <ExternalLink className="h-3.5 w-3.5 text-muted-foreground group-hover:text-accent transition-colors" />
+                    </div>
+                  </a>
+                )
+              })}
+            </div>
+          )}
         </div>
       </div>
 

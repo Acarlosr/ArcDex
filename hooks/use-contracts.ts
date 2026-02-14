@@ -53,14 +53,15 @@ export function useTokenAllowance(token: 'USDC' | 'EURC', spender: string) {
 }
 
 export function useApprove() {
-    const { writeContract, data: hash, isPending, error } = useWriteContract()
+    const { writeContract, writeContractAsync, data: hash, isPending, error, reset } = useWriteContract()
     const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
 
     const approve = async (token: 'USDC' | 'EURC', spender: string, amount: string) => {
         const tokenAddress = TOKENS[token]
         const parsedAmount = parseTokenAmount(amount)
 
-        writeContract({
+        // Use writeContractAsync so caller can await + catch errors
+        return writeContractAsync({
             address: tokenAddress as `0x${string}`,
             abi: ERC20_ABI,
             functionName: 'approve',
@@ -75,6 +76,7 @@ export function useApprove() {
         isConfirming,
         isSuccess,
         error,
+        reset,
     }
 }
 

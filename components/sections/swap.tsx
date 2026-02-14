@@ -81,6 +81,14 @@ export function SwapSection() {
     }
   }
 
+  // When switching "From" token, refetch allowance so USDC→EURC shows correct Approve if needed (often only EURC was approved)
+  useEffect(() => {
+    if (isConnected) {
+      queryClient.invalidateQueries()
+      refetchAllowance()
+    }
+  }, [fromToken, isConnected, queryClient, refetchAllowance])
+
   // Refetch after successful approve - delay + cache invalidation for reliable update
   useEffect(() => {
     if (approveSuccess) {
@@ -151,6 +159,11 @@ export function SwapSection() {
               Max
             </Button>
           </div>
+          {fromToken === "USDC" && needsApproval && fromAmount && (
+            <p className="text-xs text-muted-foreground mt-1">
+              Approve USDC first to swap USDC → EURC.
+            </p>
+          )}
         </div>
 
         {/* Swap Button */}
