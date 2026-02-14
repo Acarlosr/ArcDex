@@ -29,7 +29,7 @@ const STEPS = [
         icon: Globe,
         details: [
             "Network: Arc Testnet",
-            "Chain ID: 5042002",
+            "Chain ID: 5042034",
             "RPC: https://rpc.testnet.arc.network",
             "Explorer: https://testnet.arcscan.app"
         ],
@@ -41,7 +41,7 @@ const STEPS = [
                         await (window as unknown as { ethereum: { request: (args: { method: string; params?: unknown[] }) => Promise<unknown> } }).ethereum.request({
                             method: "wallet_addEthereumChain",
                             params: [{
-                                chainId: "0x4CEF72",
+                                chainId: "0x4CEF66",
                                 chainName: "Arc Testnet",
                                 nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 18 },
                                 rpcUrls: ["https://rpc.testnet.arc.network"],

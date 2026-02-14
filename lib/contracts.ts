@@ -1,10 +1,10 @@
 // ============================================================================
-// ArcDex Contract Configuration - Arc Testnet (Chain ID: 5042002)
+// ArcDex Contract Configuration - Arc Testnet (Chain ID: 5042034)
 // ============================================================================
 
 // Arc Testnet Chain Configuration
 export const CHAIN_CONFIG = {
-  id: 5042002,
+  id: 5042034,
   name: "Arc Testnet",
   nativeCurrency: {
     name: "USDC",
