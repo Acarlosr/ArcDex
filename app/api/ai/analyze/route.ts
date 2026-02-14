@@ -4,7 +4,6 @@ import { SYSTEM_PROMPT, createMarketAnalysisPrompt } from '@/features/ai/lib/pro
 import { aiCache, generateCacheKey } from '@/features/ai/lib/cache'
 import type { MarketAnalysis } from '@/features/ai/lib/types'
 
-export const runtime = 'edge'
 
 const CACHE_TTL = 300
 

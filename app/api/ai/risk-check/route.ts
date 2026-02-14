@@ -4,7 +4,6 @@ import { SYSTEM_PROMPT, createRiskCheckPrompt } from '@/features/ai/lib/prompts'
 import { aiCache, generateCacheKey } from '@/features/ai/lib/cache'
 import type { RiskAnalysis } from '@/features/ai/lib/types'
 
-export const runtime = 'edge'
 
 const CACHE_TTL = 120
 
