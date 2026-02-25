@@ -1,12 +1,16 @@
 'use client'
 
 import { useState } from 'react'
+import { usePathname } from 'next/navigation'
+import { useAccount } from 'wagmi'
 
 export function ArcBot() {
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<Array<{ role: string; text: string }>>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const pathname = usePathname()
+  const { address } = useAccount()
 
   const sendMessage = async () => {
     if (!input.trim() || loading) return
@@ -26,6 +30,22 @@ export function ArcBot() {
             ...messages.map((m) => ({ role: m.role, content: m.text })),
             { role: 'user', content: currentInput },
           ],
+          context: {
+            route: pathname,
+            wallet: address ?? '',
+            features: [
+              'swap-usdc-eurc',
+              'pools',
+              'stake',
+              'payments-single',
+              'payments-exact',
+              'payments-batch',
+              'bridge-cctp-v2',
+              'compliance-aml-cft',
+              'portfolio',
+              'history',
+            ],
+          },
         }),
       })
 
@@ -48,7 +68,7 @@ export function ArcBot() {
         ...prev,
         {
           role: 'assistant',
-          text: '❌ Sorry, something went wrong. Try again.',
+          text: '❌ Desculpe, algo deu errado. Tente novamente.',
         },
       ])
     } finally {
@@ -176,7 +196,7 @@ export function ArcBot() {
                     fontSize: '0.75rem',
                   }}
                 >
-                  DeFi Assistant
+                  Assistente DeFi
                 </p>
               </div>
             </div>
@@ -223,9 +243,9 @@ export function ArcBot() {
                     marginBottom: '0.5rem',
                   }}
                 >
-                  Hi! I'm ArcBot
+                  Olá! Eu sou o ArcBot
                 </h4>
-                <p style={{ fontSize: '0.875rem' }}>How can I help you today?</p>
+                <p style={{ fontSize: '0.875rem' }}>Como posso te ajudar hoje?</p>
 
                 <div
                   style={{
@@ -236,7 +256,7 @@ export function ArcBot() {
                   }}
                 >
                   <button
-                    onClick={() => setInput('What are the best pools?')}
+                    onClick={() => setInput('Quais são os melhores pools agora?')}
                     style={{
                       padding: '0.75rem',
                       backgroundColor: '#1f2937',
@@ -248,10 +268,10 @@ export function ArcBot() {
                       fontSize: '0.875rem',
                     }}
                   >
-                    📊 Analyze best pools
+                    📊 Analisar melhores pools
                   </button>
                   <button
-                    onClick={() => setInput('How to identify risks?')}
+                    onClick={() => setInput('Como identificar riscos em uma operação?')}
                     style={{
                       padding: '0.75rem',
                       backgroundColor: '#1f2937',
@@ -263,10 +283,10 @@ export function ArcBot() {
                       fontSize: '0.875rem',
                     }}
                   >
-                    ⚠️ Check risks
+                    ⚠️ Verificar riscos
                   </button>
                   <button
-                    onClick={() => setInput('What is impermanent loss?')}
+                    onClick={() => setInput('O que é impermanent loss?')}
                     style={{
                       padding: '0.75rem',
                       backgroundColor: '#1f2937',
@@ -278,7 +298,37 @@ export function ArcBot() {
                       fontSize: '0.875rem',
                     }}
                   >
-                    📚 Explain impermanent loss
+                    📚 Explicar impermanent loss
+                  </button>
+                  <button
+                    onClick={() => setInput('Me explique a aba Bridge e como usar com segurança')}
+                    style={{
+                      padding: '0.75rem',
+                      backgroundColor: '#1f2937',
+                      border: '1px solid #374151',
+                      borderRadius: '0.5rem',
+                      color: 'white',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      fontSize: '0.875rem',
+                    }}
+                  >
+                    🌉 Explicar Bridge (CCTP v2)
+                  </button>
+                  <button
+                    onClick={() => setInput('Como funciona o compliance AML/CFT no ArcDex?')}
+                    style={{
+                      padding: '0.75rem',
+                      backgroundColor: '#1f2937',
+                      border: '1px solid #374151',
+                      borderRadius: '0.5rem',
+                      color: 'white',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      fontSize: '0.875rem',
+                    }}
+                  >
+                    🛡️ Compliance AML/CFT
                   </button>
                 </div>
               </div>
@@ -366,7 +416,7 @@ export function ArcBot() {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !loading) sendMessage()
                 }}
-                placeholder="Type your question..."
+                placeholder="Digite sua pergunta..."
                 disabled={loading}
                 style={{
                   flex: 1,

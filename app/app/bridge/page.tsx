@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -26,10 +26,25 @@ const STEP_LABELS: Record<string, string> = {
   error: "Bridge failed",
 }
 
+type BridgeHistoryItem = {
+  id: string
+  direction: BridgeDirection
+  amount: string
+  speed: TransferSpeed
+  status: "success" | "failed"
+  burnTxHash: string | null
+  claimTxHash: string | null
+  error: string | null
+  timestamp: number
+}
+
+const BRIDGE_HISTORY_KEY = "arcdex_bridge_history_v1"
+
 export default function BridgePage() {
   const [direction, setDirection] = useState<BridgeDirection>("to-arc")
   const [amount, setAmount] = useState("")
   const [speed, setSpeed] = useState<TransferSpeed>("STANDARD")
+  const [bridgeHistory, setBridgeHistory] = useState<BridgeHistoryItem[]>([])
 
   const { isConnected } = useAccount()
   const { state, bridgeToArc, bridgeFromArc, reset, isLoading, isComplete, isError } = useBridge()
@@ -38,16 +53,81 @@ export default function BridgePage() {
   const sourceChain = direction === "to-arc" ? CHAINS.sepolia : CHAINS.arc
   const destChain = direction === "to-arc" ? CHAINS.arc : CHAINS.sepolia
 
-  const handleBridge = async () => {
-    if (!amount || parseFloat(amount) <= 0) return
+  useEffect(() => {
+    if (typeof window === "undefined") return
     try {
-      if (direction === "to-arc") {
-        await bridgeToArc(amount, speed)
-      } else {
-        await bridgeFromArc(amount, speed)
+      const raw = window.localStorage.getItem(BRIDGE_HISTORY_KEY)
+      if (!raw) return
+      const parsed = JSON.parse(raw) as BridgeHistoryItem[]
+      if (Array.isArray(parsed)) {
+        setBridgeHistory(parsed.slice(0, 8))
       }
     } catch {
-      // Error handled in hook state
+      // Ignore malformed local cache
+    }
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    window.localStorage.setItem(BRIDGE_HISTORY_KEY, JSON.stringify(bridgeHistory.slice(0, 8)))
+  }, [bridgeHistory])
+
+  const addBridgeHistory = (
+    status: "success" | "failed",
+    payload: {
+      amount: string
+      direction: BridgeDirection
+      speed: TransferSpeed
+      burnTxHash: string | null
+      claimTxHash: string | null
+      error: string | null
+    }
+  ) => {
+    const item: BridgeHistoryItem = {
+      id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      status,
+      timestamp: Date.now(),
+      ...payload,
+    }
+    setBridgeHistory((prev) => [item, ...prev].slice(0, 8))
+  }
+
+  const handleBridge = async () => {
+    if (!amount || parseFloat(amount) <= 0) return
+    const requestAmount = amount
+    const requestDirection = direction
+    const requestSpeed = speed
+    try {
+      if (direction === "to-arc") {
+        const result = await bridgeToArc(amount, speed)
+        addBridgeHistory("success", {
+          amount: requestAmount,
+          direction: requestDirection,
+          speed: requestSpeed,
+          burnTxHash: result.burnHash ?? null,
+          claimTxHash: "claimHash" in result ? (result.claimHash as string) : null,
+          error: null,
+        })
+      } else {
+        const result = await bridgeFromArc(amount, speed)
+        addBridgeHistory("success", {
+          amount: requestAmount,
+          direction: requestDirection,
+          speed: requestSpeed,
+          burnTxHash: result.burnHash ?? null,
+          claimTxHash: null,
+          error: null,
+        })
+      }
+    } catch {
+      addBridgeHistory("failed", {
+        amount: requestAmount,
+        direction: requestDirection,
+        speed: requestSpeed,
+        burnTxHash: state.burnTxHash,
+        claimTxHash: state.claimTxHash,
+        error: state.error ?? "Bridge failed",
+      })
     }
   }
 
@@ -283,6 +363,82 @@ export default function BridgePage() {
           >
             Powered by Circle CCTP v2 <ExternalLink className="w-3 h-3" />
           </a>
+        </div>
+
+        {/* Bridge History */}
+        <div className="mt-6 bg-card rounded-2xl p-5 border border-border">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-foreground">Bridge History</h3>
+            {bridgeHistory.length > 0 && (
+              <button
+                onClick={() => setBridgeHistory([])}
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+
+          {bridgeHistory.length === 0 ? (
+            <p className="text-xs text-muted-foreground">No bridge transactions yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {bridgeHistory.map((item) => {
+                const from = item.direction === "to-arc" ? "Sepolia" : "Arc"
+                const to = item.direction === "to-arc" ? "Arc" : "Sepolia"
+                const isSuccess = item.status === "success"
+                return (
+                  <div
+                    key={item.id}
+                    className="rounded-xl border border-border bg-muted/30 p-3"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-xs text-foreground font-medium">
+                        {item.amount} USDC · {from} {"->"} {to}
+                      </p>
+                      <span
+                        className={`text-[10px] px-2 py-0.5 rounded-full ${
+                          isSuccess
+                            ? "bg-green-500/20 text-green-400"
+                            : "bg-red-500/20 text-red-400"
+                        }`}
+                      >
+                        {isSuccess ? "Success" : "Failed"}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      {new Date(item.timestamp).toLocaleString()} · {item.speed}
+                    </p>
+                    {item.error && !isSuccess && (
+                      <p className="text-[11px] text-red-400/80 mt-1">{item.error}</p>
+                    )}
+                    <div className="mt-1.5 flex flex-wrap gap-3">
+                      {item.burnTxHash && (
+                        <a
+                          href={`${item.direction === "to-arc" ? CHAINS.sepolia.explorer : CHAINS.arc.explorer}/tx/${item.burnTxHash}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-[11px] text-cyan-400 hover:underline inline-flex items-center gap-1"
+                        >
+                          Burn TX <ExternalLink className="w-3 h-3" />
+                        </a>
+                      )}
+                      {item.claimTxHash && (
+                        <a
+                          href={`${item.direction === "to-arc" ? CHAINS.arc.explorer : CHAINS.sepolia.explorer}/tx/${item.claimTxHash}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-[11px] text-cyan-400 hover:underline inline-flex items-center gap-1"
+                        >
+                          Claim TX <ExternalLink className="w-3 h-3" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
       </div>
     </div>
