@@ -29,11 +29,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Web3Provider>{children}</Web3Provider>
+          <Web3Provider>
+            {children}
+            {/* ArcBot AI Assistant */}
+            <ArcBot />
+          </Web3Provider>
         </ThemeProvider>
-        
-        {/* ArcBot AI Assistant */}
-        <ArcBot />
       </body>
     </html>
   )
