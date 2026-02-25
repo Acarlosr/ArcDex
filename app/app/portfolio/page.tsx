@@ -3,8 +3,9 @@
 import { useState, useEffect, useCallback } from "react"
 import { useAccount } from "wagmi"
 import { useTokenBalance } from "@/hooks/use-contracts"
-import { Loader2, RefreshCw, Wallet, ExternalLink, ArrowUpRight, ArrowDownLeft, FileCode } from "lucide-react"
+import { Loader2, RefreshCw, Wallet, ExternalLink, ArrowUpRight, ArrowDownLeft, FileCode, ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useCompliance } from "@/hooks/useCompliance"
 
 // ArcScan API configuration
 const ARCSCAN_API = "https://testnet.arcscan.app/api"
@@ -538,6 +539,10 @@ export default function PortfolioPage() {
     // Web3 hooks
     const { isConnected, address } = useAccount()
 
+    // Compliance
+    const { checkCompliance, isVerified: complianceVerified } = useCompliance()
+    useEffect(() => { if (isConnected && address) checkCompliance() }, [isConnected, address, checkCompliance])
+
     // Prices hook
     const { prices, isLoading: pricesLoading, isEstimated, refetch: refetchPrices } = usePrices()
 
@@ -667,6 +672,15 @@ export default function PortfolioPage() {
                     </p>
                 </div>
             </div>
+
+            {/* Compliance Badge */}
+            {isConnected && complianceVerified && (
+                <div className="mb-6 inline-flex items-center gap-2 bg-green-500/10 border border-green-500/20 rounded-full px-4 py-2">
+                    <ShieldCheck className="w-4 h-4 text-green-400" />
+                    <span className="text-sm text-green-400 font-medium">Compliance Verified</span>
+                    <span className="text-xs text-green-400/60">AML/CFT Screening Passed</span>
+                </div>
+            )}
 
             {/* Main Content */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

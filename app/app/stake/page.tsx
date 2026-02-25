@@ -5,8 +5,8 @@ import { StatCard } from "@/components/stat-card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Loader2, RefreshCw, ExternalLink, CheckCircle2, XCircle } from "lucide-react"
-import { useAccount } from "wagmi"
+import { Loader2, RefreshCw, ExternalLink, CheckCircle2, XCircle, AlertTriangle, ShieldCheck, ShieldAlert } from "lucide-react"
+import { useAccount, useReadContract } from "wagmi"
 import {
   useTokenBalance,
   useStakedBalance,
@@ -19,9 +19,11 @@ import {
   useApprove,
   useTokenAllowance
 } from "@/hooks/use-contracts"
-import { ARCDEX, ARCSCAN_API, ARCSCAN_URL, parseTokenAmount } from "@/lib/contracts"
+import { ARCDEX, TOKENS, ARCSCAN_API, ARCSCAN_URL, parseTokenAmount, formatTokenAmount } from "@/lib/contracts"
+import { ERC20_ABI, ARCDEX_STAKING_ABI } from "@/lib/abi"
 import { MobileWalletHint } from "@/components/mobile-wallet-hint"
 import { PriceChart } from "@/components/price-chart"
+import { useCompliance } from "@/hooks/useCompliance"
 
 interface StakeTx {
   hash: string
@@ -81,11 +83,105 @@ export default function StakePage() {
   // Allowance
   const { allowance, refetch: refetchAllowance } = useTokenAllowance(selectedToken, ARCDEX.Staking)
 
+  // Compliance screening
+  const { result: complianceResult, checkCompliance, preTransactionCheck, isVerified: complianceVerified, isBlocked: complianceBlocked } = useCompliance()
+  useEffect(() => {
+    if (isConnected && address) checkCompliance()
+  }, [isConnected, address, checkCompliance])
+
   // Operations
   const { approve, isPending: approving, isSuccess: approveSuccess, hash: approveHash } = useApprove()
   const { stake, isPending: staking, isSuccess: stakeSuccess, error: stakeError } = useStake()
   const { unstake, isPending: unstaking, isSuccess: unstakeSuccess, error: unstakeError } = useUnstake()
   const { claimAllRewards, isPending: claiming, isSuccess: claimSuccess } = useClaimRewards()
+
+  // Treasury diagnostic: read treasury address from staking contract
+  const { data: treasuryAddress } = useReadContract({
+    address: ARCDEX.Staking as `0x${string}`,
+    abi: ARCDEX_STAKING_ABI,
+    functionName: 'treasury',
+  })
+
+  // Treasury diagnostic: check if treasury has enough EURC balance
+  const { data: treasuryEurcBalance } = useReadContract({
+    address: TOKENS.EURC as `0x${string}`,
+    abi: ERC20_ABI,
+    functionName: 'balanceOf',
+    args: treasuryAddress ? [treasuryAddress as `0x${string}`] : undefined,
+    query: { enabled: !!treasuryAddress },
+  })
+
+  // Treasury diagnostic: check if treasury approved staking contract for EURC
+  const { data: treasuryEurcAllowance } = useReadContract({
+    address: TOKENS.EURC as `0x${string}`,
+    abi: ERC20_ABI,
+    functionName: 'allowance',
+    args: treasuryAddress ? [treasuryAddress as `0x${string}`, ARCDEX.Staking as `0x${string}`] : undefined,
+    query: { enabled: !!treasuryAddress },
+  })
+
+  // Treasury diagnostic: same for USDC
+  const { data: treasuryUsdcBalance } = useReadContract({
+    address: TOKENS.USDC as `0x${string}`,
+    abi: ERC20_ABI,
+    functionName: 'balanceOf',
+    args: treasuryAddress ? [treasuryAddress as `0x${string}`] : undefined,
+    query: { enabled: !!treasuryAddress },
+  })
+
+  const { data: treasuryUsdcAllowance } = useReadContract({
+    address: TOKENS.USDC as `0x${string}`,
+    abi: ERC20_ABI,
+    functionName: 'allowance',
+    args: treasuryAddress ? [treasuryAddress as `0x${string}`, ARCDEX.Staking as `0x${string}`] : undefined,
+    query: { enabled: !!treasuryAddress },
+  })
+
+  // Detect treasury issues for each token
+  const eurcTreasuryIssue = (() => {
+    if (!treasuryAddress) return null
+    const balance = treasuryEurcBalance as bigint | undefined
+    const allowanceVal = treasuryEurcAllowance as bigint | undefined
+    if (balance !== undefined && balance === BigInt(0)) return "Treasury has no EURC balance to pay rewards."
+    if (allowanceVal !== undefined && allowanceVal === BigInt(0)) return "Treasury has not approved EURC for the staking contract."
+    return null
+  })()
+
+  const usdcTreasuryIssue = (() => {
+    if (!treasuryAddress) return null
+    const balance = treasuryUsdcBalance as bigint | undefined
+    const allowanceVal = treasuryUsdcAllowance as bigint | undefined
+    if (balance !== undefined && balance === BigInt(0)) return "Treasury has no USDC balance to pay rewards."
+    if (allowanceVal !== undefined && allowanceVal === BigInt(0)) return "Treasury has not approved USDC for the staking contract."
+    return null
+  })()
+
+  const currentTreasuryIssue = selectedToken === "EURC" ? eurcTreasuryIssue : usdcTreasuryIssue
+
+  // Helper to parse error messages
+  const parseStakeError = (error: Error | null): string | null => {
+    if (!error) return null
+    const msg = (error as any)?.shortMessage || error.message || ""
+    if (msg.includes("transfer amount exceeds allowance") || msg.includes("insufficient allowance")) {
+      return "Transaction failed: The treasury does not have sufficient allowance to transfer reward tokens. This is a protocol-level issue — the treasury owner needs to approve EURC for the staking contract."
+    }
+    if (msg.includes("transfer amount exceeds balance")) {
+      return "Transaction failed: The treasury does not have enough token balance to pay rewards."
+    }
+    if (msg.includes("InvalidToken")) {
+      return "Invalid token selected. Only USDC and EURC are supported."
+    }
+    if (msg.includes("ZeroAmount")) {
+      return "Amount must be greater than zero."
+    }
+    if (msg.includes("InsufficientBalance")) {
+      return "Insufficient staked balance for this operation."
+    }
+    if (msg.includes("User rejected") || msg.includes("user rejected")) {
+      return "Transaction was rejected in your wallet."
+    }
+    return msg.length > 200 ? msg.slice(0, 200) + "..." : msg
+  }
 
   // Check if approval needed
   const needsApproval = stakeAmount && allowance !== undefined &&
@@ -286,10 +382,27 @@ export default function StakePage() {
             </p>
           </div>
 
+          {/* Compliance Status */}
+          {isConnected && complianceVerified && (
+            <div className="flex items-center gap-2 text-xs text-green-400 bg-green-500/10 rounded-lg p-2 mb-2">
+              <ShieldCheck className="w-3.5 h-3.5" /> Compliance Verified
+            </div>
+          )}
+          {isConnected && complianceBlocked && (
+            <div className="rounded-lg p-3 bg-red-500/10 border border-red-500/30 mb-2">
+              <p className="text-sm text-red-400 font-medium flex items-center gap-2"><ShieldAlert className="w-4 h-4" /> Wallet Blocked</p>
+              <p className="text-xs text-red-400/70 mt-1">Compliance screening flagged this wallet. Staking is disabled.</p>
+            </div>
+          )}
+
           {/* Stake Button */}
           {!isConnected ? (
             <Button className="w-full btn-gradient h-14 text-lg font-semibold rounded-xl" disabled>
               Connect Wallet
+            </Button>
+          ) : complianceBlocked ? (
+            <Button className="w-full h-14 text-lg font-semibold rounded-xl" disabled variant="outline">
+              Wallet Blocked by Compliance
             </Button>
           ) : needsApproval ? (
             <Button
@@ -317,8 +430,26 @@ export default function StakePage() {
             </Button>
           )}
 
+          {/* Treasury warning */}
+          {currentTreasuryIssue && (
+            <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-xl flex items-start gap-2">
+              <AlertTriangle className="h-4 w-4 text-yellow-400 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-xs text-yellow-400 font-medium">Treasury Issue Detected</p>
+                <p className="text-xs text-yellow-400/80 mt-1">{currentTreasuryIssue}</p>
+                <p className="text-xs text-yellow-400/60 mt-1">
+                  If you have pending rewards, stake/unstake/claim operations may fail because the contract tries to pay rewards first.
+                  The protocol treasury owner needs to fund and approve {selectedToken} for the staking contract.
+                </p>
+              </div>
+            </div>
+          )}
+
           {stakeError && (
-            <p className="text-red-400 text-sm text-center mt-4">Error: {stakeError.message}</p>
+            <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl">
+              <p className="text-xs text-red-400 font-medium mb-1">Stake Error</p>
+              <p className="text-xs text-red-400/80">{parseStakeError(stakeError)}</p>
+            </div>
           )}
         </div>
 
@@ -361,12 +492,58 @@ export default function StakePage() {
             </div>
 
             {/* Info about rewards */}
-            <div className="mt-4 p-3 bg-muted/50 rounded-lg text-xs text-muted-foreground">
+            <div className="mt-4 p-3 bg-muted/50 rounded-lg text-xs text-muted-foreground space-y-2">
               <p className="flex items-center gap-1">
                 <span>ℹ️</span>
                 Rewards accumulate based on APR. Claim requires treasury to be configured.
               </p>
+              {/* Treasury Status */}
+              {treasuryAddress && (
+                <div className="border-t border-border pt-2 space-y-1">
+                  <p className="font-medium text-muted-foreground">Treasury Status:</p>
+                  <div className="flex justify-between">
+                    <span>USDC Balance:</span>
+                    <span className={(treasuryUsdcBalance as bigint | undefined) === BigInt(0) ? "text-red-400" : "text-green-400"}>
+                      {treasuryUsdcBalance !== undefined ? formatTokenAmount(treasuryUsdcBalance as bigint) : "..."}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>EURC Balance:</span>
+                    <span className={(treasuryEurcBalance as bigint | undefined) === BigInt(0) ? "text-red-400" : "text-green-400"}>
+                      {treasuryEurcBalance !== undefined ? formatTokenAmount(treasuryEurcBalance as bigint) : "..."}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>USDC Allowance:</span>
+                    <span className={(treasuryUsdcAllowance as bigint | undefined) === BigInt(0) ? "text-red-400" : "text-green-400"}>
+                      {treasuryUsdcAllowance !== undefined ? (Number(treasuryUsdcAllowance as bigint) > 1e15 ? "Unlimited" : formatTokenAmount(treasuryUsdcAllowance as bigint)) : "..."}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>EURC Allowance:</span>
+                    <span className={(treasuryEurcAllowance as bigint | undefined) === BigInt(0) ? "text-red-400" : "text-green-400"}>
+                      {treasuryEurcAllowance !== undefined ? (Number(treasuryEurcAllowance as bigint) > 1e15 ? "Unlimited" : formatTokenAmount(treasuryEurcAllowance as bigint)) : "..."}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
+
+            {/* Treasury Issue Alert */}
+            {(eurcTreasuryIssue || usdcTreasuryIssue) && (
+              <div className="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                <p className="text-xs text-yellow-400 font-medium flex items-center gap-1">
+                  <AlertTriangle className="h-3.5 w-3.5" />
+                  Treasury Configuration Issue
+                </p>
+                {eurcTreasuryIssue && (
+                  <p className="text-xs text-yellow-400/80 mt-1">EURC: {eurcTreasuryIssue}</p>
+                )}
+                {usdcTreasuryIssue && (
+                  <p className="text-xs text-yellow-400/80 mt-1">USDC: {usdcTreasuryIssue}</p>
+                )}
+              </div>
+            )}
 
             <Button
               onClick={handleClaimAll}
@@ -420,8 +597,20 @@ export default function StakePage() {
                   "Unstake Tokens"
                 )}
               </Button>
+              {/* Treasury warning for unstake */}
+              {currentTreasuryIssue && parseFloat(selectedStaked) > 0 && (
+                <div className="p-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-start gap-2">
+                  <AlertTriangle className="h-3.5 w-3.5 text-yellow-400 shrink-0 mt-0.5" />
+                  <p className="text-xs text-yellow-400/80">
+                    Unstake may fail because the contract claims pending rewards first, and the treasury has issues with {selectedToken}.
+                  </p>
+                </div>
+              )}
               {unstakeError && (
-                <p className="text-red-400 text-xs text-center">Error: {unstakeError.message}</p>
+                <div className="p-2 bg-red-500/10 border border-red-500/30 rounded-lg">
+                  <p className="text-xs text-red-400 font-medium mb-0.5">Unstake Error</p>
+                  <p className="text-xs text-red-400/80">{parseStakeError(unstakeError)}</p>
+                </div>
               )}
             </div>
           </div>

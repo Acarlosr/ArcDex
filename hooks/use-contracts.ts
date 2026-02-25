@@ -442,6 +442,64 @@ export function useSendPayment() {
     }
 }
 
+export function useBatchPayment() {
+    const { writeContract, data: hash, isPending, error } = useWriteContract()
+    const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
+
+    const batchPayment = async (
+        token: 'USDC' | 'EURC',
+        recipients: string[],
+        amounts: string[]
+    ) => {
+        const tokenAddress = TOKENS[token]
+        const parsedAmounts = amounts.map(a => parseTokenAmount(a))
+
+        writeContract({
+            address: ARCDEX.Payments as `0x${string}`,
+            abi: ARCDEX_PAYMENTS_ABI,
+            functionName: 'batchPayment',
+            args: [
+                tokenAddress as `0x${string}`,
+                recipients.map(r => r as `0x${string}`),
+                parsedAmounts,
+            ],
+        })
+    }
+
+    return {
+        batchPayment,
+        hash,
+        isPending,
+        isConfirming,
+        isSuccess,
+        error,
+    }
+}
+
+export function usePaymentStats() {
+    const { address } = useAccount()
+
+    const { data: totalPayments, isLoading: totalLoading } = useReadContract({
+        address: ARCDEX.Payments as `0x${string}`,
+        abi: ARCDEX_PAYMENTS_ABI,
+        functionName: 'totalPayments',
+    })
+
+    const { data: userCount, isLoading: userLoading } = useReadContract({
+        address: ARCDEX.Payments as `0x${string}`,
+        abi: ARCDEX_PAYMENTS_ABI,
+        functionName: 'userPaymentCount',
+        args: address ? [address] : undefined,
+        query: { enabled: !!address },
+    })
+
+    return {
+        totalPayments: totalPayments as bigint | undefined,
+        userPaymentCount: userCount as bigint | undefined,
+        isLoading: totalLoading || userLoading,
+    }
+}
+
 // ============================================================================
 // LP TOKEN HOOKS
 // ============================================================================

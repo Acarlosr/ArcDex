@@ -7,9 +7,10 @@ import { Badge } from "@/components/ui/badge"
 import { useTokenBalance, useGetAmountOut, useSwap, useApprove, useTokenAllowance } from "@/hooks/use-contracts"
 import { useAccount } from "wagmi"
 import { ARCDEX, parseTokenAmount, ARCSCAN_URL, ARCSCAN_API } from "@/lib/contracts"
-import { Loader2, ExternalLink, CheckCircle2, XCircle, RefreshCw } from "lucide-react"
+import { Loader2, ExternalLink, CheckCircle2, XCircle, RefreshCw, ShieldCheck, ShieldAlert } from "lucide-react"
 import { MobileWalletHint } from "@/components/mobile-wallet-hint"
 import { PriceChart } from "@/components/price-chart"
+import { useCompliance } from "@/hooks/useCompliance"
 
 type SwapToken = "USDC" | "EURC" | "USYC"
 
@@ -279,8 +280,23 @@ export default function SwapPage() {
     await approve(swapFromToken, ARCDEX.Swap, fromAmount)
   }
 
+  // Compliance screening
+  const { result: complianceResult, loading: complianceLoading, checkCompliance, preTransactionCheck, isVerified: complianceVerified, isBlocked: complianceBlocked } = useCompliance()
+
+  // Auto-check compliance when wallet connects
+  useEffect(() => {
+    if (isConnected && address) {
+      checkCompliance()
+    }
+  }, [isConnected, address, checkCompliance])
+
   const handleSwap = async () => {
     if (!fromAmount || !amountOut || !swapEnabled) return
+
+    // Pre-transaction compliance check
+    const allowed = await preTransactionCheck()
+    if (!allowed) return
+
     // Apply 0.5% slippage
     const minOut = (parseFloat(amountOut.replace(',', '')) * 0.995).toFixed(2)
     await swap(swapFromToken, fromAmount, minOut)
@@ -395,10 +411,27 @@ export default function SwapPage() {
               </p>
             </div>
 
+            {/* Compliance Status */}
+            {isConnected && complianceVerified && (
+              <div className="flex items-center gap-2 text-xs text-green-400 bg-green-500/10 rounded-lg p-2">
+                <ShieldCheck className="w-3.5 h-3.5" /> Compliance Verified
+              </div>
+            )}
+            {isConnected && complianceBlocked && (
+              <div className="rounded-lg p-3 bg-red-500/10 border border-red-500/30">
+                <p className="text-sm text-red-400 font-medium flex items-center gap-2"><ShieldAlert className="w-4 h-4" /> Wallet Blocked</p>
+                <p className="text-xs text-red-400/70 mt-1">This wallet has been flagged by compliance screening (risk score: {complianceResult?.riskScore}/10). Transactions are disabled.</p>
+              </div>
+            )}
+
             {/* Action Buttons */}
             {!isConnected ? (
               <Button className="w-full btn-gradient h-14 text-lg font-semibold rounded-xl" disabled>
                 Connect Wallet to Swap
+              </Button>
+            ) : complianceBlocked ? (
+              <Button className="w-full h-14 text-lg font-semibold rounded-xl" disabled variant="outline">
+                Wallet Blocked by Compliance
               </Button>
             ) : needsApproval ? (
               <Button
