@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { useAccount, useWriteContract } from 'wagmi'
+import { useAccount, usePublicClient, useWriteContract } from 'wagmi'
 import { parseUnits, pad } from 'viem'
 
 // CCTP v2 Domain IDs
@@ -54,6 +54,13 @@ const TOKEN_MESSENGER_V2_ABI = [
       { name: 'minFinalityThreshold', type: 'uint32' },
     ],
     outputs: [],
+  },
+  {
+    name: 'getMinFeeAmount',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [{ name: 'destinationDomain', type: 'uint32' }],
+    outputs: [{ name: 'minFee', type: 'uint256' }],
   },
 ] as const
 
@@ -110,6 +117,7 @@ export interface BridgeState {
 
 export function useBridge() {
   const { address } = useAccount()
+  const publicClient = usePublicClient()
   const { writeContractAsync } = useWriteContract()
 
   const [state, setState] = useState<BridgeState>({
@@ -174,12 +182,29 @@ export function useBridge() {
     speed: TransferSpeed = 'STANDARD'
   ) => {
     if (!address) throw new Error('Wallet not connected')
+    if (!publicClient) throw new Error('Public client not ready')
 
     const parsedAmount = parseUnits(amount, 6)
     const mintRecipient = addressToBytes32(address)
     const zeroCaller = '0x0000000000000000000000000000000000000000000000000000000000000000' as `0x${string}`
 
     try {
+      // Pre-flight: verify destination domain is supported on source TokenMessengerV2.
+      // If this call reverts, the route is not enabled and depositForBurn would fail anyway.
+      let standardMinFee = BigInt(0)
+      try {
+        standardMinFee = await publicClient.readContract({
+          address: SEPOLIA_CCTP.TokenMessengerV2,
+          abi: TOKEN_MESSENGER_V2_ABI,
+          functionName: 'getMinFeeAmount',
+          args: [CCTP_DOMAINS.ARC_TESTNET],
+        })
+      } catch {
+        throw new Error(
+          'Bridge route unavailable: Sepolia -> Arc (domain 26) is not enabled on the current CCTP TokenMessenger.'
+        )
+      }
+
       // Step 1: Approve USDC on Sepolia for TokenMessengerV2
       setState(prev => ({ ...prev, step: 'approving', progress: 10, error: null }))
 
@@ -195,7 +220,7 @@ export function useBridge() {
       // Step 2: Call depositForBurn on Sepolia
       setState(prev => ({ ...prev, step: 'burning', progress: 30 }))
 
-      const maxFee = speed === 'FAST' ? parseUnits('5', 6) : BigInt(0)
+      const maxFee = speed === 'FAST' ? parseUnits('5', 6) : standardMinFee
       const threshold = speed === 'FAST' ? FINALITY.FAST : FINALITY.STANDARD
 
       const burnHash = await writeContractAsync({
@@ -262,12 +287,27 @@ export function useBridge() {
     speed: TransferSpeed = 'STANDARD'
   ) => {
     if (!address) throw new Error('Wallet not connected')
+    if (!publicClient) throw new Error('Public client not ready')
 
     const parsedAmount = parseUnits(amount, 6)
     const mintRecipient = addressToBytes32(address)
     const zeroCaller = '0x0000000000000000000000000000000000000000000000000000000000000000' as `0x${string}`
 
     try {
+      let standardMinFee = BigInt(0)
+      try {
+        standardMinFee = await publicClient.readContract({
+          address: ARC_CCTP.TokenMessengerV2,
+          abi: TOKEN_MESSENGER_V2_ABI,
+          functionName: 'getMinFeeAmount',
+          args: [CCTP_DOMAINS.SEPOLIA],
+        })
+      } catch {
+        throw new Error(
+          'Bridge route unavailable: Arc -> Sepolia is not enabled on the current CCTP TokenMessenger.'
+        )
+      }
+
       setState(prev => ({ ...prev, step: 'approving', progress: 10, error: null }))
 
       await writeContractAsync({
@@ -279,7 +319,7 @@ export function useBridge() {
 
       setState(prev => ({ ...prev, step: 'burning', progress: 30 }))
 
-      const maxFee = speed === 'FAST' ? parseUnits('5', 6) : BigInt(0)
+      const maxFee = speed === 'FAST' ? parseUnits('5', 6) : standardMinFee
       const threshold = speed === 'FAST' ? FINALITY.FAST : FINALITY.STANDARD
 
       const burnHash = await writeContractAsync({
