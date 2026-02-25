@@ -68,7 +68,7 @@ export function ArcBot() {
         ...prev,
         {
           role: 'assistant',
-          text: '❌ Desculpe, algo deu errado. Tente novamente.',
+          text: '❌ Sorry, something went wrong. Try again.',
         },
       ])
     } finally {
@@ -196,7 +196,7 @@ export function ArcBot() {
                     fontSize: '0.75rem',
                   }}
                 >
-                  Assistente DeFi
+                  DeFi Assistant
                 </p>
               </div>
             </div>
@@ -243,9 +243,9 @@ export function ArcBot() {
                     marginBottom: '0.5rem',
                   }}
                 >
-                  Olá! Eu sou o ArcBot
+                  Hi! I'm ArcBot
                 </h4>
-                <p style={{ fontSize: '0.875rem' }}>Como posso te ajudar hoje?</p>
+                <p style={{ fontSize: '0.875rem' }}>How can I help you today?</p>
 
                 <div
                   style={{
@@ -256,7 +256,7 @@ export function ArcBot() {
                   }}
                 >
                   <button
-                    onClick={() => setInput('Quais são os melhores pools agora?')}
+                    onClick={() => setInput('What are the best pools now?')}
                     style={{
                       padding: '0.75rem',
                       backgroundColor: '#1f2937',
@@ -268,10 +268,10 @@ export function ArcBot() {
                       fontSize: '0.875rem',
                     }}
                   >
-                    📊 Analisar melhores pools
+                    📊 Analyze best pools
                   </button>
                   <button
-                    onClick={() => setInput('Como identificar riscos em uma operação?')}
+                    onClick={() => setInput('How do I identify risks in a transaction?')}
                     style={{
                       padding: '0.75rem',
                       backgroundColor: '#1f2937',
@@ -283,10 +283,10 @@ export function ArcBot() {
                       fontSize: '0.875rem',
                     }}
                   >
-                    ⚠️ Verificar riscos
+                    ⚠️ Check risks
                   </button>
                   <button
-                    onClick={() => setInput('O que é impermanent loss?')}
+                    onClick={() => setInput('What is impermanent loss?')}
                     style={{
                       padding: '0.75rem',
                       backgroundColor: '#1f2937',
@@ -298,10 +298,10 @@ export function ArcBot() {
                       fontSize: '0.875rem',
                     }}
                   >
-                    📚 Explicar impermanent loss
+                    📚 Explain impermanent loss
                   </button>
                   <button
-                    onClick={() => setInput('Me explique a aba Bridge e como usar com segurança')}
+                    onClick={() => setInput('Explain the Bridge tab and how to use it safely')}
                     style={{
                       padding: '0.75rem',
                       backgroundColor: '#1f2937',
@@ -313,10 +313,10 @@ export function ArcBot() {
                       fontSize: '0.875rem',
                     }}
                   >
-                    🌉 Explicar Bridge (CCTP v2)
+                    🌉 Explain Bridge (CCTP v2)
                   </button>
                   <button
-                    onClick={() => setInput('Como funciona o compliance AML/CFT no ArcDex?')}
+                    onClick={() => setInput('How does AML/CFT compliance work in ArcDex?')}
                     style={{
                       padding: '0.75rem',
                       backgroundColor: '#1f2937',
@@ -416,7 +416,7 @@ export function ArcBot() {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !loading) sendMessage()
                 }}
-                placeholder="Digite sua pergunta..."
+                placeholder="Type your question..."
                 disabled={loading}
                 style={{
                   flex: 1,

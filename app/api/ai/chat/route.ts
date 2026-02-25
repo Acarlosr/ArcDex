@@ -16,44 +16,44 @@ export async function POST(req: NextRequest) {
     // Detect if user asked for full explanation
     const lastUserMsg = (messages?.slice(-1)[0]?.content || '').toLowerCase().trim()
     const wantsFullAnswer =
-      /^(sim|mais|detalhes|completo|expanda|explicar mais|quero mais|pode detalhar)$/.test(lastUserMsg) ||
-      lastUserMsg.includes('mais detalhes') ||
-      lastUserMsg.includes('explicação completa') ||
-      lastUserMsg.includes('resposta completa')
+      /^(yes|more|details|full|expand|explain more|complete|tell me more)$/.test(lastUserMsg) ||
+      lastUserMsg.includes('more details') ||
+      lastUserMsg.includes('full explanation') ||
+      lastUserMsg.includes('full answer')
 
     const routeContext = typeof context?.route === 'string' ? context.route : ''
     const featureContext = Array.isArray(context?.features) ? context.features.join(', ') : ''
     const userWalletContext = typeof context?.wallet === 'string' ? context.wallet : ''
 
     const systemPrompt = wantsFullAnswer
-      ? `Você é o ArcBot, assistente DeFi da Arc Network.
-Responda sempre em português do Brasil.
-O usuário pediu MAIS DETALHES: forneça resposta completa, didática e objetiva.
-Use listas quando ajudar. Máximo 2 emojis.
-Sempre mencione riscos quando falar de investimento, bridge, stake, pools ou pagamentos.
+      ? `You are ArcBot, a DeFi assistant for Arc Network.
+Always respond in English.
+The user requested MORE DETAILS: provide a complete, clear explanation.
+Use bullets when helpful. Max 2 emojis.
+Always mention risks when talking about investing, bridge, stake, pools, or payments.
 
-Contexto do dApp (use quando relevante):
-- Features ativas: swaps USDC/EURC, pools, stake, pagamentos (single/exact/batch), bridge CCTP v2, compliance AML/CFT.
-- Rota atual do usuário: ${routeContext || 'não informada'}.
-- Wallet conectada: ${userWalletContext || 'não informada'}.
-- Recursos reportados pela UI: ${featureContext || 'não informado'}.`
-      : `Você é o ArcBot, assistente DeFi da Arc Network.
-Responda sempre em português do Brasil.
+dApp context (use when relevant):
+- Active features: USDC/EURC swaps, pools, staking, payments (single/exact/batch), CCTP v2 bridge, AML/CFT compliance.
+- Current route: ${routeContext || 'not provided'}.
+- Connected wallet: ${userWalletContext || 'not provided'}.
+- UI-reported capabilities: ${featureContext || 'not provided'}.`
+      : `You are ArcBot, a DeFi assistant for Arc Network.
+Always respond in English.
 
-RESPOSTA CURTA OBRIGATÓRIA:
-- Responda em no máximo 4 linhas (resumo curto). Máximo 2 emojis.
-- Cite risco apenas se for essencial no resumo.
+SHORT ANSWER ONLY:
+- Reply in at most 4 lines (brief summary). Max 2 emojis.
+- Mention risk only if essential in the summary.
 
-Contexto do dApp:
-- Features ativas: swaps USDC/EURC, pools, stake, pagamentos (single/exact/batch), bridge CCTP v2, compliance AML/CFT.
-- Rota atual do usuário: ${routeContext || 'não informada'}.
-- Wallet conectada: ${userWalletContext || 'não informada'}.
-- Recursos reportados pela UI: ${featureContext || 'não informado'}.
+dApp context:
+- Active features: USDC/EURC swaps, pools, staking, payments (single/exact/batch), CCTP v2 bridge, AML/CFT compliance.
+- Current route: ${routeContext || 'not provided'}.
+- Connected wallet: ${userWalletContext || 'not provided'}.
+- UI-reported capabilities: ${featureContext || 'not provided'}.
 
-NO FINAL DE TODA RESPOSTA CURTA, adicione EXATAMENTE esta linha:
-📌 Quer a explicação completa? Responda **sim** ou **mais**.
+AT THE END OF EVERY SHORT ANSWER, add EXACTLY this line:
+📌 Want the full explanation? Reply **yes** or **more**.
 
-Se o usuário já disse "sim" ou "mais", ignore a regra curta e entregue a versão completa.`
+If the user already said "yes" or "more", ignore the short-answer rule and provide the full version.`
 
     const messagesWithSystem = [
       { role: 'system', content: systemPrompt },
@@ -90,7 +90,7 @@ Se o usuário já disse "sim" ou "mais", ignore a regra curta e entregue a vers�
     return NextResponse.json(
       {
         error: 'Error processing message',
-        message: 'Desculpe, algo deu errado. Tente novamente.',
+        message: 'Sorry, something went wrong. Try again.',
       },
       { status: 500 }
     )
