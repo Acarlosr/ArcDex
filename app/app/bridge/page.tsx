@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Loader2, ArrowDown, ExternalLink, CheckCircle2, XCircle, Shield, Zap, Clock } from "lucide-react"
 import { useAccount } from "wagmi"
 import { useBridge, type BridgeDirection, type TransferSpeed } from "@/hooks/useBridge"
-import { useTokenBalance } from "@/hooks/use-contracts"
+import { useTokenBalance, useBridgeBalances } from "@/hooks/use-contracts"
 import { MobileWalletHint } from "@/components/mobile-wallet-hint"
 import { ARCSCAN_URL } from "@/lib/contracts"
 
@@ -50,6 +50,7 @@ export default function BridgePage() {
 
   const { isConnected } = useAccount()
   const { state, bridgeToArc, bridgeFromArc, reset, isLoading, isComplete, isError } = useBridge()
+  const { sepoliaBalance, arcBalance, isLoading: isLoadingBalances } = useBridgeBalances()
 
   useEffect(() => {
     if (state.step === "waiting-attestation") {
@@ -62,6 +63,10 @@ export default function BridgePage() {
     return () => { if (timerRef.current) clearInterval(timerRef.current) }
   }, [state.step])
   const { formatted: usdcBalance } = useTokenBalance("USDC")
+
+  // Determine which balance to show based on direction
+  const sourceBalance = direction === "to-arc" ? sepoliaBalance : arcBalance
+  const destBalance = direction === "to-arc" ? arcBalance : sepoliaBalance
 
   const sourceChain = direction === "to-arc" ? CHAINS.sepolia : CHAINS.arc
   const destChain = direction === "to-arc" ? CHAINS.arc : CHAINS.sepolia
@@ -185,11 +190,9 @@ export default function BridgePage() {
                 <span className="text-foreground font-bold">USDC</span>
               </div>
             </div>
-            {direction === "from-arc" && (
-              <p className="text-xs text-muted-foreground mt-2">
-                Balance: {isConnected ? usdcBalance : "---"} USDC
-              </p>
-            )}
+            <p className="text-xs text-muted-foreground mt-2">
+              Balance: {isConnected ? (isLoadingBalances ? "loading..." : sourceBalance) : "---"} USDC
+            </p>
           </div>
 
           {/* Flip Button */}
@@ -211,11 +214,14 @@ export default function BridgePage() {
                 {destChain.icon} {destChain.name}
               </span>
             </div>
-            <div className="bg-input border border-border rounded-xl p-4">
+            <div className="bg-input border border-border rounded-xl p-4 mb-2">
               <p className="text-2xl font-bold text-foreground">
                 {amount && parseFloat(amount) > 0 ? `~${amount}` : "0.00"} <span className="text-muted-foreground text-lg">USDC</span>
               </p>
             </div>
+            <p className="text-xs text-muted-foreground">
+              Balance: {isConnected ? (isLoadingBalances ? "loading..." : destBalance) : "---"} USDC
+            </p>
           </div>
 
           {/* Transfer Speed */}

@@ -1,9 +1,11 @@
 'use client'
 
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
+import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, usePublicClient } from 'wagmi'
 import { ARCDEX, TOKENS, parseTokenAmount, formatTokenAmount } from '@/lib/contracts'
 import { ERC20_ABI, ARCDEX_SWAP_ABI, ARCDEX_STAKING_ABI, ARCDEX_PAYMENTS_ABI } from '@/lib/abi'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { sepolia } from 'viem/chains'
+import { createPublicClient, http } from 'viem'
 
 // ============================================================================
 // TOKEN HOOKS
@@ -537,5 +539,70 @@ export function useLPTotalSupply() {
         formatted: data ? formatTokenAmount(data as bigint) : '0.00',
         isLoading,
         refetch,
+    }
+}
+
+// ============================================================================
+// BRIDGE HOOKS - Cross-chain balance checking
+// ============================================================================
+
+// Hook to fetch USDC balance on both Sepolia and Arc
+export function useBridgeBalances() {
+    const { address } = useAccount()
+    const publicClient = usePublicClient()
+    const [sepoliaBalance, setSepoliaBalance] = useState<bigint | null>(null)
+    const [arcBalance, setArcBalance] = useState<bigint | null>(null)
+    const [isLoading, setIsLoading] = useState(true)
+
+    useEffect(() => {
+        if (!address) {
+            setSepoliaBalance(null)
+            setArcBalance(null)
+            setIsLoading(false)
+            return
+        }
+
+        const fetchBalances = async () => {
+            setIsLoading(true)
+            try {
+                // Fetch Sepolia balance
+                const sepoliaClient = createPublicClient({
+                    chain: sepolia,
+                    transport: http(),
+                })
+                const sepBal = await sepoliaClient.readContract({
+                    address: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238' as `0x${string}`,
+                    abi: ERC20_ABI,
+                    functionName: 'balanceOf',
+                    args: [address as `0x${string}`],
+                }) as bigint
+                setSepoliaBalance(sepBal)
+
+                // Fetch Arc balance (use publicClient from wagmi which is Arc)
+                if (publicClient) {
+                    const arcBal = await publicClient.readContract({
+                        address: TOKENS.USDC as `0x${string}`,
+                        abi: ERC20_ABI,
+                        functionName: 'balanceOf',
+                        args: [address as `0x${string}`],
+                    }) as bigint
+                    setArcBalance(arcBal)
+                }
+            } catch (error) {
+                console.error('Failed to fetch bridge balances:', error)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+
+        fetchBalances()
+    }, [address, publicClient])
+
+    return {
+        sepoliaBalance: sepoliaBalance ? formatTokenAmount(sepoliaBalance) : '0.00',
+        arcBalance: arcBalance ? formatTokenAmount(arcBalance) : '0.00',
+        sepoliaBalanceRaw: sepoliaBalance,
+        arcBalanceRaw: arcBalance,
+        isLoading,
     }
 }
