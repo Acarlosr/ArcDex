@@ -12,7 +12,11 @@ const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mon
 export const metadata: Metadata = {
   title: "ARCDex V2 - DeFi Trading on Arc Network",
   description: "Multi-page DeFi dApp for trading on Arc Network Testnet",
-  generator: 'v0.app'
+  generator: 'v0.app',
+  icons: {
+    icon: '/favicon.svg',
+    apple: '/apple-icon.png',
+  },
 }
 
 export default function RootLayout({
