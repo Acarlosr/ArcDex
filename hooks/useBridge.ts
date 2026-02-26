@@ -149,11 +149,11 @@ export function useBridge() {
   }
 
   // Poll Circle attestation API (CCTP v2 workflow)
-  // Standard transfers take 13-20 min; Fast transfers take 1-2 min.
+  // Standard transfers can take up to 30-40 min on testnet; Fast transfers take 1-2 min.
   const pollAttestation = async (
     sourceDomain: number,
     txHash: string,
-    maxAttempts = 200,
+    maxAttempts = 400,
     interval = 6000,
     onProgress?: (attempt: number, max: number) => void
   ): Promise<{ message: string; attestation: string }> => {
@@ -177,7 +177,8 @@ export function useBridge() {
       }
       await new Promise(r => setTimeout(r, interval))
     }
-    throw new Error('Attestation timeout after ' + Math.round(maxAttempts * interval / 60000) + ' minutes. Your burn TX was successful - you can retry the claim later.')
+    const timeoutMinutes = Math.round(maxAttempts * interval / 60000)
+    throw new Error(`Attestation timeout after ${timeoutMinutes} minutes. Your burn TX was successful. Retry the claim in a few minutes - Circle may still be processing.`)
   }
 
   // Bridge USDC from Sepolia to Arc Testnet
@@ -247,8 +248,9 @@ export function useBridge() {
       // Step 3: Poll for attestation
       setState(prev => ({ ...prev, step: 'waiting-attestation', progress: 55 }))
 
-      // Standard: poll for ~25 min (250 x 6s), Fast: poll for ~5 min (50 x 6s)
-      const maxPolls = speed === 'FAST' ? 50 : 250
+      // Standard: poll for ~40 min (400 x 6s), Fast: poll for ~5 min (50 x 6s)
+      // Testnet can take longer, so we give it more time
+      const maxPolls = speed === 'FAST' ? 50 : 400
       const { message, attestation } = await pollAttestation(
         CCTP_DOMAINS.SEPOLIA,
         burnHash,
@@ -348,7 +350,7 @@ export function useBridge() {
 
       setState(prev => ({ ...prev, burnTxHash: burnHash, step: 'waiting-attestation', progress: 55 }))
 
-      const maxPolls = speed === 'FAST' ? 50 : 250
+      const maxPolls = speed === "FAST" ? 50 : 400
       const { message, attestation } = await pollAttestation(
         CCTP_DOMAINS.ARC_TESTNET,
         burnHash,
