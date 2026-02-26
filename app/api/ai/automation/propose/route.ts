@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { aiClient } from '@/lib/ai/ai-client'
 
 export const runtime = 'nodejs'
 
@@ -26,12 +27,6 @@ async function generateProposal(
   }
 ): Promise<AutomationProposal[]> {
   try {
-    const groqApiKey = process.env.GROQ_API_KEY
-    if (!groqApiKey) {
-      console.error('GROQ_API_KEY not configured')
-      return []
-    }
-
     const systemPrompt = `You are an AI advisor for DeFi trading on Arc Network. Analyze user wallet and market conditions to propose optimized trading actions. Return ONLY a valid JSON array of proposals.`
 
     const userPrompt = `Wallet: ${walletAddress}
@@ -39,30 +34,12 @@ async function generateProposal(
     Staking APY: ${analysisContext.stakingAPY}%, Volatility: ${analysisContext.volatility}/10
     Suggest 1-3 safe optimization actions. JSON array format with: action, description, reason, riskScore (1-10), estimatedBenefit, estimatedGasSpend, confidence (0-1).`
 
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${groqApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-        temperature: 0.7,
-        max_tokens: 1024,
-      }),
-    })
+    const aiResponse = await aiClient.chat([
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ])
 
-    if (!response.ok) {
-      console.error('Groq API error:', response.status)
-      return []
-    }
-
-    const data = await response.json()
-    const content = data.choices?.[0]?.message?.content || ''
+    const content = aiResponse.content
     const jsonMatch = content.match(/\[[\s\S]*\]/)
     if (!jsonMatch) return []
 

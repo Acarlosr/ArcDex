@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { aiClient } from '@/lib/ai/ai-client'
 
 export async function POST(req: NextRequest) {
   try {
     const { messages, context } = await req.json()
 
-    const apiKey = process.env.GROQ_API_KEY
-
-    if (!apiKey) {
+    if (!messages || messages.length === 0) {
       return NextResponse.json(
-        { error: 'GROQ_API_KEY not configured' },
-        { status: 500 }
+        { error: 'No messages provided' },
+        { status: 400 }
       )
     }
 
@@ -60,31 +59,14 @@ If the user already said "yes" or "more", ignore the short-answer rule and provi
       ...messages,
     ]
 
-    // Chamar Groq API
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        messages: messagesWithSystem,
-        temperature: 0.7,
-        max_tokens: wantsFullAnswer ? 800 : 200,
-      }),
+    // Use Universal AI Client (OpenRouter by default, with fallbacks)
+    const aiResponse = await aiClient.chat(messagesWithSystem)
+
+    return NextResponse.json({
+      content: aiResponse.content,
+      provider: aiResponse.provider,
+      model: aiResponse.model,
     })
-
-    if (!response.ok) {
-      const error = await response.text()
-      console.error('Groq API Error:', error)
-      throw new Error('Failed to call Groq API')
-    }
-
-    const data = await response.json()
-    const content = data.choices[0].message.content
-
-    return NextResponse.json({ content })
   } catch (error) {
     console.error('Chat API Error:', error)
     return NextResponse.json(
