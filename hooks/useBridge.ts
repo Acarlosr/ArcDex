@@ -201,9 +201,9 @@ export function useBridge() {
           args: [CCTP_DOMAINS.ARC_TESTNET],
         })
       } catch {
-        throw new Error(
-          'Bridge route unavailable: Sepolia -> Arc (domain 26) is not enabled on the current CCTP TokenMessenger.'
-        )
+        // Some TokenMessenger deployments may not expose getMinFeeAmount reliably.
+        // In this case, fallback to zero for standard transfers and let depositForBurn validate.
+        standardMinFee = BigInt(0)
       }
 
       // Step 1: Approve USDC on Sepolia for TokenMessengerV2
@@ -304,9 +304,8 @@ export function useBridge() {
           args: [CCTP_DOMAINS.SEPOLIA],
         })
       } catch {
-        throw new Error(
-          'Bridge route unavailable: Arc -> Sepolia is not enabled on the current CCTP TokenMessenger.'
-        )
+        // Fallback when min-fee introspection is unavailable on this deployment.
+        standardMinFee = BigInt(0)
       }
 
       setState(prev => ({ ...prev, step: 'approving', progress: 10, error: null }))
