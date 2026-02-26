@@ -149,13 +149,16 @@ export function useBridge() {
   }
 
   // Poll Circle attestation API (CCTP v2 workflow)
+  // Standard transfers take 13-20 min; Fast transfers take 1-2 min.
   const pollAttestation = async (
     sourceDomain: number,
     txHash: string,
-    maxAttempts = 60,
-    interval = 5000
+    maxAttempts = 200,
+    interval = 6000,
+    onProgress?: (attempt: number, max: number) => void
   ): Promise<{ message: string; attestation: string }> => {
     for (let i = 0; i < maxAttempts; i++) {
+      onProgress?.(i, maxAttempts)
       try {
         const resp = await fetch(
           `${CIRCLE_API_BASE}/v2/messages/${sourceDomain}?transactionHash=${txHash}`
@@ -170,11 +173,11 @@ export function useBridge() {
           }
         }
       } catch {
-        // Retry on network errors
+        // Retry silently on network errors
       }
       await new Promise(r => setTimeout(r, interval))
     }
-    throw new Error('Attestation timeout - please try again later')
+    throw new Error('Attestation timeout after ' + Math.round(maxAttempts * interval / 60000) + ' minutes. Your burn TX was successful - you can retry the claim later.')
   }
 
   // Bridge USDC from Sepolia to Arc Testnet
@@ -244,11 +247,17 @@ export function useBridge() {
       // Step 3: Poll for attestation
       setState(prev => ({ ...prev, step: 'waiting-attestation', progress: 55 }))
 
+      // Standard: poll for ~25 min (250 x 6s), Fast: poll for ~5 min (50 x 6s)
+      const maxPolls = speed === 'FAST' ? 50 : 250
       const { message, attestation } = await pollAttestation(
         CCTP_DOMAINS.SEPOLIA,
         burnHash,
-        120,
-        3000
+        maxPolls,
+        6000,
+        (attempt, max) => {
+          const pct = 55 + Math.round((attempt / max) * 25)
+          setState(prev => ({ ...prev, progress: Math.min(pct, 79) }))
+        }
       )
 
       setState(prev => ({
@@ -339,11 +348,16 @@ export function useBridge() {
 
       setState(prev => ({ ...prev, burnTxHash: burnHash, step: 'waiting-attestation', progress: 55 }))
 
+      const maxPolls = speed === 'FAST' ? 50 : 250
       const { message, attestation } = await pollAttestation(
         CCTP_DOMAINS.ARC_TESTNET,
         burnHash,
-        120,
-        3000
+        maxPolls,
+        6000,
+        (attempt, max) => {
+          const pct = 55 + Math.round((attempt / max) * 25)
+          setState(prev => ({ ...prev, progress: Math.min(pct, 79) }))
+        }
       )
 
       setState(prev => ({ ...prev, attestation, message, step: 'complete', progress: 100 }))

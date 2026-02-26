@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -45,9 +45,22 @@ export default function BridgePage() {
   const [amount, setAmount] = useState("")
   const [speed, setSpeed] = useState<TransferSpeed>("STANDARD")
   const [bridgeHistory, setBridgeHistory] = useState<BridgeHistoryItem[]>([])
+  const [elapsedSecs, setElapsedSecs] = useState(0)
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const { isConnected } = useAccount()
   const { state, bridgeToArc, bridgeFromArc, reset, isLoading, isComplete, isError } = useBridge()
+
+  useEffect(() => {
+    if (state.step === "waiting-attestation") {
+      setElapsedSecs(0)
+      timerRef.current = setInterval(() => setElapsedSecs(s => s + 1), 1000)
+    } else {
+      if (timerRef.current) clearInterval(timerRef.current)
+      timerRef.current = null
+    }
+    return () => { if (timerRef.current) clearInterval(timerRef.current) }
+  }, [state.step])
   const { formatted: usdcBalance } = useTokenBalance("USDC")
 
   const sourceChain = direction === "to-arc" ? CHAINS.sepolia : CHAINS.arc
@@ -272,13 +285,32 @@ export default function BridgePage() {
                 </div>
 
                 {state.step === "waiting-attestation" && (
-                  <p className="text-xs text-muted-foreground">
-                    Circle is verifying your transaction. This can take {speed === "FAST" ? "1-2 minutes" : "13-20 minutes"}.
-                  </p>
+                  <div className="space-y-1.5">
+                    <p className="text-xs text-muted-foreground">
+                      Circle is verifying your transaction. This can take {speed === "FAST" ? "1-2 minutes" : "13-20 minutes"}.
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-3.5 h-3.5 text-yellow-400" />
+                      <span className="text-xs text-yellow-400 font-mono tabular-nums">
+                        {Math.floor(elapsedSecs / 60).toString().padStart(2, "0")}:{(elapsedSecs % 60).toString().padStart(2, "0")}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">elapsed</span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground/70">
+                      Your burn TX is confirmed on-chain. Do not close this page.
+                    </p>
+                  </div>
                 )}
 
                 {state.error && (
-                  <p className="text-xs text-red-400/80 mt-1">{state.error}</p>
+                  <div className="mt-1">
+                    <p className="text-xs text-red-400/80">{state.error}</p>
+                    {state.burnTxHash && state.error.includes("timeout") && (
+                      <p className="text-[10px] text-muted-foreground mt-1">
+                        Your burn TX was successful. The attestation may still arrive — you can retry claiming later.
+                      </p>
+                    )}
+                  </div>
                 )}
 
                 {/* Transaction links */}
