@@ -18,7 +18,8 @@ export const CCTP_DOMAINS = {
 
 // CCTP v2 Testnet contract addresses (Sepolia as source)
 const SEPOLIA_CCTP = {
-  TokenMessengerV2: '0x9f3B8679c73C2Fef8b59B4f3444d4e156fb70AA5' as const,
+  // Official CCTP v2 TokenMessenger on Ethereum Sepolia
+  TokenMessengerV2: '0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA' as const,
   USDC: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238' as const,
 }
 
