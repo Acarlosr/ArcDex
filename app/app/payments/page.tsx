@@ -174,7 +174,8 @@ export default function PaymentsPage() {
   const { allowance, refetch: refetchAllowance } = useTokenAllowance(selectedToken, ARCDEX.Payments)
   const { totalPayments, userPaymentCount } = usePaymentStats()
 
-  const { approve, isPending: approving, isSuccess: approveSuccess, hash: approveHash } = useApprove()
+  const { approve, isPending: approving, isConfirming: approveConfirming, isSuccess: approveSuccess, hash: approveHash } = useApprove()
+  const [justApproved, setJustApproved] = useState(false)
   const { sendPayment, sendExactPayment, isPending: sending, isSuccess: sendSuccess, hash: sendHash, error: sendError } = useSendPayment()
   const { batchPayment, isPending: batchSending, isSuccess: batchSuccess, hash: batchHash, error: batchError } = useBatchPayment()
 
@@ -187,14 +188,14 @@ export default function PaymentsPage() {
   const singleTotal = useExactPayment
     ? (parseFloat(amount || "0") + feeNum)
     : parseFloat(amount || "0")
-  const needsApproval = amount && allowance !== undefined &&
+  const needsApproval = !justApproved && amount && allowance !== undefined &&
     parseTokenAmount(singleTotal.toString()) > allowance
 
   // Batch: calculate total needed
   const batchTotalAmount = batchRows.reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0)
   const batchTotalFees = batchRows.filter(r => r.recipient && r.amount).length * feeNum
   const batchGrandTotal = batchTotalAmount + batchTotalFees
-  const batchNeedsApproval = batchGrandTotal > 0 && allowance !== undefined &&
+  const batchNeedsApproval = !justApproved && batchGrandTotal > 0 && allowance !== undefined &&
     parseTokenAmount(batchGrandTotal.toFixed(6)) > allowance
 
   const addBatchRow = () => setBatchRows(prev => [...prev, { recipient: "", amount: "" }])
@@ -203,11 +204,14 @@ export default function PaymentsPage() {
     setBatchRows(prev => prev.map((r, i) => i === idx ? { ...r, [field]: value } : r))
   }
 
-  useEffect(() => { refetchAllowance() }, [selectedToken, refetchAllowance])
+  useEffect(() => { refetchAllowance(); setJustApproved(false) }, [selectedToken, refetchAllowance])
   useEffect(() => {
     if (approveSuccess && approveHash) {
-      const t = setTimeout(() => refetchAllowance(), 1500)
-      return () => clearTimeout(t)
+      setJustApproved(true)
+      const t1 = setTimeout(() => refetchAllowance(), 1000)
+      const t2 = setTimeout(() => refetchAllowance(), 3000)
+      const t3 = setTimeout(() => refetchAllowance(), 5000)
+      return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
     }
   }, [approveSuccess, approveHash, refetchAllowance])
 
@@ -217,7 +221,7 @@ export default function PaymentsPage() {
   useEffect(() => {
     if (sendSuccess && sendHash) {
       setTxStatus("confirmed")
-      setTimeout(() => { refetchUSDC(); refetchEURC(); refetchAllowance(); setAmount(""); setRecipient(""); setMemo("") }, 1000)
+      setTimeout(() => { refetchUSDC(); refetchEURC(); refetchAllowance(); setJustApproved(false); setAmount(""); setRecipient(""); setMemo("") }, 1000)
       setTimeout(() => { setTxStatus("idle"); setCurrentTxHash(null) }, 6000)
     }
   }, [sendSuccess, sendHash, refetchUSDC, refetchEURC, refetchAllowance])
@@ -231,7 +235,7 @@ export default function PaymentsPage() {
   useEffect(() => {
     if (batchSuccess && batchHash) {
       setBatchTxStatus("confirmed")
-      setTimeout(() => { refetchUSDC(); refetchEURC(); refetchAllowance(); setBatchRows([{ recipient: "", amount: "" }, { recipient: "", amount: "" }]) }, 1000)
+      setTimeout(() => { refetchUSDC(); refetchEURC(); refetchAllowance(); setJustApproved(false); setBatchRows([{ recipient: "", amount: "" }, { recipient: "", amount: "" }]) }, 1000)
       setTimeout(() => { setBatchTxStatus("idle"); setBatchTxHash(null) }, 6000)
     }
   }, [batchSuccess, batchHash, refetchUSDC, refetchEURC, refetchAllowance])
@@ -242,7 +246,12 @@ export default function PaymentsPage() {
   const handleApprove = async () => {
     const needed = Math.max(singleTotal, batchGrandTotal)
     if (needed <= 0) return
-    await approve(selectedToken, ARCDEX.Payments, (needed * 10).toFixed(6))
+    try {
+      await approve(selectedToken, ARCDEX.Payments, '999999999')
+      setJustApproved(true)
+    } catch {
+      // User rejected or error
+    }
   }
 
   const handleSendPayment = async () => {
@@ -413,13 +422,13 @@ export default function PaymentsPage() {
                 {!isConnected ? (
                   <Button className="w-full btn-gradient h-12" disabled>Connect Wallet</Button>
                 ) : needsApproval ? (
-                  <Button className="w-full btn-gradient h-12" onClick={handleApprove} disabled={approving || !amount || !isValidAddress}>
-                    {approving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Approving...</> : `Approve ${selectedToken}`}
+                  <Button className="w-full btn-gradient h-12" onClick={handleApprove} disabled={approving || approveConfirming || !amount || !isValidAddress}>
+                    {approving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Approving...</> : approveConfirming ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Confirming...</> : `Approve ${selectedToken}`}
                   </Button>
                 ) : (
                   <Button className="w-full btn-gradient h-12" onClick={handleSendPayment}
-                    disabled={sending || !amount || !isValidAddress || parseFloat(amount) <= 0 || txStatus !== "idle"}>
-                    {sending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Sending...</> : "Send Payment"}
+                    disabled={sending || approveConfirming || !amount || !isValidAddress || parseFloat(amount) <= 0 || txStatus !== "idle"}>
+                    {approveConfirming ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Confirming Approval...</> : sending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Sending...</> : "Send Payment"}
                   </Button>
                 )}
               </TabsContent>
@@ -479,13 +488,13 @@ export default function PaymentsPage() {
                 {!isConnected ? (
                   <Button className="w-full btn-gradient h-12" disabled>Connect Wallet</Button>
                 ) : batchNeedsApproval ? (
-                  <Button className="w-full btn-gradient h-12" onClick={handleApprove} disabled={approving}>
-                    {approving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Approving...</> : `Approve ${selectedToken}`}
+                  <Button className="w-full btn-gradient h-12" onClick={handleApprove} disabled={approving || approveConfirming}>
+                    {approving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Approving...</> : approveConfirming ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Confirming...</> : `Approve ${selectedToken}`}
                   </Button>
                 ) : (
                   <Button className="w-full btn-gradient h-12" onClick={handleBatchPayment}
-                    disabled={batchSending || batchTotalAmount <= 0 || batchTxStatus !== "idle"}>
-                    {batchSending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Sending Batch...</> : `Send Batch Payment`}
+                    disabled={batchSending || approveConfirming || batchTotalAmount <= 0 || batchTxStatus !== "idle"}>
+                    {approveConfirming ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Confirming Approval...</> : batchSending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Sending Batch...</> : `Send Batch Payment`}
                   </Button>
                 )}
               </TabsContent>

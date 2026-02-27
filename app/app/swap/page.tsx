@@ -284,7 +284,14 @@ export default function SwapPage() {
 
   const handleApprove = async () => {
     if (!fromAmount || !swapEnabled) return
-    await approve(swapFromToken, ARCDEX.Swap, fromAmount)
+    try {
+      // Approve large amount (standard DeFi pattern) to avoid re-approval
+      await approve(swapFromToken, ARCDEX.Swap, '999999999')
+      // TX submitted (user confirmed in wallet) — bypass stale allowance cache
+      setJustApproved(true)
+    } catch {
+      // User rejected or submission failed
+    }
   }
 
   // Compliance screening
@@ -463,10 +470,15 @@ export default function SwapPage() {
             ) : (
               <Button
                 onClick={handleSwap}
-                disabled={swapping || !fromAmount || parseFloat(fromAmount) <= 0}
+                disabled={swapping || approveConfirming || !fromAmount || parseFloat(fromAmount) <= 0}
                 className="w-full btn-gradient h-14 text-lg font-semibold rounded-xl"
               >
-                {swapping ? (
+                {approveConfirming ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Confirming Approval...
+                  </>
+                ) : swapping ? (
                   <>
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                     Swapping...

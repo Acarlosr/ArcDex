@@ -90,10 +90,11 @@ export default function StakePage() {
   }, [isConnected, address, checkCompliance])
 
   // Operations
-  const { approve, isPending: approving, isSuccess: approveSuccess, hash: approveHash } = useApprove()
+  const { approve, isPending: approving, isConfirming: approveConfirming, isSuccess: approveSuccess, hash: approveHash } = useApprove()
   const { stake, isPending: staking, isSuccess: stakeSuccess, error: stakeError } = useStake()
   const { unstake, isPending: unstaking, isSuccess: unstakeSuccess, error: unstakeError } = useUnstake()
   const { claimAllRewards, isPending: claiming, isSuccess: claimSuccess } = useClaimRewards()
+  const [justApproved, setJustApproved] = useState(false)
 
   // Treasury diagnostic: read treasury address from staking contract
   const { data: treasuryAddress } = useReadContract({
@@ -183,8 +184,8 @@ export default function StakePage() {
     return msg.length > 200 ? msg.slice(0, 200) + "..." : msg
   }
 
-  // Check if approval needed
-  const needsApproval = stakeAmount && allowance !== undefined &&
+  // Check if approval needed (skip if just approved on-chain)
+  const needsApproval = !justApproved && stakeAmount && allowance !== undefined &&
     parseTokenAmount(stakeAmount) > allowance
 
   // Fetch staking transaction history from ArcScan
@@ -232,16 +233,17 @@ export default function StakePage() {
   // Refetch allowance when token changes
   useEffect(() => {
     refetchAllowance()
+    setJustApproved(false)
   }, [selectedToken, refetchAllowance])
 
-  // Refetch allowance after approval (using hash as trigger for each new approval)
+  // After approval confirms, update local state and aggressively refetch
   useEffect(() => {
     if (approveSuccess && approveHash) {
-      // Small delay to ensure blockchain state is updated
-      const timer = setTimeout(() => {
-        refetchAllowance()
-      }, 1000)
-      return () => clearTimeout(timer)
+      setJustApproved(true)
+      const t1 = setTimeout(() => refetchAllowance(), 1000)
+      const t2 = setTimeout(() => refetchAllowance(), 3000)
+      const t3 = setTimeout(() => refetchAllowance(), 5000)
+      return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
     }
   }, [approveSuccess, approveHash, refetchAllowance])
 
@@ -255,6 +257,7 @@ export default function StakePage() {
       refetchUSDCRewards()
       refetchEURCRewards()
       refetchAllowance()
+      setJustApproved(false)
       setStakeAmount("")
       setUnstakeAmount("")
     }
@@ -271,7 +274,12 @@ export default function StakePage() {
   // Handlers
   const handleApprove = async () => {
     if (!stakeAmount) return
-    await approve(selectedToken, ARCDEX.Staking, stakeAmount)
+    try {
+      await approve(selectedToken, ARCDEX.Staking, '999999999')
+      setJustApproved(true)
+    } catch {
+      // User rejected or error
+    }
   }
 
   const handleStake = async () => {
@@ -407,11 +415,13 @@ export default function StakePage() {
           ) : needsApproval ? (
             <Button
               onClick={handleApprove}
-              disabled={approving || !stakeAmount}
+              disabled={approving || approveConfirming || !stakeAmount}
               className="w-full btn-gradient h-14 text-lg font-semibold rounded-xl"
             >
               {approving ? (
                 <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Approving...</>
+              ) : approveConfirming ? (
+                <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Confirming Approval...</>
               ) : (
                 `Approve ${selectedToken}`
               )}
@@ -419,10 +429,12 @@ export default function StakePage() {
           ) : (
             <Button
               onClick={handleStake}
-              disabled={staking || !stakeAmount || parseFloat(stakeAmount) <= 0}
+              disabled={staking || approveConfirming || !stakeAmount || parseFloat(stakeAmount) <= 0}
               className="w-full btn-gradient h-14 text-lg font-semibold rounded-xl"
             >
-              {staking ? (
+              {approveConfirming ? (
+                <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Confirming Approval...</>
+              ) : staking ? (
                 <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Staking...</>
               ) : (
                 `Stake ${selectedToken}`

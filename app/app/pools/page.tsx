@@ -61,7 +61,9 @@ export default function PoolsPage() {
   )
 
   // Hooks for operations
-  const { approve, isPending: approving, isSuccess: approveSuccess, hash: approveHash } = useApprove()
+  const { approve, isPending: approving, isConfirming: approveConfirming, isSuccess: approveSuccess, hash: approveHash } = useApprove()
+  const [justApproved0, setJustApproved0] = useState(false)
+  const [justApproved1, setJustApproved1] = useState(false)
   const { addLiquidity, isPending: adding, isSuccess: addSuccess, hash: addHash, error: addError } = useAddLiquidity()
   const { removeLiquidity, isPending: removing, isSuccess: removeSuccess, hash: removeHash, error: removeError } = useRemoveLiquidity()
 
@@ -82,26 +84,27 @@ export default function PoolsPage() {
     ? (Number(reserveEURC) * lpToRemove / Number(lpTotalSupplyRaw) / 1e6).toFixed(2)
     : "0.00"
 
-  // Check if approvals needed
-  const needsToken0Approval = pool.enabled && amount0 && token0Allowance !== undefined &&
+  // Check if approvals needed (skip if just approved on-chain)
+  const needsToken0Approval = !justApproved0 && pool.enabled && amount0 && token0Allowance !== undefined &&
     parseTokenAmount(amount0) > token0Allowance
-  const needsToken1Approval = pool.enabled && amount1 && token1Allowance !== undefined &&
+  const needsToken1Approval = !justApproved1 && pool.enabled && amount1 && token1Allowance !== undefined &&
     parseTokenAmount(amount1) > token1Allowance
 
   // Refetch allowances when pool changes
   useEffect(() => {
     refetchToken0Allowance()
     refetchToken1Allowance()
+    setJustApproved0(false)
+    setJustApproved1(false)
   }, [selectedPool, refetchToken0Allowance, refetchToken1Allowance])
 
-  // Refetch allowances after approval
+  // After approval confirms, aggressively refetch
   useEffect(() => {
     if (approveSuccess && approveHash) {
-      const timer = setTimeout(() => {
-        refetchToken0Allowance()
-        refetchToken1Allowance()
-      }, 1000)
-      return () => clearTimeout(timer)
+      const t1 = setTimeout(() => { refetchToken0Allowance(); refetchToken1Allowance() }, 1000)
+      const t2 = setTimeout(() => { refetchToken0Allowance(); refetchToken1Allowance() }, 3000)
+      const t3 = setTimeout(() => { refetchToken0Allowance(); refetchToken1Allowance() }, 5000)
+      return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
     }
   }, [approveSuccess, approveHash, refetchToken0Allowance, refetchToken1Allowance])
 
@@ -115,6 +118,8 @@ export default function PoolsPage() {
         refetchLP()
         refetchToken0Allowance()
         refetchToken1Allowance()
+        setJustApproved0(false)
+        setJustApproved1(false)
         setAmount0("")
         setAmount1("")
       }, 1000)
@@ -135,12 +140,18 @@ export default function PoolsPage() {
 
   const handleApproveToken0 = async () => {
     if (!amount0 || !pool.enabled) return
-    await approve(pool.token0 as 'USDC' | 'EURC', pool.swapContract, amount0)
+    try {
+      await approve(pool.token0 as 'USDC' | 'EURC', pool.swapContract, '999999999')
+      setJustApproved0(true)
+    } catch { /* User rejected */ }
   }
 
   const handleApproveToken1 = async () => {
     if (!amount1 || !pool.enabled) return
-    await approve(pool.token1 as 'USDC' | 'EURC', pool.swapContract, amount1)
+    try {
+      await approve(pool.token1 as 'USDC' | 'EURC', pool.swapContract, '999999999')
+      setJustApproved1(true)
+    } catch { /* User rejected */ }
   }
 
   return (
@@ -412,11 +423,13 @@ export default function PoolsPage() {
                 ) : needsToken0Approval ? (
                   <Button
                     onClick={handleApproveToken0}
-                    disabled={approving}
+                    disabled={approving || approveConfirming}
                     className="w-full btn-gradient h-14 text-lg font-semibold rounded-xl"
                   >
                     {approving ? (
                       <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Approving...</>
+                    ) : approveConfirming ? (
+                      <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Confirming...</>
                     ) : (
                       `Approve ${pool.token0}`
                     )}
@@ -424,11 +437,13 @@ export default function PoolsPage() {
                 ) : needsToken1Approval ? (
                   <Button
                     onClick={handleApproveToken1}
-                    disabled={approving}
+                    disabled={approving || approveConfirming}
                     className="w-full btn-gradient h-14 text-lg font-semibold rounded-xl"
                   >
                     {approving ? (
                       <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Approving...</>
+                    ) : approveConfirming ? (
+                      <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Confirming...</>
                     ) : (
                       `Approve ${pool.token1}`
                     )}
@@ -436,10 +451,12 @@ export default function PoolsPage() {
                 ) : (
                   <Button
                     onClick={handleAddLiquidity}
-                    disabled={adding || !amount0 || !amount1}
+                    disabled={adding || approveConfirming || !amount0 || !amount1}
                     className="w-full btn-gradient h-14 text-lg font-semibold rounded-xl"
                   >
-                    {adding ? (
+                    {approveConfirming ? (
+                      <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Confirming Approval...</>
+                    ) : adding ? (
                       <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Adding Liquidity...</>
                     ) : (
                       "Add Liquidity"
