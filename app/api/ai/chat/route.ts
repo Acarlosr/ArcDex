@@ -29,10 +29,10 @@ export async function POST(req: NextRequest) {
 Always respond in English.
 The user requested MORE DETAILS: provide a complete, clear explanation.
 Use bullets when helpful. Max 2 emojis.
-Always mention risks when talking about investing, bridge, stake, pools, or payments.
+Always mention risks when talking about investing, stake, pools, or payments.
 
 dApp context (use when relevant):
-- Active features: USDC/EURC swaps, pools, staking, payments (single/exact/batch), CCTP v2 bridge, AML/CFT compliance.
+- Active features: USDC/EURC swaps, pools, staking, payments (single/exact/batch), AML/CFT compliance.
 - Current route: ${routeContext || 'not provided'}.
 - Connected wallet: ${userWalletContext || 'not provided'}.
 - UI-reported capabilities: ${featureContext || 'not provided'}.`
@@ -44,7 +44,7 @@ SHORT ANSWER ONLY:
 - Mention risk only if essential in the summary.
 
 dApp context:
-- Active features: USDC/EURC swaps, pools, staking, payments (single/exact/batch), CCTP v2 bridge, AML/CFT compliance.
+- Active features: USDC/EURC swaps, pools, staking, payments (single/exact/batch), AML/CFT compliance.
 - Current route: ${routeContext || 'not provided'}.
 - Connected wallet: ${userWalletContext || 'not provided'}.
 - UI-reported capabilities: ${featureContext || 'not provided'}.

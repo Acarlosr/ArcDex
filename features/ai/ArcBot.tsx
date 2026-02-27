@@ -40,7 +40,6 @@ export function ArcBot() {
               'payments-single',
               'payments-exact',
               'payments-batch',
-              'bridge-cctp-v2',
               'compliance-aml-cft',
               'portfolio',
               'history',
@@ -300,21 +299,7 @@ export function ArcBot() {
                   >
                     📚 Explain impermanent loss
                   </button>
-                  <button
-                    onClick={() => setInput('Explain the Bridge tab and how to use it safely')}
-                    style={{
-                      padding: '0.75rem',
-                      backgroundColor: '#1f2937',
-                      border: '1px solid #374151',
-                      borderRadius: '0.5rem',
-                      color: 'white',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      fontSize: '0.875rem',
-                    }}
-                  >
-                    🌉 Explain Bridge (CCTP v2)
-                  </button>
+
                   <button
                     onClick={() => setInput('How does AML/CFT compliance work in ArcDex?')}
                     style={{
