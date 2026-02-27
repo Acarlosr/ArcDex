@@ -213,10 +213,13 @@ export default function SwapPage() {
   )
 
   // Approve hook
-  const { approve, isPending: approving, isSuccess: approveSuccess, hash: approveHash } = useApprove()
+  const { approve, isPending: approving, isConfirming: approveConfirming, isSuccess: approveSuccess, hash: approveHash } = useApprove()
 
   // Swap hook
   const { swap, isPending: swapping, isSuccess: swapSuccess, hash: swapHash, error: swapError } = useSwap()
+
+  // Track local approval to bypass stale allowance cache
+  const [justApproved, setJustApproved] = useState(false)
 
   const getBalance = (token: SwapToken) => {
     if (token === 'USDC') return { balance: usdcBalance, loading: usdcLoading }
@@ -229,39 +232,43 @@ export default function SwapPage() {
   const fromLoading = getBalance(fromToken).loading
   const toLoading = getBalance(toToken).loading
 
-  // Check if approval needed
-  const needsApproval = fromAmount && allowance !== undefined &&
+  // Check if approval needed (skip if just approved on-chain)
+  const needsApproval = !justApproved && fromAmount && allowance !== undefined &&
     parseTokenAmount(fromAmount) > allowance
 
-  // Refetch allowance when fromToken changes
+  // Refetch allowance and reset approval state when fromToken changes
   useEffect(() => {
     refetchAllowance()
+    setJustApproved(false)
   }, [fromToken, refetchAllowance])
 
   // Refetch balances after successful swap
   useEffect(() => {
     if (swapSuccess && swapHash) {
-      // Small delay to ensure blockchain state is updated
       const timer = setTimeout(() => {
         refetchUSDC()
         refetchEURC()
         refetchAllowance()
         setFromAmount("")
-        // Trigger history refresh
+        setJustApproved(false)
         setRefreshKey((k) => k + 1)
       }, 1000)
       return () => clearTimeout(timer)
     }
   }, [swapSuccess, swapHash, refetchUSDC, refetchEURC, refetchAllowance])
 
-  // Refetch allowance after approval
+  // After approval confirms on-chain, update local state and aggressively refetch
   useEffect(() => {
     if (approveSuccess && approveHash) {
-      // Small delay to ensure blockchain state is updated
-      const timer = setTimeout(() => {
-        refetchAllowance()
-      }, 1000)
-      return () => clearTimeout(timer)
+      setJustApproved(true)
+      const t1 = setTimeout(() => refetchAllowance(), 1000)
+      const t2 = setTimeout(() => refetchAllowance(), 3000)
+      const t3 = setTimeout(() => refetchAllowance(), 5000)
+      return () => {
+        clearTimeout(t1)
+        clearTimeout(t2)
+        clearTimeout(t3)
+      }
     }
   }, [approveSuccess, approveHash, refetchAllowance])
 
@@ -436,13 +443,18 @@ export default function SwapPage() {
             ) : needsApproval ? (
               <Button
                 onClick={handleApprove}
-                disabled={approving || !fromAmount}
+                disabled={approving || approveConfirming || !fromAmount}
                 className="w-full btn-gradient h-14 text-lg font-semibold rounded-xl"
               >
                 {approving ? (
                   <>
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                     Approving...
+                  </>
+                ) : approveConfirming ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Confirming Approval...
                   </>
                 ) : (
                   `Approve ${fromToken}`
