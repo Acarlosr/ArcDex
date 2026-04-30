@@ -4,7 +4,7 @@ import { Inter, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
 import { Web3Provider } from "@/components/web3-provider"
 import { ThemeProvider } from "@/components/theme-provider"
-import { ArcBot } from "@/features/ai/ArcBot"
+
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
 const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" })
@@ -35,8 +35,7 @@ export default function RootLayout({
         >
           <Web3Provider>
             {children}
-            {/* ArcBot AI Assistant */}
-            <ArcBot />
+
           </Web3Provider>
         </ThemeProvider>
       </body>

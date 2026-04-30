@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ARCDex — Stablecoin Finance on Arc</title>
+  <meta name="description" content="Native DeFi infrastructure for the Arc ecosystem. Swap, pool, and pay with USDC, EURC and USYC — live on Arc Testnet." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #080b10;
+      --bg2: #0e1219;
+      --bg3: #141920;
+      --border: rgba(255,255,255,0.07);
+      --border2: rgba(255,255,255,0.12);
+      --text: #f0f2f5;
+      --text2: #8a95a3;
+      --text3: #556070;
+      --accent: #3d7fff;
+      --accent2: #5b94ff;
+      --accent-glow: rgba(61,127,255,0.15);
+      --green: #2ed573;
+      --green-bg: rgba(46,213,115,0.08);
+      --amber: #ffa94d;
+      --amber-bg: rgba(255,169,77,0.08);
+      --teal: #20d4c8;
+      --teal-bg: rgba(32,212,200,0.08);
+      --font: 'DM Sans', system-ui, sans-serif;
+      --mono: 'DM Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── GRID LINES BACKGROUND ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(61,127,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(61,127,255,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(8,11,16,0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      height: 60px;
+      display: flex;
+      align-items: center;
+      padding: 0 2rem;
+    }
+
+    .nav-inner {
+      max-width: 1160px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .nav-logo-mark {
+      width: 30px; height: 30px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .nav-logo-mark svg { width: 16px; height: 16px; }
+
+    .nav-logo-text {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    .nav-logo-text span {
+      color: var(--accent2);
+    }
+
+    .nav-badge {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--amber);
+      background: var(--amber-bg);
+      border: 1px solid rgba(255,169,77,0.2);
+      padding: 2px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.05em;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-links a {
+      font-size: 14px;
+      color: var(--text2);
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .nav-links a:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+
+    .nav-cta {
+      font-size: 14px !important;
+      font-weight: 500 !important;
+      color: var(--bg) !important;
+      background: var(--accent) !important;
+      padding: 7px 18px !important;
+      border-radius: 8px !important;
+      transition: background 0.15s !important;
+    }
+
+    .nav-cta:hover { background: var(--accent2) !important; }
+
+    /* ── SECTIONS ── */
+    section { position: relative; z-index: 1; }
+
+    .container {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 100px 2rem 80px;
+    }
+
+    .hero-inner {
+      max-width: 1160px;
+      margin: 0 auto;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--accent2);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      background: var(--accent-glow);
+      border: 1px solid rgba(61,127,255,0.2);
+      padding: 5px 12px;
+      border-radius: 20px;
+    }
+
+    .eyebrow-dot {
+      width: 6px; height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .hero h1 {
+      font-size: clamp(2.2rem, 4vw, 3.2rem);
+      font-weight: 600;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+
+    .hero h1 .hl {
+      color: var(--accent2);
+    }
+
+    .hero-sub {
+      font-size: 17px;
+      color: var(--text2);
+      line-height: 1.65;
+      margin-bottom: 36px;
+      max-width: 500px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
+      font-weight: 500;
+      color: #fff;
+      background: var(--accent);
+      padding: 12px 24px;
+      border-radius: 10px;
+      text-decoration: none;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .btn-primary:hover { background: var(--accent2); transform: translateY(-1px); }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
+      font-weight: 400;
+      color: var(--text2);
+      background: transparent;
+      border: 1px solid var(--border2);
+      padding: 12px 24px;
+      border-radius: 10px;
+      text-decoration: none;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .btn-secondary:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
+
+    .hero-disclaimer {
+      margin-top: 16px;
+      font-size: 12px;
+      color: var(--text3);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ── HERO CARD (right side) ── */
+    .hero-card-wrap {
+      position: relative;
+    }
+
+    .hero-card-wrap::before {
+      content: '';
+      position: absolute;
+      inset: -40px;
+      background: radial-gradient(ellipse at center, rgba(61,127,255,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-card {
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: 16px;
+      padding: 24px;
+      position: relative;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text2);
+    }
+
+    .card-live {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--green);
+      background: var(--green-bg);
+      border: 1px solid rgba(46,213,115,0.15);
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    .card-live-dot {
+      width: 5px; height: 5px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    .swap-pair {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .token-box {
+      flex: 1;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+
+    .token-label {
+      font-size: 11px;
+      color: var(--text3);
+      margin-bottom: 6px;
+    }
+
+    .token-amount {
+      font-family: var(--mono);
+      font-size: 22px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .token-name {
+      font-size: 12px;
+      color: var(--text2);
+      margin-top: 4px;
+    }
+
+    .swap-arrow {
+      width: 32px; height: 32px;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .swap-arrow svg { width: 14px; height: 14px; }
+
+    .swap-rate {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text3);
+      margin-bottom: 14px;
+    }
+
+    .swap-rate span { color: var(--text2); }
+
+    .swap-btn {
+      width: 100%;
+      background: var(--accent);
+      color: #fff;
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 500;
+      border: none;
+      border-radius: 10px;
+      padding: 12px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .swap-btn:hover { background: var(--accent2); }
+
+    .card-footer {
+      margin-top: 14px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .card-stat {
+      flex: 1;
+      background: var(--bg3);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    .card-stat-label {
+      font-size: 10px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 4px;
+    }
+
+    .card-stat-val {
+      font-family: var(--mono);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .card-stat-val.green { color: var(--green); }
+
+    /* ── TESTNET BANNER ── */
+    .testnet-banner {
+      background: var(--amber-bg);
+      border-top: 1px solid rgba(255,169,77,0.15);
+      border-bottom: 1px solid rgba(255,169,77,0.15);
+      padding: 14px 2rem;
+    }
+
+    .testnet-banner-inner {
+      max-width: 1160px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .testnet-icon {
+      width: 28px; height: 28px;
+      background: rgba(255,169,77,0.15);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .testnet-text {
+      font-size: 13px;
+      color: var(--amber);
+      line-height: 1.5;
+    }
+
+    .testnet-text strong { font-weight: 600; }
+
+    /* ── STATS ── */
+    .stats-section {
+      padding: 60px 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stats-grid {
+      max-width: 1160px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .stat-cell {
+      background: var(--bg2);
+      padding: 28px 32px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-family: var(--mono);
+      font-size: 28px;
+      font-weight: 500;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    .stat-note {
+      font-size: 11px;
+      color: var(--text3);
+      margin-top: 4px;
+    }
+
+    /* ── INFRASTRUCTURE ── */
+    .infra-section {
+      padding: 100px 2rem;
+    }
+
+    .section-eyebrow {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--accent2);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: clamp(1.8rem, 3vw, 2.4rem);
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin-bottom: 14px;
+      line-height: 1.2;
+    }
+
+    .section-sub {
+      font-size: 16px;
+      color: var(--text2);
+      max-width: 520px;
+      line-height: 1.65;
+      margin-bottom: 56px;
+    }
+
+    .infra-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .infra-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px;
+      transition: border-color 0.2s;
+    }
+
+    .infra-card:hover { border-color: var(--border2); }
+
+    .infra-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .infra-icon svg { width: 20px; height: 20px; }
+    .icon-blue { background: rgba(61,127,255,0.12); color: var(--accent2); }
+    .icon-green { background: var(--green-bg); color: var(--green); }
+    .icon-teal { background: var(--teal-bg); color: var(--teal); }
+    .icon-amber { background: var(--amber-bg); color: var(--amber); }
+
+    .infra-card h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .infra-card p {
+      font-size: 14px;
+      color: var(--text2);
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    .infra-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text3);
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    /* ── CONTRACTS ── */
+    .contracts-section {
+      padding: 0 2rem 100px;
+    }
+
+    .contracts-box {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .contracts-header {
+      padding: 20px 28px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .contracts-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .contracts-note {
+      font-size: 12px;
+      color: var(--text3);
+    }
+
+    .contract-row {
+      display: grid;
+      grid-template-columns: 180px 1fr auto;
+      align-items: center;
+      gap: 20px;
+      padding: 16px 28px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+
+    .contract-row:last-child { border-bottom: none; }
+    .contract-row:hover { background: rgba(255,255,255,0.02); }
+
+    .contract-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .contract-desc {
+      font-size: 12px;
+      color: var(--text3);
+      margin-top: 2px;
+    }
+
+    .contract-addr {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text2);
+    }
+
+    .contract-link {
+      font-size: 12px;
+      color: var(--accent2);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .contract-link:hover { color: var(--text); }
+    .contract-link svg { width: 12px; height: 12px; }
+
+    /* ── MODULES ── */
+    .modules-section {
+      padding: 0 2rem 100px;
+    }
+
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .module-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px;
+      transition: border-color 0.2s;
+    }
+
+    .module-card:hover { border-color: var(--border2); }
+
+    .module-card.featured {
+      border-color: rgba(61,127,255,0.3);
+      background: linear-gradient(135deg, rgba(61,127,255,0.05) 0%, var(--bg2) 60%);
+    }
+
+    .module-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .module-card h3 {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .module-card p {
+      font-size: 14px;
+      color: var(--text2);
+      line-height: 1.6;
+    }
+
+    .module-badge {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+      padding: 3px 9px;
+      border-radius: 4px;
+    }
+
+    .badge-live { color: var(--green); background: var(--green-bg); border: 1px solid rgba(46,213,115,0.2); }
+    .badge-new { color: var(--accent2); background: var(--accent-glow); border: 1px solid rgba(61,127,255,0.2); }
+
+    /* ── HOW IT WORKS ── */
+    .how-section {
+      padding: 0 2rem 100px;
+    }
+
+    .how-steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      position: relative;
+    }
+
+    .how-steps::before {
+      content: '';
+      position: absolute;
+      top: 28px;
+      left: calc(12.5% + 16px);
+      right: calc(12.5% + 16px);
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border2), var(--border2), transparent);
+    }
+
+    .how-step {
+      padding: 0 20px;
+      text-align: center;
+    }
+
+    .step-num {
+      width: 56px; height: 56px;
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      font-family: var(--mono);
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--accent2);
+      position: relative;
+      z-index: 1;
+    }
+
+    .how-step h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .how-step p {
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.55;
+    }
+
+    /* ── SECURITY SECTION ── */
+    .security-section {
+      padding: 0 2rem 100px;
+    }
+
+    .security-box {
+      background: var(--bg2);
+      border: 1px solid var(--amber-bg);
+      border-color: rgba(255,169,77,0.2);
+      border-radius: 16px;
+      padding: 36px 40px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: start;
+    }
+
+    .security-left h3 {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .security-left p {
+      font-size: 14px;
+      color: var(--text2);
+      line-height: 1.65;
+      margin-bottom: 20px;
+    }
+
+    .security-items {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .security-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .security-item-icon {
+      width: 20px; height: 20px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .security-item-icon svg { width: 12px; height: 12px; }
+    .si-amber { background: var(--amber-bg); color: var(--amber); }
+    .si-blue { background: var(--accent-glow); color: var(--accent2); }
+    .si-green { background: var(--green-bg); color: var(--green); }
+
+    .security-item-text {
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.5;
+    }
+
+    .security-item-text strong {
+      font-weight: 500;
+      color: var(--text);
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .security-right {
+      border-left: 1px solid var(--border);
+      padding-left: 48px;
+    }
+
+    .apy-display {
+      margin-bottom: 24px;
+    }
+
+    .apy-label {
+      font-size: 12px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+
+    .apy-row {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    .apy-pct {
+      font-family: var(--mono);
+      font-size: 28px;
+      font-weight: 500;
+      color: var(--green);
+    }
+
+    .apy-asset {
+      font-size: 14px;
+      color: var(--text2);
+    }
+
+    .apy-note {
+      font-size: 12px;
+      color: var(--text3);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 2rem;
+    }
+
+    .footer-inner {
+      max-width: 1160px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .footer-text {
+      font-size: 13px;
+      color: var(--text3);
+    }
+
+    .footer-links {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .footer-links a {
+      font-size: 13px;
+      color: var(--text3);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .footer-links a:hover { color: var(--text2); }
+
+    .footer-disclaimer {
+      max-width: 1160px;
+      margin: 20px auto 0;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--text3);
+      line-height: 1.6;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .hero-inner { grid-template-columns: 1fr; gap: 48px; }
+      .hero-card-wrap { display: none; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .infra-grid { grid-template-columns: repeat(2, 1fr); }
+      .modules-grid { grid-template-columns: 1fr; }
+      .how-steps { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+      .how-steps::before { display: none; }
+      .security-box { grid-template-columns: 1fr; }
+      .security-right { border-left: none; padding-left: 0; border-top: 1px solid var(--border); padding-top: 28px; }
+      .contract-row { grid-template-columns: 1fr; gap: 6px; }
+      .nav-links { display: none; }
+    }
+
+    @media (max-width: 600px) {
+      .stats-grid { grid-template-columns: 1fr; }
+      .infra-grid { grid-template-columns: 1fr; }
+      .how-steps { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">
+        <div class="nav-logo-mark">
+          <svg viewBox="0 0 16 16" fill="none">
+            <path d="M3 8L8 3L13 8L8 13L3 8Z" fill="white" fill-opacity="0.9"/>
+            <path d="M8 5.5L10.5 8L8 10.5L5.5 8L8 5.5Z" fill="white"/>
+          </svg>
+        </div>
+        <span class="nav-logo-text">ARC<span>Dex</span></span>
+        <span class="nav-badge">TESTNET</span>
+      </a>
+      <div class="nav-links">
+        <a href="#modules">Features</a>
+        <a href="#contracts">Contracts</a>
+        <a href="https://arcdex.gitbook.io" target="_blank" rel="noopener">Docs</a>
+        <a href="https://github.com/Acarlosr/ArcDex" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://arc-dex.xyz/app" class="nav-cta">Launch App</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- TESTNET NOTICE -->
+  <div class="testnet-banner" style="margin-top: 60px;">
+    <div class="testnet-banner-inner">
+      <div class="testnet-icon">
+        <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
+          <path d="M8 1.5L1.5 13.5H14.5L8 1.5Z" stroke="#ffa94d" stroke-width="1.2" fill="none"/>
+          <path d="M8 6V9M8 10.5V11" stroke="#ffa94d" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <p class="testnet-text"><strong>This is a testnet deployment on Arc Network.</strong> No real funds are at risk. Contracts have not been audited. All metrics shown are testnet data. Do not use with mainnet assets.</p>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div>
+        <div class="hero-eyebrow">
+          <span class="eyebrow-dot"></span>
+          Live on Arc Testnet
+        </div>
+        <h1>
+          Native DeFi for <span class="hl">Stablecoin Finance</span> on Arc
+        </h1>
+        <p class="hero-sub">
+          ARCDex is infrastructure built for the Arc ecosystem — swap USDC, EURC and USYC, provide liquidity, earn yield, and send payments on a chain purpose-built for stablecoin finance.
+        </p>
+        <div class="hero-actions">
+          <a href="https://arc-dex.xyz/app" class="btn-primary">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M9 4L13 8L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Open App
+          </a>
+          <a href="https://arcdex.gitbook.io" target="_blank" rel="noopener" class="btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2.5" y="2" width="11" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 5.5H11M5 8H11M5 10.5H8.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+            Read Docs
+          </a>
+        </div>
+        <p class="hero-disclaimer">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#556070" stroke-width="1"/><path d="M6 4V6.5M6 7.5V8" stroke="#556070" stroke-width="1.2" stroke-linecap="round"/></svg>
+          Testnet only · Unaudited contracts · No real funds
+        </p>
+      </div>
+
+      <div class="hero-card-wrap">
+        <div class="hero-card">
+          <div class="card-header">
+            <span class="card-title">Swap Stablecoins</span>
+            <span class="card-live"><span class="card-live-dot"></span>Arc Testnet</span>
+          </div>
+          <div class="swap-pair">
+            <div class="token-box">
+              <div class="token-label">You pay</div>
+              <div class="token-amount">100</div>
+              <div class="token-name">USDC</div>
+            </div>
+            <div class="swap-arrow">
+              <svg viewBox="0 0 14 14" fill="none"><path d="M3 7H11M8 4L11 7L8 10" stroke="#8a95a3" stroke-width="1.3" stroke-linecap="round"/></svg>
+            </div>
+            <div class="token-box">
+              <div class="token-label">You receive</div>
+              <div class="token-amount">99.94</div>
+              <div class="token-name">EURC</div>
+            </div>
+          </div>
+          <div class="swap-rate">Rate: <span>1 USDC = 0.9994 EURC</span> · Fee: 0.05%</div>
+          <button class="swap-btn">Connect Wallet to Swap</button>
+          <div class="card-footer">
+            <div class="card-stat">
+              <div class="card-stat-label">Pools Active</div>
+              <div class="card-stat-val">4</div>
+            </div>
+            <div class="card-stat">
+              <div class="card-stat-label">USDC APR</div>
+              <div class="card-stat-val green">10%</div>
+            </div>
+            <div class="card-stat">
+              <div class="card-stat-label">Assets</div>
+              <div class="card-stat-val">USDC/EURC/USYC</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats-section">
+    <div class="stats-grid">
+      <div class="stat-cell">
+        <div class="stat-label">Deployed Contracts</div>
+        <div class="stat-value">4</div>
+        <div class="stat-note">Verified on ArcScan</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label">Supported Assets</div>
+        <div class="stat-value">USDC · EURC · USYC</div>
+        <div class="stat-note">Arc-native stablecoins</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label">USDC Pool APR</div>
+        <div class="stat-value">10%</div>
+        <div class="stat-note">Testnet · Variable</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label">Protocol Status</div>
+        <div class="stat-value" style="color: var(--green); font-size:18px;">Testnet Live</div>
+        <div class="stat-note">Arc Network Testnet</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INFRASTRUCTURE -->
+  <section class="infra-section" id="infra">
+    <div class="container">
+      <div class="section-eyebrow">Arc Infrastructure</div>
+      <h2 class="section-title">Built for the Arc Ecosystem</h2>
+      <p class="section-sub">ARCDex integrates natively with Arc's stablecoin infrastructure — USYC, CCTP and FX Escrow — making it a real DeFi building block for the network.</p>
+
+      <div class="infra-grid">
+        <div class="infra-card">
+          <div class="infra-icon icon-green">
+            <svg viewBox="0 0 20 20" fill="none"><path d="M10 2L18 7V13L10 18L2 13V7L10 2Z" stroke="currentColor" stroke-width="1.4"/><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.4"/></svg>
+          </div>
+          <h3>USYC Integration</h3>
+          <p>ARCDex supports USYC — Arc's yield-bearing stablecoin — as a first-class asset for swaps and liquidity pools, aligning with Arc's stablecoin finance thesis.</p>
+          <span class="infra-tag">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="currentColor" stroke-width="1"/></svg>
+            Native Arc asset
+          </span>
+        </div>
+
+        <div class="infra-card">
+          <div class="infra-icon icon-blue">
+            <svg viewBox="0 0 20 20" fill="none"><path d="M4 10H16M4 10L8 6M4 10L8 14M16 10L12 6M16 10L12 14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </div>
+          <h3>CCTP Token Messenger</h3>
+          <p>Circle's Cross-Chain Transfer Protocol is integrated into ARCDex, enabling native USDC bridging into and out of the Arc ecosystem.</p>
+          <span class="infra-tag">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="currentColor" stroke-width="1"/></svg>
+            Circle protocol
+          </span>
+        </div>
+
+        <div class="infra-card">
+          <div class="infra-icon icon-teal">
+            <svg viewBox="0 0 20 20" fill="none"><rect x="3" y="5" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M7 5V4C7 3 8 2 10 2C12 2 13 3 13 4V5" stroke="currentColor" stroke-width="1.4"/></svg>
+          </div>
+          <h3>FX Escrow Contracts</h3>
+          <p>FX escrow support enables multi-currency stablecoin pairs — USDC/EURC — with protocol-level settlement, essential for cross-border payment use cases.</p>
+          <span class="infra-tag">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="currentColor" stroke-width="1"/></svg>
+            FX settlement
+          </span>
+        </div>
+
+        <div class="infra-card">
+          <div class="infra-icon icon-amber">
+            <svg viewBox="0 0 20 20" fill="none"><path d="M10 3V17M3 10H17" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M6 6L14 14M14 6L6 14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity="0.4"/></svg>
+          </div>
+          <h3>Payments Module</h3>
+          <p>Send stablecoin payments directly within ARCDex — no separate wallet needed. Designed for the Arc vision of programmable, instant stablecoin transfers.</p>
+          <span class="infra-tag">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="currentColor" stroke-width="1"/></svg>
+            Instant USDC/EURC
+          </span>
+        </div>
+
+        <div class="infra-card">
+          <div class="infra-icon icon-blue">
+            <svg viewBox="0 0 20 20" fill="none"><path d="M4 14L4 6C4 5 5 4 6 4H14C15 4 16 5 16 6V14C16 15 15 16 14 16H6C5 16 4 15 4 14Z" stroke="currentColor" stroke-width="1.4"/><path d="M8 9H12M8 12H10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </div>
+          <h3>Full Transaction History</h3>
+          <p>Every swap, liquidity event and payment is recorded and viewable inside the app — with direct links to ArcScan for on-chain verification.</p>
+          <span class="infra-tag">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="currentColor" stroke-width="1"/></svg>
+            ArcScan linked
+          </span>
+        </div>
+
+        <div class="infra-card">
+          <div class="infra-icon icon-green">
+            <svg viewBox="0 0 20 20" fill="none"><path d="M10 2L12.5 7.5L18 8.5L14 12.5L15 18L10 15.5L5 18L6 12.5L2 8.5L7.5 7.5L10 2Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+          </div>
+          <h3>Staking & Yield</h3>
+          <p>Stake liquidity to earn yield on USDC and EURC pools. APR rates are variable and dependent on pool depth — no artificially inflated numbers.</p>
+          <span class="infra-tag">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="currentColor" stroke-width="1"/></svg>
+            Variable APR
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTRACTS -->
+  <section class="contracts-section" id="contracts">
+    <div class="container">
+      <div class="section-eyebrow">On-Chain</div>
+      <h2 class="section-title">Deployed on Arc Testnet</h2>
+      <p class="section-sub">All ARCDex contracts are live on Arc testnet and verifiable on ArcScan. Source code is open on GitHub.</p>
+
+      <div class="contracts-box">
+        <div class="contracts-header">
+          <span class="contracts-title">Smart Contracts</span>
+          <span class="contracts-note">Arc Testnet · Unaudited · Open Source</span>
+        </div>
+
+        <div class="contract-row">
+          <div>
+            <div class="contract-name">ARCDex Core</div>
+            <div class="contract-desc">Swap router & liquidity pools</div>
+          </div>
+          <div class="contract-addr">0x1a2b...3c4d</div>
+          <a href="https://arcscan.io" target="_blank" rel="noopener" class="contract-link">
+            View on ArcScan
+            <svg viewBox="0 0 12 12" fill="none"><path d="M2 10L10 2M10 2H6M10 2V6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          </a>
+        </div>
+
+        <div class="contract-row">
+          <div>
+            <div class="contract-name">FX Escrow</div>
+            <div class="contract-desc">Multi-currency settlement (USDC/EURC)</div>
+          </div>
+          <div class="contract-addr">0x2b3c...4d5e</div>
+          <a href="https://arcscan.io" target="_blank" rel="noopener" class="contract-link">
+            View on ArcScan
+            <svg viewBox="0 0 12 12" fill="none"><path d="M2 10L10 2M10 2H6M10 2V6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          </a>
+        </div>
+
+        <div class="contract-row">
+          <div>
+            <div class="contract-name">CCTP Token Messenger</div>
+            <div class="contract-desc">Circle cross-chain transfer protocol</div>
+          </div>
+          <div class="contract-addr">0x3c4d...5e6f</div>
+          <a href="https://arcscan.io" target="_blank" rel="noopener" class="contract-link">
+            View on ArcScan
+            <svg viewBox="0 0 12 12" fill="none"><path d="M2 10L10 2M10 2H6M10 2V6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          </a>
+        </div>
+
+        <div class="contract-row">
+          <div>
+            <div class="contract-name">Staking Module</div>
+            <div class="contract-desc">Yield distribution for LP providers</div>
+          </div>
+          <div class="contract-addr">0x4d5e...6f7a</div>
+          <a href="https://arcscan.io" target="_blank" rel="noopener" class="contract-link">
+            View on ArcScan
+            <svg viewBox="0 0 12 12" fill="none"><path d="M2 10L10 2M10 2H6M10 2V6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <p style="margin-top:12px; font-size:12px; color:var(--text3);">
+        Replace placeholder addresses above with your real contract addresses from <code style="font-family:var(--mono); color:var(--text2);">/app/contracts</code>
+      </p>
+    </div>
+  </section>
+
+  <!-- MODULES -->
+  <section class="modules-section" id="modules">
+    <div class="container">
+      <div class="section-eyebrow">Protocol Modules</div>
+      <h2 class="section-title">Everything in One Interface</h2>
+      <p class="section-sub">Swap, earn, pay and track — all within ARCDex, without leaving the Arc ecosystem.</p>
+
+      <div class="modules-grid">
+        <div class="module-card featured">
+          <div class="module-header">
+            <h3>Swap</h3>
+            <span class="module-badge badge-live">LIVE</span>
+          </div>
+          <p>Swap between USDC, EURC and USYC with live exchange rates, a real price chart, and full swap history. Powered by on-chain Arc contracts.</p>
+        </div>
+
+        <div class="module-card">
+          <div class="module-header">
+            <h3>Liquidity Pools</h3>
+            <span class="module-badge badge-live">LIVE</span>
+          </div>
+          <p>Add or remove liquidity from USDC and EURC pools. Earn variable APR on your deposits while contributing to protocol depth.</p>
+        </div>
+
+        <div class="module-card">
+          <div class="module-header">
+            <h3>Payments</h3>
+            <span class="module-badge badge-new">NEW</span>
+          </div>
+          <p>Send USDC and EURC payments directly to any Arc address. Built to demonstrate Arc's stablecoin payments use case — fast, programmable, cross-border ready.</p>
+        </div>
+
+        <div class="module-card">
+          <div class="module-header">
+            <h3>Staking & Portfolio</h3>
+            <span class="module-badge badge-live">LIVE</span>
+          </div>
+          <p>Stake tokens to earn yield, track your full portfolio across modules, and view complete transaction history with ArcScan links.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how-section" id="how">
+    <div class="container">
+      <div class="section-eyebrow">Getting Started</div>
+      <h2 class="section-title">Four steps to start</h2>
+      <p class="section-sub" style="margin-bottom: 48px;">Get testnet tokens and start interacting with ARCDex on Arc Network in minutes.</p>
+
+      <div class="how-steps">
+        <div class="how-step">
+          <div class="step-num">01</div>
+          <h4>Get Arc Testnet Wallet</h4>
+          <p>Install a compatible wallet and connect to Arc Testnet RPC. Docs have full setup instructions.</p>
+        </div>
+        <div class="how-step">
+          <div class="step-num">02</div>
+          <h4>Claim Testnet Tokens</h4>
+          <p>Use the Arc faucet to get testnet USDC, EURC or USYC. No real funds required.</p>
+        </div>
+        <div class="how-step">
+          <div class="step-num">03</div>
+          <h4>Open ARCDex</h4>
+          <p>Connect your wallet in the app. Your balances will appear automatically once connected.</p>
+        </div>
+        <div class="how-step">
+          <div class="step-num">04</div>
+          <h4>Swap, Pool or Pay</h4>
+          <p>Explore all modules — swap stablecoins, provide liquidity, send a payment, or stake for yield.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECURITY / TRANSPARENCY -->
+  <section class="security-section" id="security">
+    <div class="container">
+      <div class="section-eyebrow">Transparency</div>
+      <h2 class="section-title" style="margin-bottom: 32px;">Honest about where we are</h2>
+
+      <div class="security-box">
+        <div class="security-left">
+          <h3>Testnet-first, transparent by design</h3>
+          <p>ARCDex is an open-source testnet protocol. We believe in being clear about what exists today and what is still being built — no inflated claims.</p>
+
+          <div class="security-items">
+            <div class="security-item">
+              <div class="security-item-icon si-amber">
+                <svg viewBox="0 0 12 12" fill="none"><path d="M6 2L10 9H2L6 2Z" stroke="currentColor" stroke-width="1" fill="none"/><path d="M6 5V7M6 7.5V8" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+              </div>
+              <div class="security-item-text">
+                <strong>Not yet audited</strong>
+                Contracts have not undergone a formal security audit. Use testnet only — never send real funds.
+              </div>
+            </div>
+
+            <div class="security-item">
+              <div class="security-item-icon si-blue">
+                <svg viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="security-item-text">
+                <strong>Open source</strong>
+                All contracts and front-end code are open on GitHub under MIT license. Read, fork, contribute.
+              </div>
+            </div>
+
+            <div class="security-item">
+              <div class="security-item-icon si-blue">
+                <svg viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="security-item-text">
+                <strong>On-chain verifiable</strong>
+                Every contract is deployed on Arc testnet and verifiable on ArcScan. No black-box dependencies.
+              </div>
+            </div>
+
+            <div class="security-item">
+              <div class="security-item-icon si-green">
+                <svg viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="security-item-text">
+                <strong>Roadmap: formal audit planned</strong>
+                A security audit is planned before any mainnet consideration. Security is not rushed.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="security-right">
+          <div class="apy-display">
+            <div class="apy-label">Current Pool Rates (Testnet)</div>
+            <div class="apy-row">
+              <span class="apy-pct">10%</span>
+              <span class="apy-asset">APR — USDC pool</span>
+            </div>
+            <div class="apy-row">
+              <span class="apy-pct" style="font-size:22px; color: var(--teal);">8%</span>
+              <span class="apy-asset">APR — EURC pool</span>
+            </div>
+            <div class="apy-note">Rates are variable and subject to pool depth. Testnet only — no real yield.</div>
+          </div>
+
+          <div style="border-top: 1px solid var(--border); padding-top: 20px;">
+            <div style="font-size:13px; color:var(--text2); margin-bottom:12px;">Protocol links</div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <a href="https://github.com/Acarlosr/ArcDex" target="_blank" rel="noopener" style="font-size:13px; color:var(--accent2); text-decoration:none; display:flex; align-items:center; gap:6px;">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1C3.7 1 1 3.7 1 7C1 9.6 2.7 11.8 5 12.6C5.3 12.7 5.4 12.5 5.4 12.3V11.1C3.7 11.5 3.3 10.4 3.3 10.4C3 9.7 2.6 9.5 2.6 9.5C2 9.1 2.7 9.1 2.7 9.1C3.4 9.2 3.7 9.8 3.7 9.8C4.3 10.8 5.2 10.5 5.5 10.3C5.6 9.9 5.7 9.6 5.9 9.4C4.1 9.2 2.2 8.5 2.2 5.5C2.2 4.7 2.5 4 3 3.5C2.9 3.3 2.6 2.5 3.1 1.5C3.1 1.5 3.7 1.3 5.4 2.3C6 2.1 6.5 2 7 2C7.5 2 8 2.1 8.6 2.3C10.3 1.3 10.9 1.5 10.9 1.5C11.4 2.5 11.1 3.3 11 3.5C11.5 4 11.8 4.7 11.8 5.5C11.8 8.5 9.9 9.2 8.1 9.4C8.4 9.7 8.6 10.2 8.6 11V12.3C8.6 12.5 8.7 12.7 9 12.6C11.3 11.8 13 9.6 13 7C13 3.7 10.3 1 7 1Z" fill="currentColor"/></svg>
+                Source code on GitHub
+              </a>
+              <a href="https://arcdex.gitbook.io" target="_blank" rel="noopener" style="font-size:13px; color:var(--accent2); text-decoration:none; display:flex; align-items:center; gap:6px;">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="1.5" width="10" height="11" rx="1.5" stroke="currentColor" stroke-width="1.1"/><path d="M4 5H10M4 7H10M4 9H7" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+                Documentation
+              </a>
+              <a href="https://arcscan.io" target="_blank" rel="noopener" style="font-size:13px; color:var(--accent2); text-decoration:none; display:flex; align-items:center; gap:6px;">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.1"/><path d="M7 4V7L9 9" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+                View contracts on ArcScan
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-left">
+        <div class="nav-logo-mark" style="width:24px;height:24px;border-radius:6px;">
+          <svg viewBox="0 0 16 16" fill="none" width="12" height="12"><path d="M3 8L8 3L13 8L8 13L3 8Z" fill="white" fill-opacity="0.9"/><path d="M8 5.5L10.5 8L8 10.5L5.5 8L8 5.5Z" fill="white"/></svg>
+        </div>
+        <span class="footer-text">ARCDex — Arc Testnet · Open Source · MIT License</span>
+      </div>
+      <div class="footer-links">
+        <a href="https://arcdex.gitbook.io" target="_blank" rel="noopener">Docs</a>
+        <a href="https://github.com/Acarlosr/ArcDex" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://arc-dex.xyz/app/contracts">Contracts</a>
+        <a href="https://twitter.com/arcdex_" target="_blank" rel="noopener">X / Twitter</a>
+      </div>
+    </div>
+    <div class="footer-disclaimer">
+      ARCDex is an experimental testnet application deployed on Arc Network testnet. Smart contracts have not been audited. This is not financial advice. Do not use with real funds. All pool rates shown are testnet-only, variable, and do not represent guaranteed returns. ARCDex is an independent project and is not affiliated with or endorsed by Circle, Arc Network, or any other entity mentioned.
+    </div>
+  </footer>
+
+</body>
+</html>
