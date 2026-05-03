@@ -124,7 +124,7 @@ export function useGetAmountOut(tokenIn: 'USDC' | 'EURC', amountIn: string) {
 }
 
 export function useSwap() {
-    const { writeContract, data: hash, isPending, error } = useWriteContract()
+    const { writeContractAsync, data: hash, isPending, error } = useWriteContract()
     const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
 
     const swap = async (tokenIn: 'USDC' | 'EURC', amountIn: string, minAmountOut: string) => {
@@ -132,7 +132,7 @@ export function useSwap() {
         const parsedAmountIn = parseTokenAmount(amountIn)
         const parsedMinOut = parseTokenAmount(minAmountOut)
 
-        writeContract({
+        return writeContractAsync({
             address: ARCDEX.Swap as `0x${string}`,
             abi: ARCDEX_SWAP_ABI,
             functionName: 'swap',
@@ -151,14 +151,14 @@ export function useSwap() {
 }
 
 export function useAddLiquidity() {
-    const { writeContract, data: hash, isPending, error } = useWriteContract()
+    const { writeContractAsync, data: hash, isPending, error } = useWriteContract()
     const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
 
     const addLiquidity = async (amountUSDC: string, amountEURC: string) => {
         const parsedUSDC = parseTokenAmount(amountUSDC)
         const parsedEURC = parseTokenAmount(amountEURC)
 
-        writeContract({
+        return writeContractAsync({
             address: ARCDEX.Swap as `0x${string}`,
             abi: ARCDEX_SWAP_ABI,
             functionName: 'addLiquidity',
@@ -177,13 +177,13 @@ export function useAddLiquidity() {
 }
 
 export function useRemoveLiquidity() {
-    const { writeContract, data: hash, isPending, error } = useWriteContract()
+    const { writeContractAsync, data: hash, isPending, error } = useWriteContract()
     const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
 
     const removeLiquidity = async (lpTokenAmount: string) => {
         const parsedAmount = parseTokenAmount(lpTokenAmount)
 
-        writeContract({
+        return writeContractAsync({
             address: ARCDEX.Swap as `0x${string}`,
             abi: ARCDEX_SWAP_ABI,
             functionName: 'removeLiquidity',
@@ -288,14 +288,14 @@ export function useTotalStaked(token: 'USDC' | 'EURC') {
 }
 
 export function useStake() {
-    const { writeContract, data: hash, isPending, error } = useWriteContract()
+    const { writeContractAsync, data: hash, isPending, error } = useWriteContract()
     const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
 
     const stake = async (token: 'USDC' | 'EURC', amount: string) => {
         const tokenAddress = TOKENS[token]
         const parsedAmount = parseTokenAmount(amount)
 
-        writeContract({
+        return writeContractAsync({
             address: ARCDEX.Staking as `0x${string}`,
             abi: ARCDEX_STAKING_ABI,
             functionName: 'stake',
@@ -314,14 +314,14 @@ export function useStake() {
 }
 
 export function useUnstake() {
-    const { writeContract, data: hash, isPending, error } = useWriteContract()
+    const { writeContractAsync, data: hash, isPending, error } = useWriteContract()
     const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
 
     const unstake = async (token: 'USDC' | 'EURC', amount: string) => {
         const tokenAddress = TOKENS[token]
         const parsedAmount = parseTokenAmount(amount)
 
-        writeContract({
+        return writeContractAsync({
             address: ARCDEX.Staking as `0x${string}`,
             abi: ARCDEX_STAKING_ABI,
             functionName: 'unstake',
