@@ -245,7 +245,7 @@ function PortugueseDocsPage() {
                     <div>
                         <h1 className="text-4xl font-bold text-foreground mb-4">Introdução</h1>
                         <p className="text-xl text-muted-foreground">
-                            ARCDex é uma plataforma DeFi na Arc Network Testnet para swap, staking, pools de liquidez e pagamentos em stablecoins.
+                            ARCDex é uma plataforma DeFi na Arc Network Testnet para swap, staking, pools de liquidez, pagamentos em stablecoins e suporte experimental a cirBTC.
                         </p>
                     </div>
                     <Card className="bg-card border-primary/30">
@@ -256,7 +256,7 @@ function PortugueseDocsPage() {
                                 <li>Fazer stake de stablecoins para testar yield na Arc Testnet.</li>
                                 <li>Fornecer liquidez em pools e acompanhar sua participação.</li>
                                 <li>Enviar pagamentos on-chain com memo e taxa baixa.</li>
-                                <li>Acompanhar saldos, contratos e histórico pelo app.</li>
+                                <li>Acompanhar saldos de USDC, EURC e cirBTC pelo app.</li>
                             </ul>
                         </CardContent>
                     </Card>
@@ -268,7 +268,7 @@ function PortugueseDocsPage() {
                         {[
                             ["1", "Conecte a carteira", "Use WalletConnect no mobile ou uma extensão EVM no desktop."],
                             ["2", "Adicione a Arc Testnet", "Chain ID 5042034, RPC https://rpc.testnet.arc.network e explorer https://testnet.arcscan.app."],
-                            ["3", "Pegue tokens de teste", "Use o Circle Faucet e selecione a rede Arc para solicitar USDC de testnet."],
+                            ["3", "Pegue tokens de teste", "Use o Circle Faucet e selecione a rede Arc para solicitar tokens de testnet como USDC e cirBTC quando disponível."],
                             ["4", "Teste o fluxo", "Comece por swap, depois teste pools, stake, pagamentos e portfolio."],
                         ].map(([step, title, body]) => (
                             <Card key={step} className="bg-card border-border">
@@ -613,7 +613,7 @@ function WhyArcDexSection() {
                                 Stablecoin-First Design
                             </h4>
                             <p className="text-muted-foreground text-sm">
-                                Built specifically for stablecoins (USDC, EURC) and yield-bearing tokens (USYC), 
+                                Built specifically for stablecoins (USDC, EURC) and Circle assets like cirBTC,
                                 optimized for real-world financial applications.
                             </p>
                         </div>
@@ -997,7 +997,7 @@ function PortfolioSection() {
                             <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
                                 <li>USDC Balance</li>
                                 <li>EURC Balance</li>
-                                <li>USYC Balance</li>
+                                <li>cirBTC Balance</li>
                             </ul>
                         </div>
                         <div className="space-y-2">
@@ -1160,9 +1160,9 @@ function TokensSection() {
                         </tr>
                     </thead>
                     <tbody>
-                        <TokenRow symbol="USDC" address="0x3600000000000000000000000000000000000000" type="Native Gas Token" />
-                        <TokenRow symbol="EURC" address="0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a" type="Stablecoin" />
-                        <TokenRow symbol="USYC" address="0xe9185F0c5F296Ed1797AaE4238D26CCaBEadb86C" type="Yield-Bearing" />
+                        <TokenRow symbol="USDC" address="0x3600000000000000000000000000000000000000" decimals={6} type="Native Gas Token" />
+                        <TokenRow symbol="EURC" address="0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a" decimals={6} type="Stablecoin" />
+                        <TokenRow symbol="cirBTC" address="0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF" decimals={8} type="Circle Wrapped Bitcoin" />
                     </tbody>
                 </table>
             </div>
@@ -1187,10 +1187,10 @@ function TokensSection() {
                             </p>
                         </div>
                         <div>
-                            <h4 className="font-semibold text-foreground mb-2">USYC (US Yield Coin)</h4>
+                            <h4 className="font-semibold text-foreground mb-2">cirBTC (Circle Wrapped Bitcoin)</h4>
                             <p className="text-sm text-muted-foreground">
-                                USYC is a yield-bearing token representing tokenized money market fund shares. 
-                                It uses 6 decimals and requires allowlisting for minting/redeeming on testnet.
+                                cirBTC is Circle Wrapped Bitcoin on Arc Testnet. Testnet cirBTC has no financial value
+                                and is listed in ARCDex for balances, portfolio tracking, and future swap/pool support.
                             </p>
                         </div>
                     </div>
@@ -1622,12 +1622,12 @@ function ContractCard({ name, address, desc, functions }: { name: string, addres
     )
 }
 
-function TokenRow({ symbol, address, type }: { symbol: string, address: string, type?: string }) {
+function TokenRow({ symbol, address, decimals = 6, type }: { symbol: string, address: string, decimals?: number, type?: string }) {
     return (
         <tr className="border-t border-border hover:bg-muted/50 transition-colors">
             <td className="p-4 font-semibold">{symbol}</td>
             <td className="p-4 font-mono text-sm text-muted-foreground">{address}</td>
-            <td className="p-4">6</td>
+            <td className="p-4">{decimals}</td>
             <td className="p-4 text-sm text-muted-foreground">{type || "ERC-20"}</td>
         </tr>
     )

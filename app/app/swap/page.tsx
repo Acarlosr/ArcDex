@@ -13,11 +13,11 @@ import { PriceChart } from "@/components/price-chart"
 import { useCompliance } from "@/hooks/useCompliance"
 import { useI18n } from "@/lib/i18n"
 
-type SwapToken = "USDC" | "EURC" | "USYC"
+type SwapToken = "USDC" | "EURC" | "CIRBTC"
 
-// Check if a swap pair is available (USYC pairs not deployed yet)
+// Check if a swap pair is available (cirBTC pairs not deployed yet)
 function isSwapEnabled(from: SwapToken, to: SwapToken): boolean {
-  if (from === "USYC" || to === "USYC") return false // USYC contracts not deployed
+  if (from === "CIRBTC" || to === "CIRBTC") return false // cirBTC pools not deployed yet
   return from !== to
 }
 
@@ -200,10 +200,10 @@ export default function SwapPage() {
   // Get real balances from blockchain
   const { formatted: usdcBalance, isLoading: usdcLoading, refetch: refetchUSDC } = useTokenBalance('USDC')
   const { formatted: eurcBalance, isLoading: eurcLoading, refetch: refetchEURC } = useTokenBalance('EURC')
-  const { formatted: usycBalance, isLoading: usycLoading, refetch: refetchUSYC } = useTokenBalance('USYC')
+  const { formatted: cirbtcBalance, isLoading: cirbtcLoading, refetch: refetchCIRBTC } = useTokenBalance('CIRBTC')
 
   // Get amount out from contract (only for USDC/EURC pairs)
-  const swapFromToken = fromToken === 'USYC' ? 'USDC' : fromToken
+  const swapFromToken = fromToken === 'CIRBTC' ? 'USDC' : fromToken
   const { formatted: amountOut, isLoading: quoteLoading } = useGetAmountOut(
     swapEnabled ? swapFromToken : 'USDC',
     swapEnabled ? fromAmount : ''
@@ -227,7 +227,7 @@ export default function SwapPage() {
   const getBalance = (token: SwapToken) => {
     if (token === 'USDC') return { balance: usdcBalance, loading: usdcLoading }
     if (token === 'EURC') return { balance: eurcBalance, loading: eurcLoading }
-    return { balance: usycBalance, loading: usycLoading }
+    return { balance: cirbtcBalance, loading: cirbtcLoading }
   }
 
   const fromBalance = getBalance(fromToken).balance
@@ -251,6 +251,7 @@ export default function SwapPage() {
       const timer = setTimeout(() => {
         refetchUSDC()
         refetchEURC()
+        refetchCIRBTC()
         refetchAllowance()
         setFromAmount("")
         setJustApproved(false)
@@ -258,7 +259,7 @@ export default function SwapPage() {
       }, 1000)
       return () => clearTimeout(timer)
     }
-  }, [swapSuccess, swapHash, refetchUSDC, refetchEURC, refetchAllowance])
+  }, [swapSuccess, swapHash, refetchUSDC, refetchEURC, refetchCIRBTC, refetchAllowance])
 
   // After approval confirms on-chain, update local state and aggressively refetch
   useEffect(() => {
@@ -341,7 +342,7 @@ export default function SwapPage() {
               <div className="flex items-center gap-2">
                 <label className="text-sm font-medium text-muted-foreground">{t("swap.from")}</label>
                 {!swapEnabled && (
-                  <span className="text-xs text-yellow-600 dark:text-yellow-400 bg-yellow-500/20 px-2 py-0.5 rounded-full">{t("swap.usycSoon")}</span>
+                  <span className="text-xs text-yellow-600 dark:text-yellow-400 bg-yellow-500/20 px-2 py-0.5 rounded-full">{t("swap.pairSoon")}</span>
                 )}
               </div>
               <div className="flex gap-4">
@@ -353,13 +354,13 @@ export default function SwapPage() {
                     // Auto-select appropriate toToken
                     if (newFrom === "USDC") setToToken("EURC")
                     else if (newFrom === "EURC") setToToken("USDC")
-                    else if (newFrom === "USYC") setToToken("USDC")
+                    else if (newFrom === "CIRBTC") setToToken("USDC")
                   }}
                   className="bg-input text-foreground border border-border rounded-xl p-4 w-32 text-lg font-medium"
                 >
                   <option value="USDC">USDC</option>
                   <option value="EURC">EURC</option>
-                  <option value="USYC">USYC ⏳</option>
+                  <option value="CIRBTC">cirBTC ⏳</option>
                 </select>
                 <Input
                   type="number"
@@ -407,13 +408,13 @@ export default function SwapPage() {
                     // Auto-select appropriate fromToken
                     if (newTo === "USDC") setFromToken(fromToken === "USDC" ? "EURC" : fromToken)
                     else if (newTo === "EURC") setFromToken(fromToken === "EURC" ? "USDC" : fromToken)
-                    else if (newTo === "USYC") setFromToken(fromToken === "USYC" ? "USDC" : fromToken)
+                    else if (newTo === "CIRBTC") setFromToken(fromToken === "CIRBTC" ? "USDC" : fromToken)
                   }}
                   className="bg-input text-foreground border border-border rounded-xl p-4 w-32 text-lg font-medium"
                 >
                   <option value="USDC">USDC</option>
                   <option value="EURC">EURC</option>
-                  <option value="USYC">USYC ⏳</option>
+                  <option value="CIRBTC">cirBTC ⏳</option>
                 </select>
                 <Input
                   type="text"
@@ -547,6 +548,15 @@ export default function SwapPage() {
                 </div>
                 <span className="text-foreground font-medium">
                   {eurcLoading ? "..." : eurcBalance}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white text-xs font-bold">₿</div>
+                  <span className="text-foreground">cirBTC</span>
+                </div>
+                <span className="text-foreground font-medium">
+                  {cirbtcLoading ? "..." : cirbtcBalance}
                 </span>
               </div>
             </div>

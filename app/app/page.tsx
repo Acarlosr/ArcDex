@@ -141,7 +141,7 @@ export default function AppHome() {
             </div>
             <div>
               <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">{t("app.supportedTokens")}</p>
-              <p className="text-xl font-bold text-foreground">USDC, EURC</p>
+              <p className="text-xl font-bold text-foreground">USDC, EURC, cirBTC</p>
               <p className="text-sm text-muted-foreground mt-1">{t("app.stablecoinFocus")}</p>
             </div>
           </div>

@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { ExternalLink, Shield, FileCode, Copy, Check, ChevronLeft } from "lucide-react"
 import { useState } from "react"
-import { ARCDEX, TOKENS, USYC_CONTRACTS, CCTP, PAYMENTS, ARCSCAN_URL } from "@/lib/contracts"
+import { ARCDEX, TOKENS, CCTP, PAYMENTS, ARCSCAN_URL } from "@/lib/contracts"
 import { useI18n } from "@/lib/i18n"
 
 interface ContractCardProps {
@@ -146,9 +146,9 @@ export default function ContractsPage() {
                             description="Euro-denominated stablecoin by Circle"
                         />
                         <ContractCard
-                            name="USYC"
-                            address={TOKENS.USYC}
-                            description="Yield-bearing tokenized money market fund"
+                            name="cirBTC"
+                            address={TOKENS.CIRBTC}
+                            description="Circle Wrapped Bitcoin on Arc Testnet"
                         />
                     </div>
                 </section>
@@ -160,16 +160,6 @@ export default function ContractsPage() {
                         {t("contracts.infrastructure")}
                     </h2>
                     <div className="grid gap-4 md:grid-cols-2">
-                        <ContractCard
-                            name="USYC Teller"
-                            address={USYC_CONTRACTS.Teller}
-                            description="Mint/redeem USYC from USDC"
-                        />
-                        <ContractCard
-                            name="USYC Entitlements"
-                            address={USYC_CONTRACTS.Entitlements}
-                            description="Access control for USYC"
-                        />
                         <ContractCard
                             name="CCTP Token Messenger"
                             address={CCTP.TokenMessengerV2}

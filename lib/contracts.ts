@@ -43,9 +43,11 @@ export const TOKENS = {
   // EURC - Euro-denominated stablecoin by Circle (6 decimals)
   EURC: "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a" as const,
 
-  // USYC - Yield-bearing token, tokenized money market fund (6 decimals)
-  USYC: "0xe9185F0c5F296Ed1797AaE4238D26CCaBEadb86C" as const,
+  // cirBTC - Circle Wrapped Bitcoin on Arc Testnet
+  CIRBTC: "0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF" as const,
 } as const;
+
+export type TokenSymbol = keyof typeof TOKENS;
 
 // Token metadata for UI display
 export const TOKEN_INFO = {
@@ -61,24 +63,12 @@ export const TOKEN_INFO = {
     decimals: 6,
     icon: "/tokens/eurc.svg",
   },
-  [TOKENS.USYC]: {
-    symbol: "USYC",
-    name: "US Yield Coin",
-    decimals: 6,
-    icon: "/tokens/usyc.svg",
+  [TOKENS.CIRBTC]: {
+    symbol: "cirBTC",
+    name: "Circle Wrapped Bitcoin",
+    decimals: 8,
+    icon: "/tokens/cirbtc.svg",
   },
-} as const;
-
-// ============================================================================
-// USYC RELATED CONTRACTS
-// ============================================================================
-
-export const USYC_CONTRACTS = {
-  // Manages allowlisted access and entitlement controls
-  Entitlements: "0xcc205224862c7641930c87679e98999d23c26113" as const,
-
-  // Contract to mint and redeem testnet USYC from testnet USDC
-  Teller: "0x9fdF14c5B14173D74C08Af27AebFf39240dC105A" as const,
 } as const;
 
 // ============================================================================
@@ -132,16 +122,13 @@ export const ARCDEX = {
   // P2P Payments
   Payments: (process.env.NEXT_PUBLIC_ARCDEX_PAYMENTS ?? "0x515683c9399445df4a38915c2130cc498aba4319") as `0x${string}`,
 
-  // USYC Pools (deploy and update addresses)
-  LP_USYC: "" as const, // TODO: Update after deploy
-  SwapUSYC: "" as const, // TODO: Update after deploy
 } as const;
 
 // ============================================================================
 // POOL DEFINITIONS
 // ============================================================================
 
-export type PoolPair = "USDC_EURC" | "USYC_USDC" | "USYC_EURC";
+export type PoolPair = "USDC_EURC" | "CIRBTC_USDC" | "CIRBTC_EURC";
 
 export const POOLS: Record<PoolPair, {
   name: string;
@@ -163,25 +150,25 @@ export const POOLS: Record<PoolPair, {
     apr: 12.4,
     icon: "💱",
   },
-  USYC_USDC: {
-    name: "USYC / USDC",
-    token0: "USYC",
+  CIRBTC_USDC: {
+    name: "cirBTC / USDC",
+    token0: "CIRBTC",
     token1: "USDC",
-    lpToken: ARCDEX.LP_USYC,
-    swapContract: ARCDEX.SwapUSYC,
-    enabled: false, // Enable after deployment
-    apr: 8.5,
-    icon: "📈",
+    lpToken: "",
+    swapContract: "",
+    enabled: false, // Enable after cirBTC pool deployment
+    apr: 6.8,
+    icon: "₿",
   },
-  USYC_EURC: {
-    name: "USYC / EURC",
-    token0: "USYC",
+  CIRBTC_EURC: {
+    name: "cirBTC / EURC",
+    token0: "CIRBTC",
     token1: "EURC",
-    lpToken: ARCDEX.LP_USYC,
-    swapContract: ARCDEX.SwapUSYC,
-    enabled: false, // Enable after deployment
-    apr: 7.2,
-    icon: "📊",
+    lpToken: "",
+    swapContract: "",
+    enabled: false, // Enable after cirBTC pool deployment
+    apr: 6.1,
+    icon: "₿",
   },
 };
 
@@ -210,7 +197,7 @@ export const PROTOCOL = {
 // HELPER FUNCTIONS
 // ============================================================================
 
-export function getTokenAddress(symbol: "USDC" | "EURC" | "USYC"): string {
+export function getTokenAddress(symbol: TokenSymbol): string {
   return TOKENS[symbol];
 }
 

@@ -1,16 +1,17 @@
 'use client'
 
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
-import { ARCDEX, TOKENS, parseTokenAmount, formatTokenAmount } from '@/lib/contracts'
+import { ARCDEX, TOKENS, TOKEN_INFO, TokenSymbol, parseTokenAmount, formatTokenAmount } from '@/lib/contracts'
 import { ERC20_ABI, ARCDEX_SWAP_ABI, ARCDEX_STAKING_ABI, ARCDEX_PAYMENTS_ABI } from '@/lib/abi'
 
 // ============================================================================
 // TOKEN HOOKS
 // ============================================================================
 
-export function useTokenBalance(token: 'USDC' | 'EURC' | 'USYC', enabled = true) {
+export function useTokenBalance(token: TokenSymbol, enabled = true) {
     const { address } = useAccount()
     const tokenAddress = TOKENS[token]
+    const decimals = TOKEN_INFO[tokenAddress].decimals
 
     const { data, isLoading, refetch } = useReadContract({
         address: tokenAddress as `0x${string}`,
@@ -24,7 +25,7 @@ export function useTokenBalance(token: 'USDC' | 'EURC' | 'USYC', enabled = true)
 
     return {
         balance: data as bigint | undefined,
-        formatted: data ? formatTokenAmount(data as bigint) : '0.00',
+        formatted: data ? formatTokenAmount(data as bigint, decimals) : '0.00',
         isLoading,
         refetch,
     }

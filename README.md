@@ -44,7 +44,7 @@ Arc Network is a Layer 1 blockchain optimized for **stablecoin-native DeFi** and
 ### **Native Stablecoin Infrastructure**
 - **USDC as native gas** — No ETH/volatile gas tokens required
 - **Built-in CCTP support** — Cross-chain transfers via Circle's Cross-Chain Transfer Protocol
-- **Stablecoin-first design** — Optimized for USDC, EURC, and yield-bearing tokens like USYC
+- **Stablecoin-first design** — Optimized for USDC, EURC, and Arc-native Circle assets like cirBTC
 
 ### **Developer Experience**
 - **EVM-compatible** — Use familiar tools (Foundry, Hardhat, Wagmi)
@@ -52,9 +52,9 @@ Arc Network is a Layer 1 blockchain optimized for **stablecoin-native DeFi** and
 - **Low fees** — Cost-effective for high-frequency DeFi operations
 - **Testnet available** — Full-featured testnet for development and testing
 
-### **Real-World Asset Focus**
-- **USYC integration** — Tokenized money market funds on-chain
-- **RWA primitives** — Infrastructure for asset tokenization
+### **Circle Asset Focus**
+- **cirBTC-ready UX** — Circle Wrapped Bitcoin support for balances and future pools
+- **Stablecoin primitives** — Infrastructure for USDC and EURC workflows
 - **Regulatory clarity** — Built with compliance in mind
 
 ### **Why ArcDex on Arc?**
@@ -62,7 +62,7 @@ ArcDex leverages Arc's stablecoin-native architecture to provide:
 - **Seamless swaps** between stablecoins without gas token conversions
 - **Efficient staking** with USDC/EURC directly
 - **Low-cost payments** optimized for stablecoin transfers
-- **Future RWA support** via USYC and other tokenized assets
+- **Future asset support** via cirBTC and other Arc-compatible tokens
 
 ---
 
@@ -77,7 +77,7 @@ ArcDex leverages Arc's stablecoin-native architecture to provide:
 - Add and remove liquidity
 - View LP positions
 - Active pools: **USDC / EURC**
-- USYC pools prepared (pending deploy)
+- cirBTC pools prepared (pending deploy)
 
 ### 🥩 Staking
 - Stake & unstake tokens
@@ -106,7 +106,7 @@ The Portfolio section was developed in well-defined phases, focusing on realism 
 
 ### Phase 3 – Real Token Balances
 - On-chain ERC-20 balance reading via wagmi
-- Supported tokens: **USDC**, **EURC**, **USYC**
+- Supported tokens: **USDC**, **EURC**, **cirBTC**
 - Wallet connection & loading states
 
 ### Phase 4 – Transactions
@@ -181,7 +181,7 @@ Integrated Docs page inside the dApp, prepared for onboarding content:
 | ArcDexLP | `0x823f387a392bdc1ef57bc30cc005be7e6d067f13` | ✅ Deployed |
 | ArcDexStaking | `0x5d1ddbafd6a11131154a635563699230f0b9229b` | ✅ Deployed |
 | ArcDexPayments | `0x515683c9399445df4a38915c2130cc498aba4319` | ✅ Deployed |
-| USYC Pools | — | ⏳ Pending deploy |
+| cirBTC Pools | — | ⏳ Pending deploy |
 
 ---
 

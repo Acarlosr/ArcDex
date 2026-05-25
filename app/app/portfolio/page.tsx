@@ -77,14 +77,14 @@ function getTxType(tx: ArcScanTx, userAddress: string): { type: string; icon: 's
 const TOKEN_CONFIG = [
     { key: 'USDC' as const, symbol: 'USDC', name: 'USD Coin', icon: '$', bgColor: 'bg-blue-500', coingeckoId: 'usd-coin', defaultPrice: 1.00 },
     { key: 'EURC' as const, symbol: 'EURC', name: 'Euro Coin', icon: '€', bgColor: 'bg-blue-600', coingeckoId: 'euro-coin', defaultPrice: 1.00 },
-    { key: 'USYC' as const, symbol: 'USYC', name: 'US Yield Coin', icon: 'Y', bgColor: 'bg-green-500', coingeckoId: null, defaultPrice: 1.00 },
+    { key: 'CIRBTC' as const, symbol: 'cirBTC', name: 'Circle Wrapped Bitcoin', icon: '₿', bgColor: 'bg-orange-500', coingeckoId: 'bitcoin', defaultPrice: 100000.00 },
 ]
 
 // Default prices (fallback for testnet)
 const DEFAULT_PRICES: Record<string, number> = {
     USDC: 1.00,
     EURC: 1.00,
-    USYC: 1.00,
+    CIRBTC: 100000.00,
 }
 
 // Format USD value
@@ -553,22 +553,22 @@ export default function PortfolioPage() {
     // Token balances - real blockchain data
     const { formatted: usdcBalance, isLoading: usdcLoading, refetch: refetchUSDC } = useTokenBalance('USDC')
     const { formatted: eurcBalance, isLoading: eurcLoading, refetch: refetchEURC } = useTokenBalance('EURC')
-    const { formatted: usycBalance, isLoading: usycLoading, refetch: refetchUSYC } = useTokenBalance('USYC')
+    const { formatted: cirbtcBalance, isLoading: cirbtcLoading, refetch: refetchCIRBTC } = useTokenBalance('CIRBTC')
 
-    const isAnyLoading = usdcLoading || eurcLoading || usycLoading || pricesLoading
+    const isAnyLoading = usdcLoading || eurcLoading || cirbtcLoading || pricesLoading
 
     // Calculate total tokens (sum of all balances in token units)
     const totalTokens = isConnected && !isAnyLoading
         ? (parseFloat(usdcBalance.replace(',', '')) || 0) +
         (parseFloat(eurcBalance.replace(',', '')) || 0) +
-        (parseFloat(usycBalance.replace(',', '')) || 0)
+        (parseFloat(cirbtcBalance.replace(',', '')) || 0)
         : 0
 
     // Calculate Net Worth in USD
     const netWorthUSD = isConnected && !isAnyLoading
         ? (parseFloat(usdcBalance.replace(',', '')) || 0) * prices.USDC +
         (parseFloat(eurcBalance.replace(',', '')) || 0) * prices.EURC +
-        (parseFloat(usycBalance.replace(',', '')) || 0) * prices.USYC
+        (parseFloat(cirbtcBalance.replace(',', '')) || 0) * prices.CIRBTC
         : 0
 
     // Generate chart data based on current value
@@ -578,15 +578,15 @@ export default function PortfolioPage() {
     const tokensWithBalance = [
         parseFloat(usdcBalance.replace(',', '')) || 0,
         parseFloat(eurcBalance.replace(',', '')) || 0,
-        parseFloat(usycBalance.replace(',', '')) || 0,
+        parseFloat(cirbtcBalance.replace(',', '')) || 0,
     ].filter(b => b > 0).length
 
     // Get balance for each token
-    const getBalanceData = (key: 'USDC' | 'EURC' | 'USYC') => {
+    const getBalanceData = (key: 'USDC' | 'EURC' | 'CIRBTC') => {
         switch (key) {
             case 'USDC': return { balance: usdcBalance, isLoading: usdcLoading }
             case 'EURC': return { balance: eurcBalance, isLoading: eurcLoading }
-            case 'USYC': return { balance: usycBalance, isLoading: usycLoading }
+            case 'CIRBTC': return { balance: cirbtcBalance, isLoading: cirbtcLoading }
         }
     }
 
@@ -594,7 +594,7 @@ export default function PortfolioPage() {
     const handleRefresh = () => {
         refetchUSDC()
         refetchEURC()
-        refetchUSYC()
+        refetchCIRBTC()
         refetchPrices()
     }
 
@@ -665,14 +665,14 @@ export default function PortfolioPage() {
                     </p>
                 </div>
 
-                {/* USYC Balance Card */}
+                {/* cirBTC Balance Card */}
                 <div className="bg-card rounded-2xl p-6 border border-border hover:border-cyan-500/30 transition-colors">
-                    <p className="text-sm text-muted-foreground mb-2">{t("portfolio.usycBalance")}</p>
+                    <p className="text-sm text-muted-foreground mb-2">{t("portfolio.cirbtcBalance")}</p>
                     <p className="text-2xl font-bold text-foreground mb-1 font-mono">
-                        {!isConnected ? "—" : usycLoading ? "..." : usycBalance}
+                        {!isConnected ? "—" : cirbtcLoading ? "..." : cirbtcBalance}
                     </p>
                     <p className="text-sm font-medium text-accent">
-                        {!isConnected ? "—" : isAnyLoading ? "..." : formatUSD((parseFloat(usycBalance.replace(',', '')) || 0) * prices.USYC)}
+                        {!isConnected ? "—" : isAnyLoading ? "..." : formatUSD((parseFloat(cirbtcBalance.replace(',', '')) || 0) * prices.CIRBTC)}
                     </p>
                 </div>
             </div>

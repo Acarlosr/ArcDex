@@ -36,7 +36,7 @@ ArcDex is a DeFi platform designed to provide essential financial services on th
 |-------|---------|----------|
 | USDC | `0x3600000000000000000000000000000000000000` | 6 |
 | EURC | `0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a` | 6 |
-| USYC | `0xe9185F0c5F296Ed1797AaE4238D26CCaBEadb86C` | 6 |
+| cirBTC | `0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF` | 8 |
 
 ---
 

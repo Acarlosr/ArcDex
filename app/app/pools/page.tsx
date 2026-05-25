@@ -36,7 +36,7 @@ export default function PoolsPage() {
   // Get real balances for all tokens
   const { formatted: usdcBalance, isLoading: usdcLoading, refetch: refetchUSDC } = useTokenBalance('USDC')
   const { formatted: eurcBalance, isLoading: eurcLoading, refetch: refetchEURC } = useTokenBalance('EURC')
-  const { formatted: usycBalance, isLoading: usycLoading, refetch: refetchUSYC } = useTokenBalance('USYC')
+  const { formatted: cirbtcBalance, isLoading: cirbtcLoading, refetch: refetchCIRBTC } = useTokenBalance('CIRBTC')
   const { formatted: lpBalance, balance: lpBalanceRaw, isLoading: lpLoading, refetch: refetchLP } = useLPBalance()
   const { totalSupply: lpTotalSupplyRaw } = useLPTotalSupply()
   const { formattedUSDC: poolUSDC, formattedEURC: poolEURC, reserveUSDC, reserveEURC } = useSwapReserves()
@@ -45,7 +45,7 @@ export default function PoolsPage() {
   const getBalance = (token: string) => {
     if (token === 'USDC') return { balance: usdcBalance, loading: usdcLoading }
     if (token === 'EURC') return { balance: eurcBalance, loading: eurcLoading }
-    if (token === 'USYC') return { balance: usycBalance, loading: usycLoading }
+    if (token === 'CIRBTC') return { balance: cirbtcBalance, loading: cirbtcLoading }
     return { balance: '0.00', loading: false }
   }
 
@@ -116,7 +116,7 @@ export default function PoolsPage() {
       const timer = setTimeout(() => {
         refetchUSDC()
         refetchEURC()
-        refetchUSYC()
+        refetchCIRBTC()
         refetchLP()
         refetchToken0Allowance()
         refetchToken1Allowance()
@@ -127,7 +127,7 @@ export default function PoolsPage() {
       }, 1000)
       return () => clearTimeout(timer)
     }
-  }, [addSuccess, addHash, removeSuccess, removeHash, refetchUSDC, refetchEURC, refetchUSYC, refetchLP, refetchToken0Allowance, refetchToken1Allowance])
+  }, [addSuccess, addHash, removeSuccess, removeHash, refetchUSDC, refetchEURC, refetchCIRBTC, refetchLP, refetchToken0Allowance, refetchToken1Allowance])
 
   const handleAddLiquidity = async () => {
     if (!amount0 || !amount1 || !pool.enabled) return
@@ -169,7 +169,7 @@ export default function PoolsPage() {
       <MobileWalletHint />
 
       {/* Pool Selector Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4 mb-8">
         {(Object.keys(POOLS) as PoolPair[]).map((poolKey) => {
           const p = POOLS[poolKey]
           const isSelected = selectedPool === poolKey
@@ -273,22 +273,6 @@ export default function PoolsPage() {
                   </td>
                 </tr>
 
-                {/* Placeholder rows for future pools */}
-                {/*
-                <tr className="border-b border-border/50 opacity-50">
-                  <td className="py-4 px-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">📈</span>
-                      <span className="font-medium text-foreground">USYC / USDC</span>
-                    </div>
-                  </td>
-                  <td className="text-right py-4 px-4 text-muted-foreground">—</td>
-                  <td className="text-right py-4 px-4 text-muted-foreground">—</td>
-                  <td className="text-right py-4 px-4 text-muted-foreground">—</td>
-                  <td className="text-right py-4 px-4 text-muted-foreground">—</td>
-                  <td className="text-right py-4 px-4 text-muted-foreground text-xs">Coming Soon</td>
-                </tr>
-                */}
               </tbody>
             </table>
           </div>
@@ -504,10 +488,10 @@ export default function PoolsPage() {
               </div>
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-white text-xs font-bold">Y</div>
-                  <span className="text-foreground">USYC</span>
+                  <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white text-xs font-bold">₿</div>
+                  <span className="text-foreground">cirBTC</span>
                 </div>
-                <span className="text-foreground font-medium">{usycLoading ? "..." : usycBalance}</span>
+                <span className="text-foreground font-medium">{cirbtcLoading ? "..." : cirbtcBalance}</span>
               </div>
               <div className="flex justify-between items-center border-t border-border pt-3">
                 <div className="flex items-center gap-2">
