@@ -24,6 +24,7 @@ import { ERC20_ABI, ARCDEX_STAKING_ABI } from "@/lib/abi"
 import { MobileWalletHint } from "@/components/mobile-wallet-hint"
 import { PriceChart } from "@/components/price-chart"
 import { useCompliance } from "@/hooks/useCompliance"
+import { useI18n } from "@/lib/i18n"
 
 interface StakeTx {
   hash: string
@@ -36,6 +37,7 @@ interface StakeTx {
 }
 
 export default function StakePage() {
+  const { t } = useI18n()
   const [selectedToken, setSelectedToken] = useState<"USDC" | "EURC">("USDC")
   const [stakeAmount, setStakeAmount] = useState("")
   const [unstakeAmount, setUnstakeAmount] = useState("")
@@ -309,8 +311,8 @@ export default function StakePage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Stake & Earn</h1>
-          <p className="text-muted-foreground mt-1">Stake your USDC or EURC to earn annual yield on Arc Testnet.</p>
+          <h1 className="text-3xl font-bold text-foreground">{t("stake.title")}</h1>
+          <p className="text-muted-foreground mt-1">{t("stake.subtitle")}</p>
         </div>
       </div>
 
@@ -320,12 +322,12 @@ export default function StakePage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Stake Card */}
         <div className="bg-card rounded-2xl p-8 border border-border glow-border">
-          <h2 className="text-xl font-semibold text-foreground mb-6">Stake Tokens</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-6">{t("stake.tokens")}</h2>
 
           <div className="space-y-4 mb-6">
             {/* Token Selection */}
             <div className="space-y-2">
-              <Label htmlFor="token-select" className="text-foreground">Token</Label>
+              <Label htmlFor="token-select" className="text-foreground">{t("common.token")}</Label>
               <select
                 id="token-select"
                 value={selectedToken}
@@ -342,7 +344,7 @@ export default function StakePage() {
 
             {/* Amount Input */}
             <div className="space-y-2">
-              <Label htmlFor="stake-amount" className="text-foreground">Amount</Label>
+              <Label htmlFor="stake-amount" className="text-foreground">{t("common.amount")}</Label>
               <div className="flex gap-3">
                 <Input
                   id="stake-amount"
@@ -357,11 +359,11 @@ export default function StakePage() {
                   variant="outline"
                   className="border-border text-accent hover:bg-muted bg-transparent h-14 px-6"
                 >
-                  Max
+                  {t("common.max")}
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">
-                Balance: {selectedLoading ? "..." : selectedBalance} {selectedToken}
+                {t("common.balance")}: {selectedLoading ? "..." : selectedBalance} {selectedToken}
               </p>
             </div>
           </div>
@@ -369,22 +371,22 @@ export default function StakePage() {
           {/* APR Info */}
           <div className="bg-muted rounded-xl p-4 space-y-3 mb-6">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Base APR</span>
+              <span className="text-muted-foreground">{t("stake.baseApr")}</span>
               <span className="text-accent font-semibold">{baseAPR}%</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Boost APR</span>
+              <span className="text-muted-foreground">{t("stake.boostApr")}</span>
               <span className="text-accent font-semibold">+{boostAPR}%</span>
             </div>
             <div className="flex justify-between text-sm border-t border-border pt-3">
-              <span className="text-muted-foreground">Total APR</span>
+              <span className="text-muted-foreground">{t("stake.totalApr")}</span>
               <span className="text-accent font-bold">{totalAPR}%</span>
             </div>
           </div>
 
           {/* Estimated Earnings */}
           <div className="bg-input rounded-xl p-4 mb-6">
-            <p className="text-xs text-muted-foreground mb-1">Estimated Earnings Per Year</p>
+            <p className="text-xs text-muted-foreground mb-1">{t("stake.estimatedYear")}</p>
             <p className="text-2xl font-bold text-accent">
               {estimatedEarnings} {selectedToken}
             </p>
@@ -393,12 +395,12 @@ export default function StakePage() {
           {/* Compliance Status */}
           {isConnected && complianceVerified && (
             <div className="flex items-center gap-2 text-xs text-green-400 bg-green-500/10 rounded-lg p-2 mb-2">
-              <ShieldCheck className="w-3.5 h-3.5" /> Compliance Verified
+              <ShieldCheck className="w-3.5 h-3.5" /> {t("common.complianceVerified")}
             </div>
           )}
           {isConnected && complianceBlocked && (
             <div className="rounded-lg p-3 bg-red-500/10 border border-red-500/30 mb-2">
-              <p className="text-sm text-red-400 font-medium flex items-center gap-2"><ShieldAlert className="w-4 h-4" /> Wallet Blocked</p>
+              <p className="text-sm text-red-400 font-medium flex items-center gap-2"><ShieldAlert className="w-4 h-4" /> {t("common.walletBlocked")}</p>
               <p className="text-xs text-red-400/70 mt-1">Compliance screening flagged this wallet. Staking is disabled.</p>
             </div>
           )}
@@ -406,11 +408,11 @@ export default function StakePage() {
           {/* Stake Button */}
           {!isConnected ? (
             <Button className="w-full btn-gradient h-14 text-lg font-semibold rounded-xl" disabled>
-              Connect Wallet
+              {t("common.connectWallet")}
             </Button>
           ) : complianceBlocked ? (
             <Button className="w-full h-14 text-lg font-semibold rounded-xl" disabled variant="outline">
-              Wallet Blocked by Compliance
+              {t("common.walletBlockedCompliance")}
             </Button>
           ) : needsApproval ? (
             <Button
@@ -419,11 +421,11 @@ export default function StakePage() {
               className="w-full btn-gradient h-14 text-lg font-semibold rounded-xl"
             >
               {approving ? (
-                <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Approving...</>
+                <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> {t("common.approving")}</>
               ) : approveConfirming ? (
-                <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Confirming Approval...</>
+                <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> {t("common.confirmingApproval")}</>
               ) : (
-                `Approve ${selectedToken}`
+                `${t("common.approve")} ${selectedToken}`
               )}
             </Button>
           ) : (
@@ -433,11 +435,11 @@ export default function StakePage() {
               className="w-full btn-gradient h-14 text-lg font-semibold rounded-xl"
             >
               {approveConfirming ? (
-                <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Confirming Approval...</>
+                <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> {t("common.confirmingApproval")}</>
               ) : staking ? (
-                <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Staking...</>
+                <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> {t("stake.staking")}</>
               ) : (
-                `Stake ${selectedToken}`
+                t("stake.stakeToken", { token: selectedToken })
               )}
             </Button>
           )}
@@ -469,18 +471,18 @@ export default function StakePage() {
         <div className="space-y-6">
           {/* Your Position */}
           <div className="bg-card rounded-2xl p-6 border border-border">
-            <h3 className="text-lg font-semibold text-foreground mb-4">Your Position</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-4">{t("stake.position")}</h3>
             <div className="space-y-4">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Staked USDC</span>
+                <span className="text-muted-foreground">{t("stake.stakedUsdc")}</span>
                 <span className="text-foreground font-medium">{stakedUSDC}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Staked EURC</span>
+                <span className="text-muted-foreground">{t("stake.stakedEurc")}</span>
                 <span className="text-foreground font-medium">{stakedEURC}</span>
               </div>
               <div className="flex justify-between border-t border-border pt-3">
-                <span className="text-muted-foreground">Total Value</span>
+                <span className="text-muted-foreground">{t("stake.totalValue")}</span>
                 <span className="text-foreground font-bold">${totalStakedValue.toFixed(2)}</span>
               </div>
             </div>
@@ -489,16 +491,16 @@ export default function StakePage() {
           {/* Pending Rewards */}
           <div className="bg-card rounded-2xl p-6 border border-border">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-foreground">Pending Rewards</h3>
+              <h3 className="text-lg font-semibold text-foreground">{t("stake.pendingRewards")}</h3>
               <span className="text-xs text-yellow-400 bg-yellow-500/20 px-2 py-1 rounded-full">Testnet</span>
             </div>
             <div className="space-y-4">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">USDC Rewards</span>
+                <span className="text-muted-foreground">{t("stake.usdcRewards")}</span>
                 <span className="text-accent font-semibold">{usdcRewards}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">EURC Rewards</span>
+                <span className="text-muted-foreground">{t("stake.eurcRewards")}</span>
                 <span className="text-accent font-semibold">{eurcRewards}</span>
               </div>
             </div>
@@ -563,18 +565,18 @@ export default function StakePage() {
               className="w-full mt-4 btn-gradient"
             >
               {claiming ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Claiming...</>
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t("stake.claiming")}</>
               ) : (
-                "Claim All Rewards"
+                t("stake.claimAll")
               )}
             </Button>
           </div>
 
           {/* Unstake */}
           <div className="bg-card rounded-2xl p-6 border border-border">
-            <h3 className="text-lg font-semibold text-foreground mb-4">Unstake {selectedToken}</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-4">{t("stake.unstake")} {selectedToken}</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Withdraw your staked tokens. No lock period on Arc Testnet.
+              {t("stake.unstakeDescription")}
             </p>
             <div className="space-y-3">
               <div className="flex gap-2">
@@ -591,11 +593,11 @@ export default function StakePage() {
                   size="sm"
                   className="border-border text-accent hover:bg-muted bg-transparent"
                 >
-                  Max
+                  {t("common.max")}
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">
-                Staked: {selectedStaked} {selectedToken}
+                {t("stake.staked")}: {selectedStaked} {selectedToken}
               </p>
               <Button
                 onClick={handleUnstake}
@@ -604,9 +606,9 @@ export default function StakePage() {
                 className="w-full border-border text-foreground hover:bg-muted"
               >
                 {unstaking ? (
-                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Unstaking...</>
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t("stake.unstaking")}</>
                 ) : (
-                  "Unstake Tokens"
+                  t("stake.unstakeTokens")
                 )}
               </Button>
               {/* Treasury warning for unstake */}
@@ -633,7 +635,7 @@ export default function StakePage() {
       <div className="mt-8">
         <div className="bg-card rounded-2xl p-6 border border-border">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-foreground">Staking Transaction History</h3>
+            <h3 className="text-lg font-semibold text-foreground">{t("stake.history")}</h3>
             <Button
               variant="ghost"
               size="sm"
@@ -646,7 +648,7 @@ export default function StakePage() {
           </div>
 
           {!isConnected ? (
-            <p className="text-sm text-muted-foreground text-center py-6">Connect wallet to see transaction history.</p>
+            <p className="text-sm text-muted-foreground text-center py-6">{t("stake.connectHistory")}</p>
           ) : txLoading && stakeTxs.length === 0 ? (
             <div className="space-y-2">
               {[1, 2, 3].map((i) => (
@@ -663,11 +665,11 @@ export default function StakePage() {
             <div className="text-center py-6">
               <p className="text-red-400 text-sm mb-2">{txError}</p>
               <Button variant="outline" size="sm" onClick={fetchStakeTxs}>
-                <RefreshCw className="w-3 h-3 mr-1" /> Retry
+                <RefreshCw className="w-3 h-3 mr-1" /> {t("common.retry")}
               </Button>
             </div>
           ) : stakeTxs.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-6">No staking transactions found yet.</p>
+            <p className="text-sm text-muted-foreground text-center py-6">{t("stake.noHistory")}</p>
           ) : (
             <div className="space-y-2">
               {stakeTxs.map((tx) => {
@@ -700,7 +702,7 @@ export default function StakePage() {
                         <p className="text-sm font-medium text-foreground flex items-center gap-1.5">
                           {methodLabel}
                           <span className={`text-xs px-1.5 py-0.5 rounded ${isSuccess ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}>
-                            {isSuccess ? "Success" : "Failed"}
+                            {isSuccess ? t("common.success") : t("common.failed")}
                           </span>
                         </p>
                         <p className="text-xs text-muted-foreground">
@@ -725,8 +727,8 @@ export default function StakePage() {
       {/* APY Chart - Below Stake Button */}
       <div className="mt-8 mb-8">
         <PriceChart
-          title="APY Evolution"
-          subtitle={`Current: ${totalAPR.toFixed(2)}% APR`}
+          title={t("stake.apyEvolution")}
+          subtitle={t("stake.currentApr", { apr: totalAPR.toFixed(2) })}
           currentValue={`${totalAPR.toFixed(2)}%`}
           type="apy"
           height={250}
@@ -736,24 +738,24 @@ export default function StakePage() {
       {/* Stats - Below Chart */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
-          title="Total USDC Staked"
+          title={t("stake.totalUsdcStaked")}
           value={totalStakedUSDC}
-          subtitle="In staking contract"
+          subtitle={t("stake.inContract")}
         />
         <StatCard
-          title="Total EURC Staked"
+          title={t("stake.totalEurcStaked")}
           value={totalStakedEURC}
-          subtitle="In staking contract"
+          subtitle={t("stake.inContract")}
         />
         <StatCard
-          title="Your Staked"
+          title={t("stake.yourStaked")}
           value={`$${totalStakedValue.toFixed(2)}`}
-          subtitle="USDC + EURC value"
+          subtitle={t("stake.usdcEurcValue")}
         />
         <StatCard
           title="APR"
           value={`${totalAPR.toFixed(0)}%`}
-          subtitle="USDC staking rate"
+          subtitle={t("stake.usdcRate")}
         />
       </div>
     </div>

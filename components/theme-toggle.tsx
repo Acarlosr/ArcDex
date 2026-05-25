@@ -4,8 +4,10 @@ import * as React from "react"
 import { Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
+import { useI18n } from "@/lib/i18n"
 
 export function ThemeToggle() {
+  const { t } = useI18n()
   const { theme, setTheme, resolvedTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
 
@@ -29,14 +31,14 @@ export function ThemeToggle() {
       size="icon"
       onClick={() => setTheme(isDark ? "light" : "dark")}
       className="h-9 w-9 rounded-lg border border-border hover:bg-muted hover:border-primary/30 transition-all"
-      title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      title={isDark ? t("theme.toLight") : t("theme.toDark")}
     >
       {isDark ? (
         <Sun className="h-4 w-4 text-yellow-500 transition-transform hover:rotate-12" />
       ) : (
         <Moon className="h-4 w-4 text-slate-700 transition-transform hover:-rotate-12" />
       )}
-      <span className="sr-only">Toggle theme</span>
+      <span className="sr-only">{t("theme.toggle")}</span>
     </Button>
   )
 }

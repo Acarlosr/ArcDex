@@ -4,6 +4,7 @@ import { Inter, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
 import { Web3Provider } from "@/components/web3-provider"
 import { ThemeProvider } from "@/components/theme-provider"
+import { I18nProvider } from "@/lib/i18n"
 
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
@@ -25,18 +26,20 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
-          enableSystem
+          defaultTheme="light"
+          enableSystem={false}
+          storageKey="arcdex-theme"
           disableTransitionOnChange
         >
-          <Web3Provider>
-            {children}
-
-          </Web3Provider>
+          <I18nProvider>
+            <Web3Provider>
+              {children}
+            </Web3Provider>
+          </I18nProvider>
         </ThemeProvider>
       </body>
     </html>

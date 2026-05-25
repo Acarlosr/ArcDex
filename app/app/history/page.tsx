@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button"
 import { ExternalLink } from "lucide-react"
 import { useAccount } from "wagmi"
 import { ARCDEX } from "@/lib/contracts"
+import { useI18n } from "@/lib/i18n"
 
 // Correct Arc Testnet Explorer URL
 const EXPLORER_URL = "https://testnet.arcscan.app"
 
 export default function HistoryPage() {
+  const { t } = useI18n()
   const [filterToken, setFilterToken] = useState("all")
 
   const { address, isConnected } = useAccount()
@@ -22,8 +24,8 @@ export default function HistoryPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Transaction History</h1>
-          <p className="text-muted-foreground mt-1">View your transactions on Arc Network.</p>
+          <h1 className="text-3xl font-bold text-foreground">{t("history.title")}</h1>
+          <p className="text-muted-foreground mt-1">{t("history.subtitle")}</p>
         </div>
         <Button
           variant="outline"
@@ -31,7 +33,7 @@ export default function HistoryPage() {
           onClick={() => window.open(addressExplorerUrl, '_blank')}
         >
           <ExternalLink className="w-4 h-4 mr-2" />
-          View on Explorer
+          {t("history.viewExplorer")}
         </Button>
       </div>
 
@@ -64,12 +66,10 @@ export default function HistoryPage() {
                   </div>
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold text-foreground mb-2">
-                      View Your Transactions
+                      {t("history.viewTransactions")}
                     </h3>
                     <p className="text-sm text-muted-foreground mb-4">
-                      To view your complete transaction history on Arc Testnet,
-                      visit the ArcScan Explorer. There you will find all interactions
-                      with ArcDex contracts, including swaps, stakes, and payments.
+                      {t("history.description")}
                     </p>
                     <div className="flex flex-wrap gap-3">
                       <Button
@@ -77,21 +77,21 @@ export default function HistoryPage() {
                         className="btn-gradient"
                       >
                         <ExternalLink className="w-4 h-4 mr-2" />
-                        View My History
+                        {t("history.viewMyHistory")}
                       </Button>
                       <Button
                         variant="outline"
                         onClick={() => window.open(`${EXPLORER_URL}/address/${ARCDEX.Swap}`, '_blank')}
                         className="border-border text-foreground hover:bg-muted"
                       >
-                        Swap Contract
+                        {t("history.swapContract")}
                       </Button>
                       <Button
                         variant="outline"
                         onClick={() => window.open(`${EXPLORER_URL}/address/${ARCDEX.Staking}`, '_blank')}
                         className="border-border text-foreground hover:bg-muted"
                       >
-                        Staking Contract
+                        {t("history.stakingContract")}
                       </Button>
                     </div>
                   </div>
@@ -100,7 +100,7 @@ export default function HistoryPage() {
 
               {/* Your Address */}
               <div className="bg-muted/50 rounded-xl p-4">
-                <p className="text-sm text-muted-foreground mb-2">Your Wallet</p>
+                <p className="text-sm text-muted-foreground mb-2">{t("history.yourWallet")}</p>
                 <div className="flex items-center gap-2">
                   <code className="text-foreground font-mono text-sm bg-input px-3 py-2 rounded-lg flex-1 overflow-hidden text-ellipsis">
                     {address}
@@ -111,7 +111,7 @@ export default function HistoryPage() {
                     onClick={() => navigator.clipboard.writeText(address || '')}
                     className="border-border text-muted-foreground hover:text-foreground"
                   >
-                    Copy
+                    {t("history.copy")}
                   </Button>
                 </div>
               </div>
@@ -119,7 +119,7 @@ export default function HistoryPage() {
               {/* Contract Addresses Reference */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-muted/50 rounded-xl p-4">
-                  <p className="text-sm text-muted-foreground mb-1">Swap Contract</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t("history.swapContract")}</p>
                   <a
                     href={`${EXPLORER_URL}/address/${ARCDEX.Swap}`}
                     target="_blank"
@@ -130,7 +130,7 @@ export default function HistoryPage() {
                   </a>
                 </div>
                 <div className="bg-muted/50 rounded-xl p-4">
-                  <p className="text-sm text-muted-foreground mb-1">Staking Contract</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t("history.stakingContract")}</p>
                   <a
                     href={`${EXPLORER_URL}/address/${ARCDEX.Staking}`}
                     target="_blank"
@@ -141,7 +141,7 @@ export default function HistoryPage() {
                   </a>
                 </div>
                 <div className="bg-muted/50 rounded-xl p-4">
-                  <p className="text-sm text-muted-foreground mb-1">LP Token</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t("history.lpToken")}</p>
                   <a
                     href={`${EXPLORER_URL}/address/${ARCDEX.LP}`}
                     target="_blank"
@@ -152,7 +152,7 @@ export default function HistoryPage() {
                   </a>
                 </div>
                 <div className="bg-muted/50 rounded-xl p-4">
-                  <p className="text-sm text-muted-foreground mb-1">Payments Contract</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t("history.paymentsContract")}</p>
                   <a
                     href={`${EXPLORER_URL}/address/${ARCDEX.Payments}`}
                     target="_blank"
@@ -170,9 +170,9 @@ export default function HistoryPage() {
               <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4 text-3xl">
                 🔗
               </div>
-              <h3 className="text-xl font-semibold text-foreground mb-2">Connect Wallet</h3>
+              <h3 className="text-xl font-semibold text-foreground mb-2">{t("common.connectWallet")}</h3>
               <p className="text-muted-foreground">
-                Connect your wallet to view your transaction history.
+                {t("history.connectDescription")}
               </p>
             </div>
           )}

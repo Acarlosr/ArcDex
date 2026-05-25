@@ -72,11 +72,11 @@ export function Web3Provider({ children }: { children: ReactNode }) {
     const [queryClient] = useState(() => new QueryClient({
         defaultOptions: {
             queries: {
-                staleTime: 5 * 1000, // Reduced for faster updates
-                refetchOnWindowFocus: true, // Enable refetch on focus
-                refetchOnReconnect: true, // Enable refetch on reconnect
-                retry: 3, // Increased retries for resilience
-                retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
+                staleTime: 30 * 1000,
+                refetchOnWindowFocus: false,
+                refetchOnReconnect: true,
+                retry: 1,
+                retryDelay: 1000,
             },
         },
     }))

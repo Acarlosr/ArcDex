@@ -4,93 +4,94 @@ import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { CheckCircle2, Wallet, Globe, Droplet, Zap, ChevronRight, ChevronLeft, ExternalLink } from "lucide-react"
+import { useI18n } from "@/lib/i18n"
 
 interface OnboardingModalProps {
     open: boolean
     onOpenChange: (open: boolean) => void
 }
 
-const STEPS = [
-    {
-        id: 1,
-        title: "Connect Your Wallet",
-        description: "Use WalletConnect for mobile or browser extension for desktop.",
-        icon: Wallet,
-        details: [
-            "📱 Mobile: Use WalletConnect with MetaMask, Trust Wallet, etc.",
-            "💻 Desktop: Use MetaMask browser extension",
-            "🔐 Supported: Any EVM-compatible wallet"
-        ]
-    },
-    {
-        id: 2,
-        title: "Add Arc Testnet",
-        description: "Configure your wallet for Arc Network Testnet.",
-        icon: Globe,
-        details: [
-            "Network: Arc Testnet",
-            "Chain ID: 5042034",
-            "RPC: https://rpc.testnet.arc.network",
-            "Explorer: https://testnet.arcscan.app"
-        ],
-        action: {
-            label: "Add Network",
-            onClick: async () => {
-                if (typeof window !== "undefined" && (window as unknown as { ethereum?: { request: (args: { method: string; params?: unknown[] }) => Promise<unknown> } }).ethereum) {
-                    try {
-                        await (window as unknown as { ethereum: { request: (args: { method: string; params?: unknown[] }) => Promise<unknown> } }).ethereum.request({
-                            method: "wallet_addEthereumChain",
-                            params: [{
-                                chainId: "0x4CEF66",
-                                chainName: "Arc Testnet",
-                                nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 18 },
-                                rpcUrls: ["https://rpc.testnet.arc.network"],
-                                blockExplorerUrls: ["https://testnet.arcscan.app"]
-                            }]
-                        })
-                    } catch (error) {
-                        console.error("Failed to add network:", error)
+export function OnboardingModal({ open, onOpenChange }: OnboardingModalProps) {
+    const { t } = useI18n()
+    const [currentStep, setCurrentStep] = useState(0)
+    const steps = [
+        {
+            id: 1,
+            title: t("onboarding.connectTitle"),
+            description: t("onboarding.connectDesc"),
+            icon: Wallet,
+            details: [
+                t("onboarding.connectDetail1"),
+                t("onboarding.connectDetail2"),
+                t("onboarding.connectDetail3")
+            ]
+        },
+        {
+            id: 2,
+            title: t("onboarding.arcTitle"),
+            description: t("onboarding.arcDesc"),
+            icon: Globe,
+            details: [
+                "Network: Arc Testnet",
+                "Chain ID: 5042034",
+                "RPC: https://rpc.testnet.arc.network",
+                "Explorer: https://testnet.arcscan.app"
+            ],
+            action: {
+                label: t("onboarding.addNetwork"),
+                onClick: async () => {
+                    if (typeof window !== "undefined" && (window as unknown as { ethereum?: { request: (args: { method: string; params?: unknown[] }) => Promise<unknown> } }).ethereum) {
+                        try {
+                            await (window as unknown as { ethereum: { request: (args: { method: string; params?: unknown[] }) => Promise<unknown> } }).ethereum.request({
+                                method: "wallet_addEthereumChain",
+                                params: [{
+                                    chainId: "0x4CEF66",
+                                    chainName: "Arc Testnet",
+                                    nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 18 },
+                                    rpcUrls: ["https://rpc.testnet.arc.network"],
+                                    blockExplorerUrls: ["https://testnet.arcscan.app"]
+                                }]
+                            })
+                        } catch (error) {
+                            console.error("Failed to add network:", error)
+                        }
                     }
                 }
             }
+        },
+        {
+            id: 3,
+            title: t("onboarding.faucetTitle"),
+            description: t("onboarding.faucetDesc"),
+            icon: Droplet,
+            details: [
+                t("onboarding.faucetDetail1"),
+                t("onboarding.faucetDetail2"),
+                t("onboarding.faucetDetail3"),
+                t("onboarding.faucetDetail4")
+            ],
+            link: {
+                label: t("onboarding.openFaucet"),
+                url: "https://faucet.circle.com"
+            }
+        },
+        {
+            id: 4,
+            title: t("onboarding.startTitle"),
+            description: t("onboarding.startDesc"),
+            icon: Zap,
+            details: [
+                t("onboarding.startDetail1"),
+                t("onboarding.startDetail2"),
+                t("onboarding.startDetail3"),
+                t("onboarding.startDetail4")
+            ]
         }
-    },
-    {
-        id: 3,
-        title: "Get Testnet USDC",
-        description: "Claim free USDC from the Circle Faucet to start testing.",
-        icon: Droplet,
-        details: [
-            "1. Go to Circle Faucet",
-            "2. Connect your wallet",
-            "3. Select 'Arc' network",
-            "4. Claim testnet USDC"
-        ],
-        link: {
-            label: "Open Circle Faucet",
-            url: "https://faucet.circle.com"
-        }
-    },
-    {
-        id: 4,
-        title: "Start Testing!",
-        description: "Try our DeFi features on Arc Testnet.",
-        icon: Zap,
-        details: [
-            "⚡ Swap: Exchange USDC ↔ EURC",
-            "📈 Stake: Earn testnet yield on stablecoins",
-            "💧 Pools: Provide liquidity and earn fees",
-            "💸 Payments: Send stablecoins instantly"
-        ]
-    }
-]
+    ]
 
-export function OnboardingModal({ open, onOpenChange }: OnboardingModalProps) {
-    const [currentStep, setCurrentStep] = useState(0)
-
-    const step = STEPS[currentStep]
+    const step = steps[currentStep]
     const Icon = step.icon
-    const isLastStep = currentStep === STEPS.length - 1
+    const isLastStep = currentStep === steps.length - 1
     const isFirstStep = currentStep === 0
 
     const handleNext = () => {
@@ -113,13 +114,13 @@ export function OnboardingModal({ open, onOpenChange }: OnboardingModalProps) {
             <DialogContent className="bg-card border-border max-w-md">
                 <DialogHeader>
                     <DialogTitle className="text-foreground flex items-center gap-2">
-                        <span className="text-cyan-400">🚀</span> How to Test ARCDex
+                        <span className="text-cyan-400">🚀</span> {t("onboarding.title")}
                     </DialogTitle>
                 </DialogHeader>
 
                 {/* Progress Indicator */}
                 <div className="flex gap-2 mb-4">
-                    {STEPS.map((_, idx) => (
+                    {steps.map((_, idx) => (
                         <div
                             key={idx}
                             className={`h-1 flex-1 rounded-full transition-colors ${idx <= currentStep ? "bg-cyan-400" : "bg-muted"
@@ -135,7 +136,7 @@ export function OnboardingModal({ open, onOpenChange }: OnboardingModalProps) {
                             <Icon className="w-6 h-6 text-cyan-400" />
                         </div>
                         <div>
-                            <p className="text-xs text-muted-foreground">Step {step.id} of {STEPS.length}</p>
+                            <p className="text-xs text-muted-foreground">{t("onboarding.step")} {step.id} {t("onboarding.of")} {steps.length}</p>
                             <h3 className="text-lg font-semibold text-foreground">{step.title}</h3>
                         </div>
                         {currentStep > 0 && (
@@ -186,13 +187,13 @@ export function OnboardingModal({ open, onOpenChange }: OnboardingModalProps) {
                         className="flex-1 border-border"
                     >
                         <ChevronLeft className="w-4 h-4 mr-1" />
-                        Back
+                        {t("common.back")}
                     </Button>
                     <Button
                         onClick={handleNext}
                         className="flex-1 btn-gradient"
                     >
-                        {isLastStep ? "Get Started" : "Next"}
+                        {isLastStep ? t("common.getStarted") : t("common.next")}
                         {!isLastStep && <ChevronRight className="w-4 h-4 ml-1" />}
                     </Button>
                 </div>
@@ -205,7 +206,7 @@ export function OnboardingModal({ open, onOpenChange }: OnboardingModalProps) {
                     }}
                     className="text-xs text-muted-foreground hover:text-foreground transition-colors text-center"
                 >
-                    Skip tutorial
+                    {t("common.skipTutorial")}
                 </button>
             </DialogContent>
         </Dialog>

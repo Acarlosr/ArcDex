@@ -6,6 +6,7 @@ import { useTokenBalance } from "@/hooks/use-contracts"
 import { Loader2, RefreshCw, Wallet, ExternalLink, ArrowUpRight, ArrowDownLeft, FileCode, ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCompliance } from "@/hooks/useCompliance"
+import { useI18n } from "@/lib/i18n"
 
 // ArcScan API configuration
 const ARCSCAN_API = "https://testnet.arcscan.app/api"
@@ -322,6 +323,7 @@ function TokenRow({
     price: number
     priceLoading: boolean
 }) {
+    const { t } = useI18n()
     const numericBalance = parseFloat(balance.replace(',', '')) || 0
     const value = numericBalance * price
 
@@ -337,7 +339,7 @@ function TokenRow({
                 </div>
             </div>
             <div className="text-center">
-                <p className="text-xs text-muted-foreground">Price</p>
+                <p className="text-xs text-muted-foreground">{t("portfolio.price")}</p>
                 {priceLoading ? (
                     <Loader2 className="w-3 h-3 animate-spin text-muted-foreground mx-auto" />
                 ) : (
@@ -360,6 +362,7 @@ function TokenRow({
 
 // Transactions List Component
 function TransactionsList({ address }: { address: string }) {
+    const { t } = useI18n()
     const [transactions, setTransactions] = useState<ArcScanTx[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -384,11 +387,11 @@ function TransactionsList({ address }: { address: string }) {
             }
         } catch (err) {
             console.error('Failed to fetch transactions:', err)
-            setError('Could not load transactions')
+            setError(t("portfolio.couldNotLoad"))
         } finally {
             setIsLoading(false)
         }
-    }, [address])
+    }, [address, t])
 
     useEffect(() => {
         fetchTransactions()
@@ -399,7 +402,7 @@ function TransactionsList({ address }: { address: string }) {
         return (
             <div className="text-center py-12">
                 <Loader2 className="w-8 h-8 animate-spin text-cyan-400 mx-auto mb-4" />
-                <p className="text-muted-foreground">Loading transactions...</p>
+                <p className="text-muted-foreground">{t("portfolio.loadingTx")}</p>
             </div>
         )
     }
@@ -413,7 +416,7 @@ function TransactionsList({ address }: { address: string }) {
                 </div>
                 <p className="text-foreground font-medium mb-2">{error}</p>
                 <p className="text-sm text-muted-foreground mb-4">
-                    View your transactions directly on the explorer
+                    {t("portfolio.viewExplorer")}
                 </p>
                 <a
                     href={`${ARCSCAN_URL}/address/${address}`}
@@ -421,7 +424,7 @@ function TransactionsList({ address }: { address: string }) {
                     rel="noreferrer"
                     className="inline-flex items-center gap-2 px-4 py-2 bg-accent text-background rounded-lg font-medium hover:opacity-90 transition-opacity"
                 >
-                    View on ArcScan <ExternalLink className="w-4 h-4" />
+                    {t("common.viewArcScan")} <ExternalLink className="w-4 h-4" />
                 </a>
             </div>
         )
@@ -434,9 +437,9 @@ function TransactionsList({ address }: { address: string }) {
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
                     <span className="text-3xl">📋</span>
                 </div>
-                <p className="text-foreground font-medium mb-2">No Transactions Yet</p>
+                <p className="text-foreground font-medium mb-2">{t("portfolio.noTx")}</p>
                 <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-4">
-                    Your transaction history will appear here once you make your first transaction.
+                    {t("portfolio.noTxText")}
                 </p>
                 <a
                     href={`${ARCSCAN_URL}/address/${address}`}
@@ -444,7 +447,7 @@ function TransactionsList({ address }: { address: string }) {
                     rel="noreferrer"
                     className="inline-flex items-center gap-2 text-cyan-400 hover:underline text-sm"
                 >
-                    View on ArcScan <ExternalLink className="w-3 h-3" />
+                    {t("common.viewArcScan")} <ExternalLink className="w-3 h-3" />
                 </a>
             </div>
         )
@@ -454,14 +457,14 @@ function TransactionsList({ address }: { address: string }) {
         <div className="space-y-4">
             {/* Header with Refresh */}
             <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">Last 10 transactions</p>
+                <p className="text-sm text-muted-foreground">{t("portfolio.last10")}</p>
                 <Button
                     variant="ghost"
                     size="sm"
                     onClick={fetchTransactions}
                     className="text-muted-foreground hover:text-foreground"
                 >
-                    <RefreshCw className="w-3 h-3 mr-1" /> Refresh
+                    <RefreshCw className="w-3 h-3 mr-1" /> {t("common.refresh")}
                 </Button>
             </div>
 
@@ -525,7 +528,7 @@ function TransactionsList({ address }: { address: string }) {
                     rel="noreferrer"
                     className="text-cyan-400 hover:underline inline-flex items-center gap-1"
                 >
-                    View all on ArcScan <ExternalLink className="w-3 h-3" />
+                    {t("common.viewAllArcScan")} <ExternalLink className="w-3 h-3" />
                 </a>
             </p>
         </div>
@@ -533,6 +536,7 @@ function TransactionsList({ address }: { address: string }) {
 }
 
 export default function PortfolioPage() {
+    const { t } = useI18n()
     const [activeTab, setActiveTab] = useState<"tokens" | "nfts" | "transactions">("tokens")
     const [chartPeriod, setChartPeriod] = useState<"24H" | "7D" | "30D">("7D")
 
@@ -599,8 +603,8 @@ export default function PortfolioPage() {
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold text-foreground">Portfolio</h1>
-                    <p className="text-muted-foreground mt-1">Track your assets and positions on Arc Network</p>
+                    <h1 className="text-3xl font-bold text-foreground">{t("portfolio.title")}</h1>
+                    <p className="text-muted-foreground mt-1">{t("portfolio.subtitle")}</p>
                 </div>
                 {isConnected && (
                     <Button
@@ -611,7 +615,7 @@ export default function PortfolioPage() {
                         className="border-border text-muted-foreground hover:text-foreground"
                     >
                         <RefreshCw className={`w-4 h-4 mr-2 ${isAnyLoading ? 'animate-spin' : ''}`} />
-                        Refresh
+                        {t("common.refresh")}
                     </Button>
                 )}
             </div>
@@ -621,13 +625,13 @@ export default function PortfolioPage() {
                 {/* Total Balance (USD) Card */}
                 <div className="bg-card rounded-2xl p-6 border border-border hover:border-cyan-500/30 transition-colors">
                     <div className="flex items-center gap-2 mb-2">
-                        <p className="text-sm text-muted-foreground">Total Balance</p>
+                        <p className="text-sm text-muted-foreground">{t("portfolio.totalBalance")}</p>
                         {isEstimated && (
                             <span
                                 className="text-[10px] text-yellow-400 bg-yellow-500/20 px-1.5 py-0.5 rounded cursor-help"
-                                title="Off-chain pricing for testnet demo"
+                                title={t("portfolio.estimatedTitle")}
                             >
-                                Estimated
+                                {t("portfolio.estimated")}
                             </span>
                         )}
                     </div>
@@ -635,13 +639,13 @@ export default function PortfolioPage() {
                         {!isConnected ? "—" : isAnyLoading ? "..." : formatUSD(netWorthUSD)}
                     </p>
                     <p className="text-sm font-medium text-muted-foreground">
-                        {isConnected ? `${tokensWithBalance} token${tokensWithBalance !== 1 ? 's' : ''} held` : "Connect wallet"}
+                        {isConnected ? t(tokensWithBalance === 1 ? "portfolio.tokenHeld" : "portfolio.tokensHeld", { count: tokensWithBalance }) : t("common.connectWallet")}
                     </p>
                 </div>
 
                 {/* USDC Balance Card */}
                 <div className="bg-card rounded-2xl p-6 border border-border hover:border-cyan-500/30 transition-colors">
-                    <p className="text-sm text-muted-foreground mb-2">USDC Balance</p>
+                    <p className="text-sm text-muted-foreground mb-2">{t("portfolio.usdcBalance")}</p>
                     <p className="text-2xl font-bold text-foreground mb-1 font-mono">
                         {!isConnected ? "—" : usdcLoading ? "..." : usdcBalance}
                     </p>
@@ -652,7 +656,7 @@ export default function PortfolioPage() {
 
                 {/* EURC Balance Card */}
                 <div className="bg-card rounded-2xl p-6 border border-border hover:border-cyan-500/30 transition-colors">
-                    <p className="text-sm text-muted-foreground mb-2">EURC Balance</p>
+                    <p className="text-sm text-muted-foreground mb-2">{t("portfolio.eurcBalance")}</p>
                     <p className="text-2xl font-bold text-foreground mb-1 font-mono">
                         {!isConnected ? "—" : eurcLoading ? "..." : eurcBalance}
                     </p>
@@ -663,7 +667,7 @@ export default function PortfolioPage() {
 
                 {/* USYC Balance Card */}
                 <div className="bg-card rounded-2xl p-6 border border-border hover:border-cyan-500/30 transition-colors">
-                    <p className="text-sm text-muted-foreground mb-2">USYC Balance</p>
+                    <p className="text-sm text-muted-foreground mb-2">{t("portfolio.usycBalance")}</p>
                     <p className="text-2xl font-bold text-foreground mb-1 font-mono">
                         {!isConnected ? "—" : usycLoading ? "..." : usycBalance}
                     </p>
@@ -677,8 +681,8 @@ export default function PortfolioPage() {
             {isConnected && complianceVerified && (
                 <div className="mb-6 inline-flex items-center gap-2 bg-green-500/10 border border-green-500/20 rounded-full px-4 py-2">
                     <ShieldCheck className="w-4 h-4 text-green-400" />
-                    <span className="text-sm text-green-400 font-medium">Compliance Verified</span>
-                    <span className="text-xs text-green-400/60">AML/CFT Screening Passed</span>
+                    <span className="text-sm text-green-400 font-medium">{t("common.complianceVerified")}</span>
+                    <span className="text-xs text-green-400/60">{t("portfolio.amlPassed")}</span>
                 </div>
             )}
 
@@ -689,13 +693,13 @@ export default function PortfolioPage() {
                     <div className="bg-card rounded-2xl p-6 md:p-8 border border-border glow-border">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                             <div className="flex items-center gap-3">
-                                <h2 className="text-lg font-semibold text-foreground">Portfolio Value</h2>
+                                <h2 className="text-lg font-semibold text-foreground">{t("portfolio.value")}</h2>
                                 {isEstimated && (
                                     <span
                                         className="text-xs text-yellow-400 bg-yellow-500/20 px-2 py-1 rounded-full cursor-help"
-                                        title="Off-chain pricing for testnet demo"
+                                        title={t("portfolio.estimatedTitle")}
                                     >
-                                        Estimated
+                                        {t("portfolio.estimated")}
                                     </span>
                                 )}
                             </div>
@@ -721,7 +725,7 @@ export default function PortfolioPage() {
                             <div className="h-48 md:h-64 flex items-center justify-center">
                                 <div className="text-center">
                                     <Wallet className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                                    <p className="text-muted-foreground">Connect wallet to see portfolio value</p>
+                                    <p className="text-muted-foreground">{t("portfolio.connectValue")}</p>
                                 </div>
                             </div>
                         ) : (
@@ -733,7 +737,7 @@ export default function PortfolioPage() {
                 {/* Sidebar */}
                 <div className="space-y-6">
                     <div className="bg-card rounded-2xl p-6 border border-border">
-                        <h3 className="text-lg font-semibold text-foreground mb-4">Network</h3>
+                        <h3 className="text-lg font-semibold text-foreground mb-4">{t("portfolio.network")}</h3>
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
                                 <span className="text-primary-foreground font-bold">A</span>
@@ -747,20 +751,20 @@ export default function PortfolioPage() {
 
                     {/* Quick Stats */}
                     <div className="bg-card rounded-2xl p-6 border border-border">
-                        <h3 className="text-lg font-semibold text-foreground mb-4">Summary</h3>
+                        <h3 className="text-lg font-semibold text-foreground mb-4">{t("portfolio.summary")}</h3>
                         <div className="space-y-3">
                             <div className="flex justify-between">
-                                <span className="text-muted-foreground">Tokens</span>
+                                <span className="text-muted-foreground">{t("portfolio.tokens")}</span>
                                 <span className="text-foreground font-medium">
                                     {isConnected ? tokensWithBalance : "—"}
                                 </span>
                             </div>
                             <div className="flex justify-between">
-                                <span className="text-muted-foreground">NFTs</span>
+                                <span className="text-muted-foreground">{t("portfolio.nfts")}</span>
                                 <span className="text-foreground font-medium">—</span>
                             </div>
                             <div className="flex justify-between">
-                                <span className="text-muted-foreground">Transactions</span>
+                                <span className="text-muted-foreground">{t("portfolio.transactions")}</span>
                                 <span className="text-foreground font-medium">—</span>
                             </div>
                         </div>
@@ -769,13 +773,13 @@ export default function PortfolioPage() {
                     {/* Wallet Info */}
                     {isConnected && address && (
                         <div className="bg-card rounded-2xl p-6 border border-border">
-                            <h3 className="text-lg font-semibold text-foreground mb-4">Wallet</h3>
+                            <h3 className="text-lg font-semibold text-foreground mb-4">{t("portfolio.wallet")}</h3>
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
                                     <Wallet className="w-5 h-5 text-primary-foreground" />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <p className="font-medium text-foreground text-sm">Connected</p>
+                                    <p className="font-medium text-foreground text-sm">{t("portfolio.connected")}</p>
                                     <p className="text-xs text-muted-foreground font-mono truncate">
                                         {address.slice(0, 6)}...{address.slice(-4)}
                                     </p>
@@ -798,7 +802,7 @@ export default function PortfolioPage() {
                                 : "text-muted-foreground hover:text-foreground"
                                 }`}
                         >
-                            Tokens
+                            {t("portfolio.tokens")}
                         </button>
                         <button
                             onClick={() => setActiveTab("nfts")}
@@ -807,7 +811,7 @@ export default function PortfolioPage() {
                                 : "text-muted-foreground hover:text-foreground"
                                 }`}
                         >
-                            NFTs
+                            {t("portfolio.nfts")}
                         </button>
                         <button
                             onClick={() => setActiveTab("transactions")}
@@ -816,7 +820,7 @@ export default function PortfolioPage() {
                                 : "text-muted-foreground hover:text-foreground"
                                 }`}
                         >
-                            Transactions
+                            {t("portfolio.transactions")}
                         </button>
                     </div>
 
@@ -830,9 +834,9 @@ export default function PortfolioPage() {
                                         <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
                                             <Wallet className="w-8 h-8 text-muted-foreground" />
                                         </div>
-                                        <p className="text-foreground font-medium mb-2">Wallet Not Connected</p>
+                                        <p className="text-foreground font-medium mb-2">{t("portfolio.walletNotConnected")}</p>
                                         <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-                                            Connect your wallet to view your token balances on Arc Testnet.
+                                            {t("portfolio.connectTokens")}
                                         </p>
                                     </div>
                                 ) : (
@@ -852,7 +856,7 @@ export default function PortfolioPage() {
                                             )
                                         })}
                                         <p className="text-xs text-muted-foreground text-center pt-2">
-                                            Showing Arc Testnet balances • Get tokens from{" "}
+                                            {t("portfolio.showingBalances")} • {t("portfolio.getTokensFrom")}{" "}
                                             <a href="https://faucet.circle.com" target="_blank" rel="noreferrer" className="text-cyan-400 hover:underline">
                                                 Circle Faucet
                                             </a>
@@ -866,9 +870,9 @@ export default function PortfolioPage() {
                                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
                                     <span className="text-3xl">🖼️</span>
                                 </div>
-                                <p className="text-foreground font-medium mb-2">No NFTs on Arc Testnet</p>
+                                <p className="text-foreground font-medium mb-2">{t("portfolio.noNfts")}</p>
                                 <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-                                    NFT support is coming soon. Your collection will appear here once available.
+                                    {t("portfolio.noNftsText")}
                                 </p>
                             </div>
                         )}
@@ -878,9 +882,9 @@ export default function PortfolioPage() {
                                     <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
                                         <Wallet className="w-8 h-8 text-muted-foreground" />
                                     </div>
-                                    <p className="text-foreground font-medium mb-2">Wallet Not Connected</p>
+                                    <p className="text-foreground font-medium mb-2">{t("portfolio.walletNotConnected")}</p>
                                     <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-                                        Connect your wallet to view your transaction history.
+                                        {t("portfolio.connectTransactions")}
                                     </p>
                                 </div>
                             ) : (

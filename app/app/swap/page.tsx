@@ -11,6 +11,7 @@ import { Loader2, ExternalLink, CheckCircle2, XCircle, RefreshCw, ShieldCheck, S
 import { MobileWalletHint } from "@/components/mobile-wallet-hint"
 import { PriceChart } from "@/components/price-chart"
 import { useCompliance } from "@/hooks/useCompliance"
+import { useI18n } from "@/lib/i18n"
 
 type SwapToken = "USDC" | "EURC" | "USYC"
 
@@ -53,6 +54,7 @@ function formatAddress(addr: string): string {
 
 // Swap History Component
 function SwapHistory({ address }: { address: string | undefined }) {
+  const { t } = useI18n()
   const [transactions, setTransactions] = useState<SwapTx[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -85,11 +87,11 @@ function SwapHistory({ address }: { address: string | undefined }) {
       }
     } catch (err) {
       console.error('Failed to fetch swaps:', err)
-      setError('Failed to load swap history')
+      setError(t("swap.failedLoad"))
     } finally {
       setIsLoading(false)
     }
-  }, [address])
+  }, [address, t])
 
   useEffect(() => {
     fetchSwaps()
@@ -98,7 +100,7 @@ function SwapHistory({ address }: { address: string | undefined }) {
   if (!address) {
     return (
       <div className="text-center py-4">
-        <p className="text-muted-foreground text-sm">Connect wallet to see history</p>
+        <p className="text-muted-foreground text-sm">{t("swap.loadHistory")}</p>
       </div>
     )
   }
@@ -125,7 +127,7 @@ function SwapHistory({ address }: { address: string | undefined }) {
         <p className="text-red-400 text-sm mb-2">{error}</p>
         <Button variant="outline" size="sm" onClick={fetchSwaps}>
           <RefreshCw className="w-3 h-3 mr-1" />
-          Retry
+          {t("common.retry")}
         </Button>
       </div>
     )
@@ -134,7 +136,7 @@ function SwapHistory({ address }: { address: string | undefined }) {
   if (transactions.length === 0) {
     return (
       <div className="text-center py-4">
-        <p className="text-muted-foreground text-sm">No swaps yet</p>
+        <p className="text-muted-foreground text-sm">{t("swap.noSwaps")}</p>
       </div>
     )
   }
@@ -160,7 +162,7 @@ function SwapHistory({ address }: { address: string | undefined }) {
                 ? 'bg-green-500/20 text-green-400'
                 : 'bg-red-500/20 text-red-400'
                 }`}>
-                {tx.isError === '0' ? 'Confirmed' : 'Failed'}
+                {tx.isError === '0' ? t("common.confirmed") : t("common.failed")}
               </span>
             </div>
           </div>
@@ -177,7 +179,7 @@ function SwapHistory({ address }: { address: string | undefined }) {
           rel="noreferrer"
           className="text-cyan-400 hover:underline text-xs inline-flex items-center gap-1"
         >
-          View all on ArcScan <ExternalLink className="w-3 h-3" />
+          {t("common.viewAllArcScan")} <ExternalLink className="w-3 h-3" />
         </a>
       </div>
     </div>
@@ -185,6 +187,7 @@ function SwapHistory({ address }: { address: string | undefined }) {
 }
 
 export default function SwapPage() {
+  const { t } = useI18n()
   const [fromToken, setFromToken] = useState<SwapToken>("USDC")
   const [toToken, setToToken] = useState<SwapToken>("EURC")
   const [fromAmount, setFromAmount] = useState("")
@@ -321,8 +324,8 @@ export default function SwapPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Swap Tokens</h1>
-          <p className="text-muted-foreground mt-1">Exchange tokens instantly on Arc Network</p>
+          <h1 className="text-3xl font-bold text-foreground">{t("swap.title")}</h1>
+          <p className="text-muted-foreground mt-1">{t("swap.subtitle")}</p>
         </div>
       </div>
 
@@ -336,9 +339,9 @@ export default function SwapPage() {
             {/* From */}
             <div className="space-y-3 mb-6">
               <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-muted-foreground">From</label>
+                <label className="text-sm font-medium text-muted-foreground">{t("swap.from")}</label>
                 {!swapEnabled && (
-                  <span className="text-xs text-yellow-400 bg-yellow-500/20 px-2 py-0.5 rounded-full">USYC Coming Soon</span>
+                  <span className="text-xs text-yellow-600 dark:text-yellow-400 bg-yellow-500/20 px-2 py-0.5 rounded-full">{t("swap.usycSoon")}</span>
                 )}
               </div>
               <div className="flex gap-4">
@@ -368,14 +371,14 @@ export default function SwapPage() {
               </div>
               <div className="flex justify-between items-center">
                 <p className="text-xs text-muted-foreground">
-                  Balance: {fromLoading ? "..." : fromBalance} {fromToken}
+                  {t("common.balance")}: {fromLoading ? "..." : fromBalance} {fromToken}
                 </p>
                 {isConnected && (
                   <button
                     onClick={handleMaxClick}
                     className="text-xs text-cyan-400 hover:text-cyan-300"
                   >
-                    MAX
+                    {t("common.max")}
                   </button>
                 )}
               </div>
@@ -394,7 +397,7 @@ export default function SwapPage() {
 
             {/* To */}
             <div className="space-y-3 mb-8">
-              <label className="text-sm font-medium text-muted-foreground">To</label>
+              <label className="text-sm font-medium text-muted-foreground">{t("swap.to")}</label>
               <div className="flex gap-4">
                 <select
                   value={toToken}
@@ -421,19 +424,19 @@ export default function SwapPage() {
                 />
               </div>
               <p className="text-xs text-muted-foreground">
-                Balance: {toLoading ? "..." : toBalance} {toToken}
+                {t("common.balance")}: {toLoading ? "..." : toBalance} {toToken}
               </p>
             </div>
 
             {/* Compliance Status */}
             {isConnected && complianceVerified && (
               <div className="flex items-center gap-2 text-xs text-green-400 bg-green-500/10 rounded-lg p-2">
-                <ShieldCheck className="w-3.5 h-3.5" /> Compliance Verified
+                <ShieldCheck className="w-3.5 h-3.5" /> {t("common.complianceVerified")}
               </div>
             )}
             {isConnected && complianceBlocked && (
               <div className="rounded-lg p-3 bg-red-500/10 border border-red-500/30">
-                <p className="text-sm text-red-400 font-medium flex items-center gap-2"><ShieldAlert className="w-4 h-4" /> Wallet Blocked</p>
+                <p className="text-sm text-red-400 font-medium flex items-center gap-2"><ShieldAlert className="w-4 h-4" /> {t("common.walletBlocked")}</p>
                 <p className="text-xs text-red-400/70 mt-1">This wallet has been flagged by compliance screening (risk score: {complianceResult?.riskScore}/10). Transactions are disabled.</p>
               </div>
             )}
@@ -441,11 +444,11 @@ export default function SwapPage() {
             {/* Action Buttons */}
             {!isConnected ? (
               <Button className="w-full btn-gradient h-14 text-lg font-semibold rounded-xl" disabled>
-                Connect Wallet to Swap
+                {t("swap.connectToSwap")}
               </Button>
             ) : complianceBlocked ? (
               <Button className="w-full h-14 text-lg font-semibold rounded-xl" disabled variant="outline">
-                Wallet Blocked by Compliance
+                {t("common.walletBlockedCompliance")}
               </Button>
             ) : needsApproval ? (
               <Button
@@ -456,15 +459,15 @@ export default function SwapPage() {
                 {approving ? (
                   <>
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Approving...
+                    {t("common.approving")}
                   </>
                 ) : approveConfirming ? (
                   <>
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Confirming Approval...
+                    {t("common.confirmingApproval")}
                   </>
                 ) : (
-                  `Approve ${fromToken}`
+                  `${t("common.approve")} ${fromToken}`
                 )}
               </Button>
             ) : (
@@ -476,22 +479,22 @@ export default function SwapPage() {
                 {approveConfirming ? (
                   <>
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Confirming Approval...
+                    {t("common.confirmingApproval")}
                   </>
                 ) : swapping ? (
                   <>
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Swapping...
+                    {t("swap.swapping")}
                   </>
                 ) : (
-                  "Swap"
+                  t("nav.swap")
                 )}
               </Button>
             )}
 
             {swapError && (
               <p className="text-red-400 text-sm mt-4 text-center">
-                Error: {swapError.message}
+                {t("common.error")}: {swapError.message}
               </p>
             )}
           </div>
@@ -501,32 +504,32 @@ export default function SwapPage() {
         <div className="space-y-6">
           {/* Price Info */}
           <div className="bg-card rounded-2xl p-6 border border-border">
-            <h3 className="text-lg font-semibold text-foreground mb-4">Swap Details</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-4">{t("swap.details")}</h3>
             <div className="space-y-4">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Price</span>
+                <span className="text-muted-foreground">{t("common.price")}</span>
                 <span className="text-foreground font-medium">
                   1 {fromToken} ≈ {fromAmount && amountOut ? (parseFloat(amountOut) / parseFloat(fromAmount)).toFixed(4) : "0.92"} {toToken}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Slippage</span>
+                <span className="text-muted-foreground">{t("swap.slippage")}</span>
                 <Badge className="bg-accent text-background">0.5%</Badge>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Network Fee</span>
+                <span className="text-muted-foreground">{t("common.networkFee")}</span>
                 <span className="text-foreground font-medium">~0.05 USDC</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Route</span>
-                <span className="text-foreground font-medium">Direct</span>
+                <span className="text-muted-foreground">{t("common.route")}</span>
+                <span className="text-foreground font-medium">{t("common.direct")}</span>
               </div>
             </div>
           </div>
 
           {/* Your Balances */}
           <div className="bg-card rounded-2xl p-6 border border-border">
-            <h3 className="text-lg font-semibold text-foreground mb-4">Your Balances</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-4">{t("common.yourBalances")}</h3>
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
@@ -555,15 +558,15 @@ export default function SwapPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
         {/* Price Chart */}
         <PriceChart
-          title="Exchange Rate"
-          subtitle="24h Vol: $19,157.77 (updates hourly)"
+          title={t("swap.exchangeRate")}
+          subtitle={t("swap.exchangeSubtitle")}
           type="swap"
           height={250}
         />
 
         {/* Swap History */}
         <div className="bg-card rounded-2xl p-6 border border-border">
-          <h3 className="text-lg font-semibold text-foreground mb-4">Swap History</h3>
+          <h3 className="text-lg font-semibold text-foreground mb-4">{t("swap.history")}</h3>
           <SwapHistory key={refreshKey} address={address} />
         </div>
       </div>

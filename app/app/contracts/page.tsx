@@ -4,6 +4,7 @@ import Link from "next/link"
 import { ExternalLink, Shield, FileCode, Copy, Check, ChevronLeft } from "lucide-react"
 import { useState } from "react"
 import { ARCDEX, TOKENS, USYC_CONTRACTS, CCTP, PAYMENTS, ARCSCAN_URL } from "@/lib/contracts"
+import { useI18n } from "@/lib/i18n"
 
 interface ContractCardProps {
     name: string
@@ -13,6 +14,7 @@ interface ContractCardProps {
 }
 
 function ContractCard({ name, address, description }: ContractCardProps) {
+    const { t } = useI18n()
     const [copied, setCopied] = useState(false)
 
     const copyAddress = () => {
@@ -29,7 +31,7 @@ function ContractCard({ name, address, description }: ContractCardProps) {
                     <button
                         onClick={copyAddress}
                         className="p-1.5 rounded hover:bg-muted transition-colors"
-                        title="Copy address"
+                        title={t("contracts.copyAddress")}
                     >
                         {copied ? (
                             <Check className="w-4 h-4 text-green-500" />
@@ -42,7 +44,7 @@ function ContractCard({ name, address, description }: ContractCardProps) {
                         target="_blank"
                         rel="noreferrer"
                         className="p-1.5 rounded hover:bg-muted transition-colors"
-                        title="View on ArcScan"
+                        title={t("contracts.viewArcScan")}
                     >
                         <ExternalLink className="w-4 h-4 text-primary" />
                     </a>
@@ -57,6 +59,7 @@ function ContractCard({ name, address, description }: ContractCardProps) {
 }
 
 export default function ContractsPage() {
+    const { t } = useI18n()
     return (
         <main className="min-h-screen">
             <div className="max-w-4xl mx-auto px-4 py-12">
@@ -66,7 +69,7 @@ export default function ContractsPage() {
                     className="inline-flex items-center gap-1 text-primary hover:text-primary/80 mb-6 text-sm"
                 >
                     <ChevronLeft className="w-4 h-4" />
-                    Back to App
+                    {t("contracts.back")}
                 </Link>
 
                 {/* Header */}
@@ -75,10 +78,10 @@ export default function ContractsPage() {
                         <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
                             <FileCode className="w-5 h-5 text-primary-foreground" />
                         </div>
-                        <h1 className="text-3xl font-bold text-foreground">Contracts & Security</h1>
+                        <h1 className="text-3xl font-bold text-foreground">{t("contracts.title")}</h1>
                     </div>
                     <p className="text-muted-foreground">
-                        All smart contracts deployed on Arc Testnet (Chain ID: 5042002). Verify addresses on ArcScan.
+                        {t("contracts.subtitle")}
                     </p>
                 </div>
 
@@ -87,10 +90,9 @@ export default function ContractsPage() {
                     <div className="flex items-start gap-3">
                         <Shield className="w-5 h-5 text-amber-400 mt-0.5" />
                         <div>
-                            <h3 className="font-semibold text-amber-200 mb-1">Testnet Status</h3>
-                            <p className="text-sm text-amber-200/80">
-                                These contracts are deployed on Arc Testnet for evaluation purposes. They have not been audited.
-                                Use testnet tokens only. Do not send real funds to these addresses.
+                            <h3 className="font-semibold text-amber-700 dark:text-amber-200 mb-1">{t("contracts.testnetStatus")}</h3>
+                            <p className="text-sm text-amber-700 dark:text-amber-200/80">
+                                {t("contracts.testnetText")}
                             </p>
                         </div>
                     </div>
@@ -100,7 +102,7 @@ export default function ContractsPage() {
                 <section className="mb-8">
                     <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-primary"></span>
-                        ARCDex Core Contracts
+                        {t("contracts.core")}
                     </h2>
                     <div className="grid gap-4">
                         <ContractCard
@@ -130,7 +132,7 @@ export default function ContractsPage() {
                 <section className="mb-8">
                     <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                        Supported Tokens
+                        {t("contracts.tokens")}
                     </h2>
                     <div className="grid gap-4">
                         <ContractCard
@@ -155,7 +157,7 @@ export default function ContractsPage() {
                 <section className="mb-8">
                     <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                        Arc Protocol Infrastructure
+                        {t("contracts.infrastructure")}
                     </h2>
                     <div className="grid gap-4 md:grid-cols-2">
                         <ContractCard
@@ -183,7 +185,7 @@ export default function ContractsPage() {
 
                 {/* Resources */}
                 <section className="mb-8">
-                    <h2 className="text-xl font-bold text-foreground mb-4">Resources</h2>
+                    <h2 className="text-xl font-bold text-foreground mb-4">{t("contracts.resources")}</h2>
                     <div className="grid gap-3 md:grid-cols-2">
                         <a
                             href={ARCSCAN_URL}

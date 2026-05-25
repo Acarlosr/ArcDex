@@ -8,7 +8,7 @@ import { ERC20_ABI, ARCDEX_SWAP_ABI, ARCDEX_STAKING_ABI, ARCDEX_PAYMENTS_ABI } f
 // TOKEN HOOKS
 // ============================================================================
 
-export function useTokenBalance(token: 'USDC' | 'EURC' | 'USYC') {
+export function useTokenBalance(token: 'USDC' | 'EURC' | 'USYC', enabled = true) {
     const { address } = useAccount()
     const tokenAddress = TOKENS[token]
 
@@ -18,7 +18,7 @@ export function useTokenBalance(token: 'USDC' | 'EURC' | 'USYC') {
         functionName: 'balanceOf',
         args: address ? [address] : undefined,
         query: {
-            enabled: !!address,
+            enabled: enabled && !!address,
         },
     })
 

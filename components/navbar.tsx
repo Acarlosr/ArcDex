@@ -10,6 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useTokenBalance } from "@/hooks/use-contracts"
 import { Logo } from "@/components/logo"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { LanguageToggle } from "@/components/language-toggle"
+import { useI18n } from "@/lib/i18n"
 
 // Deep link URLs for mobile wallets
 const WALLET_DEEP_LINKS = {
@@ -18,6 +20,7 @@ const WALLET_DEEP_LINKS = {
 }
 
 export function Navbar() {
+  const { t } = useI18n()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const [copiedLink, setCopiedLink] = useState(false)
@@ -29,8 +32,8 @@ export function Navbar() {
   const { connect, connectors, isPending } = useConnect()
   const { disconnect } = useDisconnect()
 
-  const { formatted: usdcBalance } = useTokenBalance('USDC')
-  const { formatted: eurcBalance } = useTokenBalance('EURC')
+  const { formatted: usdcBalance } = useTokenBalance('USDC', isDialogOpen && isConnected)
+  const { formatted: eurcBalance } = useTokenBalance('EURC', isDialogOpen && isConnected)
 
   useEffect(() => {
     const ua = navigator.userAgent.toLowerCase()
@@ -78,14 +81,14 @@ export function Navbar() {
   const formatAddress = (addr: string) => `${addr.slice(0, 6)}...${addr.slice(-4)}`
 
   const navItems = [
-    { label: "Swap", href: "/app/swap" },
-    { label: "Pools", href: "/app/pools" },
-    { label: "Payments", href: "/app/payments" },
-    { label: "Stake", href: "/app/stake" },
-    { label: "Portfolio", href: "/app/portfolio" },
-    { label: "Contracts", href: "/app/contracts" },
-    { label: "History", href: "/app/history" },
-    { label: "Docs", href: "/app/docs" },
+    { label: t("nav.swap"), href: "/app/swap" },
+    { label: t("nav.pools"), href: "/app/pools" },
+    { label: t("nav.payments"), href: "/app/payments" },
+    { label: t("nav.stake"), href: "/app/stake" },
+    { label: t("nav.portfolio"), href: "/app/portfolio" },
+    { label: t("nav.contracts"), href: "/app/contracts" },
+    { label: t("nav.history"), href: "/app/history" },
+    { label: t("nav.docs"), href: "/app/docs" },
   ]
 
   const showBrowserWalletButton = !isMobile || hasInjectedProvider
@@ -102,6 +105,7 @@ export function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={false}
                 className={`text-sm transition-colors ${pathname === item.href ? "text-accent font-semibold" : "text-muted-foreground hover:text-foreground"}`}
               >
                 {item.label}
@@ -111,16 +115,17 @@ export function Navbar() {
 
           <div className="flex items-center gap-3">
             <ThemeToggle />
+            <LanguageToggle />
             <div className="relative group">
               <a href="https://faucet.circle.com" target="_blank" rel="noreferrer" className="text-primary hover:text-primary/80 transition-colors cursor-pointer">
                 <Droplet size={20} />
               </a>
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-foreground text-background text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                faucet
+                {t("nav.faucet")}
               </div>
             </div>
 
-            <span className="text-sm text-muted-foreground font-medium">Arc Testnet</span>
+            <span className="text-sm text-muted-foreground font-medium">{t("nav.arcTestnet")}</span>
 
             {isConnected && address ? (
               <Button onClick={() => setIsDialogOpen(true)} variant="outline" className="border-border text-foreground hover:bg-muted">
@@ -129,9 +134,9 @@ export function Navbar() {
             ) : (
               <Button onClick={() => setIsDialogOpen(true)} className="bg-primary text-primary-foreground hover:bg-primary/90" disabled={isConnecting || isPending}>
                 {isConnecting || isPending ? (
-                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Connecting...</>
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t("wallet.connecting")}</>
                 ) : (
-                  "Connect Wallet"
+                  t("wallet.connect")
                 )}
               </Button>
             )}
@@ -143,21 +148,21 @@ export function Navbar() {
         <DialogContent className="bg-card border-border">
           <DialogHeader>
             <DialogTitle className="text-foreground">
-              {isConnected ? "Wallet Connected" : "Connect Wallet"}
+              {isConnected ? t("wallet.connected") : t("wallet.connect")}
             </DialogTitle>
           </DialogHeader>
 
           {isConnected && address ? (
             <div className="space-y-4">
               <div className="bg-muted rounded-lg p-4">
-                <p className="text-xs text-muted-foreground mb-2">Address</p>
+                <p className="text-xs text-muted-foreground mb-2">{t("wallet.address")}</p>
                 <div className="flex items-center justify-between">
                   <span className="text-foreground font-mono text-sm">{formatAddress(address)}</span>
                   <div className="flex gap-2">
-                    <button onClick={copyAddress} className="p-1.5 rounded hover:bg-background transition-colors" title="Copy address">
+                    <button onClick={copyAddress} className="p-1.5 rounded hover:bg-background transition-colors" title={t("wallet.copyAddress")}>
                       {copied ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4 text-muted-foreground" />}
                     </button>
-                    <a href={`https://testnet.arcscan.app/address/${address}`} target="_blank" rel="noreferrer" className="p-1.5 rounded hover:bg-background transition-colors" title="View on explorer">
+                    <a href={`https://testnet.arcscan.app/address/${address}`} target="_blank" rel="noreferrer" className="p-1.5 rounded hover:bg-background transition-colors" title={t("wallet.viewExplorer")}>
                       <ExternalLink className="h-4 w-4 text-muted-foreground" />
                     </a>
                   </div>
@@ -166,17 +171,17 @@ export function Navbar() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-muted rounded-lg p-3">
-                  <p className="text-xs text-muted-foreground mb-1">USDC Balance</p>
+                  <p className="text-xs text-muted-foreground mb-1">{t("wallet.usdcBalance")}</p>
                   <p className="text-lg font-semibold text-foreground">{usdcBalance}</p>
                 </div>
                 <div className="bg-muted rounded-lg p-3">
-                  <p className="text-xs text-muted-foreground mb-1">EURC Balance</p>
+                  <p className="text-xs text-muted-foreground mb-1">{t("wallet.eurcBalance")}</p>
                   <p className="text-lg font-semibold text-foreground">{eurcBalance}</p>
                 </div>
               </div>
 
               <Button onClick={handleDisconnect} variant="outline" className="w-full border-destructive text-destructive hover:bg-destructive/10">
-                Disconnect
+                {t("wallet.disconnect")}
               </Button>
             </div>
           ) : (
@@ -190,12 +195,12 @@ export function Navbar() {
                   <span className="text-primary-foreground font-bold text-xs">WC</span>
                 </div>
                 <div className="text-left">
-                  <span className="block font-semibold">WalletConnect</span>
+                  <span className="block font-semibold">{t("wallet.walletConnect")}</span>
                   <span className="text-xs text-muted-foreground">
-                    {isMobile ? 'Connect your mobile wallet' : 'Scan QR with mobile wallet'}
+                    {isMobile ? t("wallet.walletConnectMobile") : t("wallet.walletConnectDesktop")}
                   </span>
                 </div>
-                <span className="ml-auto text-xs text-primary">Recommended</span>
+                <span className="ml-auto text-xs text-primary">{t("wallet.recommended")}</span>
               </button>
 
               {/* Browser Wallet */}
@@ -208,11 +213,11 @@ export function Navbar() {
                     <span className="text-white font-bold text-sm">🦊</span>
                   </div>
                   <div className="text-left">
-                    <span className="block">Browser Wallet</span>
-                    <span className="text-xs text-muted-foreground">MetaMask, Rabby, etc.</span>
+                    <span className="block">{t("wallet.browserWallet")}</span>
+                    <span className="text-xs text-muted-foreground">{t("wallet.browserWalletDesc")}</span>
                   </div>
                   {hasInjectedProvider && (
-                    <span className="ml-auto text-xs text-green-400">✓ Detected</span>
+                    <span className="ml-auto text-xs text-green-400">✓ {t("wallet.detected")}</span>
                   )}
                 </button>
               )}
@@ -222,25 +227,25 @@ export function Navbar() {
                 <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-3">
                   <div className="flex items-center gap-2 text-sm text-foreground">
                     <Smartphone className="h-4 w-4 text-primary" />
-                    <span className="font-medium">Or open in wallet browser</span>
+                    <span className="font-medium">{t("wallet.openWalletBrowser")}</span>
                   </div>
 
                   <div className="flex flex-col gap-2">
                     <a href={WALLET_DEEP_LINKS.metamask} className="flex items-center gap-3 p-3 rounded-lg bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 transition-colors">
-                      <span className="text-sm font-medium text-foreground">Open in MetaMask</span>
+                      <span className="text-sm font-medium text-foreground">{t("wallet.openMetaMask")}</span>
                       <ExternalLink className="ml-auto h-4 w-4 text-muted-foreground" />
                     </a>
                     <a href={WALLET_DEEP_LINKS.trust} className="flex items-center gap-3 p-3 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 transition-colors">
-                      <span className="text-sm font-medium text-foreground">Open in Trust Wallet</span>
+                      <span className="text-sm font-medium text-foreground">{t("wallet.openTrust")}</span>
                       <ExternalLink className="ml-auto h-4 w-4 text-muted-foreground" />
                     </a>
                   </div>
 
                   <button onClick={copyDappLink} className="w-full flex items-center justify-center gap-2 p-2 rounded-lg border border-border hover:bg-muted transition-colors text-sm text-muted-foreground">
                     {copiedLink ? (
-                      <><Check className="h-4 w-4 text-green-400" /><span className="text-green-400">Link copied!</span></>
+                      <><Check className="h-4 w-4 text-green-400" /><span className="text-green-400">{t("wallet.linkCopied")}</span></>
                     ) : (
-                      <><Copy className="h-4 w-4" /><span>Copy dApp link</span></>
+                      <><Copy className="h-4 w-4" /><span>{t("wallet.copyDappLink")}</span></>
                     )}
                   </button>
                 </div>
@@ -249,10 +254,10 @@ export function Navbar() {
               {/* Faucet Links */}
               <div className="flex gap-2">
                 <a href="https://faucet.circle.com" target="_blank" rel="noreferrer" className="flex-1 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20 text-primary text-xs font-medium hover:bg-primary/20 transition-colors text-center">
-                  💧 USDC Faucet
+                  {t("wallet.usdcFaucet")}
                 </a>
                 <a href="https://testnet.arcscan.app" target="_blank" rel="noreferrer" className="flex-1 px-3 py-2 rounded-lg bg-muted border border-border text-muted-foreground text-xs font-medium hover:bg-muted/80 transition-colors text-center">
-                  🔍 Explorer
+                  {t("wallet.explorer")}
                 </a>
               </div>
             </div>

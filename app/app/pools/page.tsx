@@ -21,8 +21,10 @@ import {
 import { ARCDEX, POOLS, PoolPair, parseTokenAmount } from "@/lib/contracts"
 import { MobileWalletHint } from "@/components/mobile-wallet-hint"
 import { PriceChart } from "@/components/price-chart"
+import { useI18n } from "@/lib/i18n"
 
 export default function PoolsPage() {
+  const { t } = useI18n()
   const [selectedPool, setSelectedPool] = useState<PoolPair>("USDC_EURC")
   const [liquidityPercentage, setLiquidityPercentage] = useState(50)
   const [amount0, setAmount0] = useState("")
@@ -159,8 +161,8 @@ export default function PoolsPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Liquidity Pools</h1>
-          <p className="text-muted-foreground mt-1">Provide liquidity to pools and earn trading fees.</p>
+          <h1 className="text-3xl font-bold text-foreground">{t("pools.title")}</h1>
+          <p className="text-muted-foreground mt-1">{t("pools.subtitle")}</p>
         </div>
       </div>
 
@@ -194,13 +196,13 @@ export default function PoolsPage() {
                 <span className="text-lg font-semibold text-foreground">{p.name}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">APR</span>
+                <span className="text-muted-foreground">{t("pools.apr")}</span>
                 <span className="text-accent font-semibold">{p.apr}%</span>
               </div>
               <div className="flex justify-between text-sm mt-1">
-                <span className="text-muted-foreground">Status</span>
-                <span className={p.enabled ? 'text-green-400' : 'text-yellow-400'}>
-                  {p.enabled ? 'Active' : 'Coming Soon'}
+                <span className="text-muted-foreground">{t("pools.status")}</span>
+                <span className={p.enabled ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}>
+                  {p.enabled ? t("common.active") : t("common.comingSoon")}
                 </span>
               </div>
             </button>
@@ -213,19 +215,19 @@ export default function PoolsPage() {
         <div className="bg-card rounded-2xl p-6 border border-border mb-8">
           <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
             <span className="text-2xl">💼</span>
-            My Pools
+            {t("pools.myPools")}
           </h2>
 
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="text-left py-3 px-4 text-muted-foreground font-medium">Pool</th>
-                  <th className="text-right py-3 px-4 text-muted-foreground font-medium">LP Tokens</th>
+                  <th className="text-left py-3 px-4 text-muted-foreground font-medium">{t("pools.pool")}</th>
+                  <th className="text-right py-3 px-4 text-muted-foreground font-medium">{t("pools.lpTokens")}</th>
                   <th className="text-right py-3 px-4 text-muted-foreground font-medium">USDC</th>
                   <th className="text-right py-3 px-4 text-muted-foreground font-medium">EURC</th>
-                  <th className="text-right py-3 px-4 text-muted-foreground font-medium">Share</th>
-                  <th className="text-right py-3 px-4 text-muted-foreground font-medium">Actions</th>
+                  <th className="text-right py-3 px-4 text-muted-foreground font-medium">{t("pools.share")}</th>
+                  <th className="text-right py-3 px-4 text-muted-foreground font-medium">{t("pools.actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -266,7 +268,7 @@ export default function PoolsPage() {
                       }}
                       className="border-red-500/50 text-red-400 hover:bg-red-500/10"
                     >
-                      Remove
+                      {t("pools.remove")}
                     </Button>
                   </td>
                 </tr>
@@ -294,7 +296,7 @@ export default function PoolsPage() {
           <div className="mt-4 p-4 bg-muted/50 rounded-xl">
             <div className="flex flex-wrap justify-between items-center gap-4">
               <div>
-                <p className="text-sm text-muted-foreground">Total Value Deposited</p>
+                <p className="text-sm text-muted-foreground">{t("pools.totalDeposited")}</p>
                 <p className="text-2xl font-bold text-foreground">
                   ${reserveUSDC && reserveEURC && lpBalanceRaw && lpTotalSupplyRaw && lpTotalSupplyRaw > BigInt(0)
                     ? (
@@ -306,7 +308,7 @@ export default function PoolsPage() {
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-sm text-muted-foreground">Estimated APR Earnings (Year)</p>
+                <p className="text-sm text-muted-foreground">{t("pools.estimatedEarnings")}</p>
                 <p className="text-xl font-bold text-accent">
                   +${reserveUSDC && reserveEURC && lpBalanceRaw && lpTotalSupplyRaw && lpTotalSupplyRaw > BigInt(0)
                     ? (
@@ -331,10 +333,10 @@ export default function PoolsPage() {
               <span className="text-2xl">{pool.icon}</span>
               <h2 className="text-xl font-semibold text-foreground">{pool.name} Pool</h2>
               {!pool.enabled && (
-                <span className="px-2 py-1 bg-yellow-500/20 text-yellow-400 text-xs rounded-full">Coming Soon</span>
+                <span className="px-2 py-1 bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 text-xs rounded-full">{t("common.comingSoon")}</span>
               )}
             </div>
-            <p className="text-sm text-muted-foreground mb-6">Add liquidity to earn {pool.apr}% APR on trades</p>
+            <p className="text-sm text-muted-foreground mb-6">{t("pools.addLiquidityText", { apr: pool.apr })}</p>
 
             {pool.enabled ? (
               <div className="space-y-6">
@@ -343,7 +345,7 @@ export default function PoolsPage() {
                   <div className="flex items-center gap-2">
                     <Label className="text-foreground">{pool.token0} Amount</Label>
                     {amount0 && !needsToken0Approval && (
-                      <span className="text-xs text-green-400">✓ Approved</span>
+                      <span className="text-xs text-green-600 dark:text-green-400">✓ {t("common.approved")}</span>
                     )}
                   </div>
                   <Input
@@ -358,14 +360,14 @@ export default function PoolsPage() {
                   />
                   <div className="flex justify-between items-center">
                     <p className="text-xs text-muted-foreground">
-                      Balance: {token0Balance.loading ? "..." : token0Balance.balance} {pool.token0}
+                      {t("common.balance")}: {token0Balance.loading ? "..." : token0Balance.balance} {pool.token0}
                     </p>
                     {isConnected && (
                       <button
                         onClick={() => setAmount0(token0Balance.balance.replace(',', ''))}
                         className="text-xs text-cyan-400 hover:text-cyan-300"
                       >
-                        MAX
+                        {t("common.max")}
                       </button>
                     )}
                   </div>
@@ -376,7 +378,7 @@ export default function PoolsPage() {
                   <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center text-primary font-bold text-xl">
                     +
                   </div>
-                  <span className="text-xs text-muted-foreground">Combine tokens</span>
+                  <span className="text-xs text-muted-foreground">{t("pools.combineTokens")}</span>
                 </div>
 
                 {/* Token 1 Input */}
@@ -384,7 +386,7 @@ export default function PoolsPage() {
                   <div className="flex items-center gap-2">
                     <Label className="text-foreground">{pool.token1} Amount</Label>
                     {amount1 && !needsToken1Approval && (
-                      <span className="text-xs text-green-400">✓ Approved</span>
+                      <span className="text-xs text-green-600 dark:text-green-400">✓ {t("common.approved")}</span>
                     )}
                   </div>
                   <Input
@@ -396,14 +398,14 @@ export default function PoolsPage() {
                   />
                   <div className="flex justify-between items-center">
                     <p className="text-xs text-muted-foreground">
-                      Balance: {token1Balance.loading ? "..." : token1Balance.balance} {pool.token1}
+                      {t("common.balance")}: {token1Balance.loading ? "..." : token1Balance.balance} {pool.token1}
                     </p>
                     {isConnected && (
                       <button
                         onClick={() => setAmount1(token1Balance.balance.replace(',', ''))}
                         className="text-xs text-cyan-400 hover:text-cyan-300"
                       >
-                        MAX
+                        {t("common.max")}
                       </button>
                     )}
                   </div>
@@ -411,14 +413,14 @@ export default function PoolsPage() {
 
                 {/* LP Estimate */}
                 <div className="bg-muted rounded-xl p-4">
-                  <p className="text-sm text-muted-foreground">You will receive</p>
-                  <p className="text-2xl font-bold text-accent mt-1">{estimatedLP} LP Shares</p>
+                  <p className="text-sm text-muted-foreground">{t("pools.receive")}</p>
+                  <p className="text-2xl font-bold text-accent mt-1">{estimatedLP} {t("pools.lpShares")}</p>
                 </div>
 
                 {/* Action Buttons */}
                 {!isConnected ? (
                   <Button className="w-full btn-gradient h-14 text-lg font-semibold rounded-xl" disabled>
-                    Connect Wallet
+                    {t("common.connectWallet")}
                   </Button>
                 ) : needsToken0Approval ? (
                   <Button
@@ -427,11 +429,11 @@ export default function PoolsPage() {
                     className="w-full btn-gradient h-14 text-lg font-semibold rounded-xl"
                   >
                     {approving ? (
-                      <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Approving...</>
+                      <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> {t("common.approving")}</>
                     ) : approveConfirming ? (
-                      <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Confirming...</>
+                      <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> {t("common.confirming")}</>
                     ) : (
-                      `Approve ${pool.token0}`
+                      `${t("common.approve")} ${pool.token0}`
                     )}
                   </Button>
                 ) : needsToken1Approval ? (
@@ -441,11 +443,11 @@ export default function PoolsPage() {
                     className="w-full btn-gradient h-14 text-lg font-semibold rounded-xl"
                   >
                     {approving ? (
-                      <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Approving...</>
+                      <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> {t("common.approving")}</>
                     ) : approveConfirming ? (
-                      <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Confirming...</>
+                      <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> {t("common.confirming")}</>
                     ) : (
-                      `Approve ${pool.token1}`
+                      `${t("common.approve")} ${pool.token1}`
                     )}
                   </Button>
                 ) : (
@@ -455,25 +457,25 @@ export default function PoolsPage() {
                     className="w-full btn-gradient h-14 text-lg font-semibold rounded-xl"
                   >
                     {approveConfirming ? (
-                      <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Confirming Approval...</>
+                      <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> {t("common.confirmingApproval")}</>
                     ) : adding ? (
-                      <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Adding Liquidity...</>
+                      <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> {t("pools.addingLiquidity")}</>
                     ) : (
-                      "Add Liquidity"
+                      t("pools.addLiquidity")
                     )}
                   </Button>
                 )}
 
                 {addError && (
-                  <p className="text-red-400 text-sm text-center">Error: {addError.message}</p>
+                  <p className="text-red-400 text-sm text-center">{t("common.error")}: {addError.message}</p>
                 )}
               </div>
             ) : (
               <div className="text-center py-12">
                 <Lock className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-foreground mb-2">Coming Soon</h3>
+                <h3 className="text-xl font-semibold text-foreground mb-2">{t("common.comingSoon")}</h3>
                 <p className="text-muted-foreground">
-                  The {pool.name} pool will be available after the USYC contracts are deployed.
+                  {t("pools.poolAvailableAfter", { pool: pool.name })}
                 </p>
               </div>
             )}
@@ -484,7 +486,7 @@ export default function PoolsPage() {
         <div className="space-y-6">
           {/* Your Balances */}
           <div className="bg-card rounded-2xl p-6 border border-border">
-            <h3 className="text-lg font-semibold text-foreground mb-4">Your Balances</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-4">{t("common.yourBalances")}</h3>
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
@@ -510,7 +512,7 @@ export default function PoolsPage() {
               <div className="flex justify-between items-center border-t border-border pt-3">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold">LP</div>
-                  <span className="text-foreground">LP Tokens</span>
+                  <span className="text-foreground">{t("pools.lpTokens")}</span>
                 </div>
                 <span className="text-foreground font-medium">{lpLoading ? "..." : lpBalance}</span>
               </div>
@@ -520,10 +522,10 @@ export default function PoolsPage() {
           {/* Remove Liquidity */}
           {pool.enabled && (
             <div id="remove-liquidity" className="bg-card rounded-2xl p-6 border border-border">
-              <h3 className="text-lg font-semibold text-foreground mb-4">Remove Liquidity</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-4">{t("pools.removeLiquidity")}</h3>
               <div className="space-y-4">
                 <div>
-                  <Label className="text-foreground">Percentage: {liquidityPercentage}%</Label>
+                  <Label className="text-foreground">{t("pools.removeShare")}: {liquidityPercentage}%</Label>
                   <Slider
                     value={[liquidityPercentage]}
                     onValueChange={(value) => setLiquidityPercentage(value[0])}
@@ -551,14 +553,14 @@ export default function PoolsPage() {
                   className="w-full border-border text-foreground hover:bg-muted"
                 >
                   {removing ? (
-                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Removing...</>
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t("pools.removingLiquidity")}</>
                   ) : (
-                    "Remove Liquidity"
+                    t("pools.removeLiquidity")
                   )}
                 </Button>
 
                 {removeError && (
-                  <p className="text-red-400 text-xs text-center">Error: {removeError.message}</p>
+                  <p className="text-red-400 text-xs text-center">{t("common.error")}: {removeError.message}</p>
                 )}
               </div>
             </div>
@@ -569,8 +571,8 @@ export default function PoolsPage() {
       {/* TVL Chart - Below Add Liquidity Button */}
       <div className="mt-8 mb-8">
         <PriceChart
-          title="Total Value Locked"
-          subtitle="24h Vol: $19,157.77 (updates hourly)"
+          title={t("landing.tvl")}
+          subtitle={t("swap.exchangeSubtitle")}
           type="tvl"
           height={250}
         />
@@ -580,8 +582,8 @@ export default function PoolsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard title={`Pool ${pool.token0}`} value={pool.enabled ? poolUSDC || "0.00" : "—"} subtitle={`${pool.token0} in pool`} />
         <StatCard title={`Pool ${pool.token1}`} value={pool.enabled ? poolEURC || "0.00" : "—"} subtitle={`${pool.token1} in pool`} />
-        <StatCard title="Your LP" value={pool.enabled ? (lpLoading ? "..." : lpBalance) : "—"} subtitle="LP token balance" />
-        <StatCard title="Pool Share" value={pool.enabled ? `${poolShare}%` : "—"} subtitle="Your share of pool" />
+        <StatCard title={t("pools.yourLp")} value={pool.enabled ? (lpLoading ? "..." : lpBalance) : "—"} subtitle={t("pools.lpBalance")} />
+        <StatCard title={t("pools.share")} value={pool.enabled ? `${poolShare}%` : "—"} subtitle={t("pools.yourPoolShare")} />
       </div>
     </div>
   )

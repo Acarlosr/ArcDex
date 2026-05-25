@@ -19,6 +19,7 @@ import {
 import { ARCDEX, parseTokenAmount, ARCSCAN_URL } from "@/lib/contracts"
 import { MobileWalletHint } from "@/components/mobile-wallet-hint"
 import { useCompliance } from "@/hooks/useCompliance"
+import { useI18n } from "@/lib/i18n"
 
 const ARCSCAN_API = "https://testnet.arcscan.app/api"
 
@@ -58,6 +59,7 @@ function formatAddress(addr: string): string {
 }
 
 function PaymentHistory({ address }: { address: string | undefined }) {
+  const { t } = useI18n()
   const [transactions, setTransactions] = useState<PaymentTx[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -83,15 +85,15 @@ function PaymentHistory({ address }: { address: string | undefined }) {
       }
     } catch (err) {
       console.error('Failed to fetch payments:', err)
-      setError('Failed to load payment history')
+      setError(t("payments.failedLoad"))
     } finally {
       setIsLoading(false)
     }
-  }, [address])
+  }, [address, t])
 
   useEffect(() => { fetchPayments() }, [fetchPayments])
 
-  if (!address) return <p className="text-muted-foreground text-center py-6">Connect wallet to see payment history</p>
+  if (!address) return <p className="text-muted-foreground text-center py-6">{t("payments.connectHistory")}</p>
   if (isLoading) return (
     <div className="space-y-3">
       {[1, 2, 3].map((i) => (
@@ -105,17 +107,17 @@ function PaymentHistory({ address }: { address: string | undefined }) {
   if (error) return (
     <div className="text-center py-6">
       <p className="text-red-400 mb-3 text-sm">{error}</p>
-      <Button variant="outline" size="sm" onClick={fetchPayments}><RefreshCw className="w-3 h-3 mr-1" /> Retry</Button>
+      <Button variant="outline" size="sm" onClick={fetchPayments}><RefreshCw className="w-3 h-3 mr-1" /> {t("common.retry")}</Button>
     </div>
   )
-  if (transactions.length === 0) return <p className="text-muted-foreground text-center py-6 text-sm">No payments sent yet</p>
+  if (transactions.length === 0) return <p className="text-muted-foreground text-center py-6 text-sm">{t("payments.noPayments")}</p>
 
   return (
     <div className="space-y-2">
       {transactions.map((tx) => {
         const isSuccess = tx.isError === '0'
         const method = tx.functionName?.split("(")[0] || "payment"
-        const label = method === "batchPayment" ? "Batch" : method === "sendExactPayment" ? "Exact" : "Payment"
+        const label = method === "batchPayment" ? t("payments.batch") : method === "sendExactPayment" ? t("payments.exact") : t("payments.payment")
         return (
           <a key={tx.hash} href={`${ARCSCAN_URL}/tx/${tx.hash}`} target="_blank" rel="noreferrer"
             className="flex items-center justify-between p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors group">
@@ -127,7 +129,7 @@ function PaymentHistory({ address }: { address: string | undefined }) {
                 <p className="text-sm font-medium text-foreground flex items-center gap-1.5">
                   {label}
                   <span className={`text-xs px-1.5 py-0.5 rounded ${isSuccess ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}>
-                    {isSuccess ? "OK" : "Failed"}
+                    {isSuccess ? "OK" : t("common.failed")}
                   </span>
                 </p>
                 <p className="text-xs text-muted-foreground">{formatRelativeTime(tx.timeStamp)}</p>
@@ -142,7 +144,7 @@ function PaymentHistory({ address }: { address: string | undefined }) {
       <div className="text-center pt-1">
         <a href={`${ARCSCAN_URL}/address/${address}`} target="_blank" rel="noreferrer"
           className="text-cyan-400 hover:underline text-xs inline-flex items-center gap-1">
-          View all on ArcScan <ExternalLink className="w-3 h-3" />
+          {t("common.viewAllArcScan")} <ExternalLink className="w-3 h-3" />
         </a>
       </div>
     </div>
@@ -150,6 +152,7 @@ function PaymentHistory({ address }: { address: string | undefined }) {
 }
 
 export default function PaymentsPage() {
+  const { t } = useI18n()
   const [selectedToken, setSelectedToken] = useState<"USDC" | "EURC">("USDC")
   const [recipient, setRecipient] = useState("")
   const [amount, setAmount] = useState("")
@@ -290,15 +293,15 @@ export default function PaymentsPage() {
     return (
       <div className={`rounded-lg p-3 border ${colors}`}>
         <div className="flex items-center gap-2">
-          {status === "signing" && <><Clock className="w-4 h-4 text-yellow-400 animate-pulse" /><span className="text-yellow-400 text-sm">Waiting for wallet signature...</span></>}
-          {status === "pending" && <><Loader2 className="w-4 h-4 text-yellow-400 animate-spin" /><span className="text-yellow-400 text-sm">Transaction pending...</span></>}
-          {status === "confirmed" && <><CheckCircle2 className="w-4 h-4 text-green-400" /><span className="text-green-400 text-sm">Confirmed!</span></>}
-          {status === "failed" && <><XCircle className="w-4 h-4 text-red-400" /><span className="text-red-400 text-sm">{err?.message?.includes('User rejected') ? 'Cancelled' : 'Failed'}</span></>}
+          {status === "signing" && <><Clock className="w-4 h-4 text-yellow-400 animate-pulse" /><span className="text-yellow-600 dark:text-yellow-400 text-sm">{t("payments.waitingSignature")}</span></>}
+          {status === "pending" && <><Loader2 className="w-4 h-4 text-yellow-400 animate-spin" /><span className="text-yellow-600 dark:text-yellow-400 text-sm">{t("payments.pending")}</span></>}
+          {status === "confirmed" && <><CheckCircle2 className="w-4 h-4 text-green-400" /><span className="text-green-600 dark:text-green-400 text-sm">{t("common.confirmed")}!</span></>}
+          {status === "failed" && <><XCircle className="w-4 h-4 text-red-400" /><span className="text-red-400 text-sm">{err?.message?.includes('User rejected') ? t("payments.cancelled") : t("common.failed")}</span></>}
         </div>
         {hash && (status === "pending" || status === "confirmed") && (
           <a href={`${ARCSCAN_URL}/tx/${hash}`} target="_blank" rel="noreferrer"
             className="text-xs text-cyan-400 hover:underline mt-1 inline-flex items-center gap-1">
-            View on ArcScan <ExternalLink className="w-3 h-3" />
+            {t("common.viewArcScan")} <ExternalLink className="w-3 h-3" />
           </a>
         )}
       </div>
@@ -309,8 +312,8 @@ export default function PaymentsPage() {
     <div className="w-full">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Payments</h1>
-          <p className="text-muted-foreground mt-1">Send stablecoins to any address on Arc Network.</p>
+          <h1 className="text-3xl font-bold text-foreground">{t("payments.title")}</h1>
+          <p className="text-muted-foreground mt-1">{t("payments.subtitle")}</p>
         </div>
       </div>
 
@@ -322,69 +325,69 @@ export default function PaymentsPage() {
           <div className="bg-card rounded-2xl p-6 border border-border glow-border">
             {/* Token selector */}
             <div className="mb-6 space-y-2">
-              <Label className="text-foreground">Token</Label>
+              <Label className="text-foreground">{t("common.token")}</Label>
               <select value={selectedToken} onChange={(e) => setSelectedToken(e.target.value as "USDC" | "EURC")}
                 className="w-full bg-input text-foreground border border-border rounded-xl p-3 text-lg">
                 <option value="USDC">USDC</option>
                 <option value="EURC">EURC</option>
               </select>
               <p className="text-xs text-muted-foreground">
-                Balance: {!isConnected ? "---" : selectedLoading ? "..." : `${selectedBalance} ${selectedToken}`}
+                {t("common.balance")}: {!isConnected ? "---" : selectedLoading ? "..." : `${selectedBalance} ${selectedToken}`}
               </p>
             </div>
 
             {/* Compliance Status */}
             {isConnected && complianceVerified && (
               <div className="flex items-center gap-2 text-xs text-green-400 bg-green-500/10 rounded-lg p-2 mb-4">
-                <ShieldCheck className="w-3.5 h-3.5" /> Compliance Verified
+                <ShieldCheck className="w-3.5 h-3.5" /> {t("common.complianceVerified")}
               </div>
             )}
             {isConnected && complianceBlocked && (
               <div className="rounded-lg p-3 bg-red-500/10 border border-red-500/30 mb-4">
-                <p className="text-sm text-red-400 font-medium flex items-center gap-2"><ShieldAlert className="w-4 h-4" /> Wallet Blocked</p>
-                <p className="text-xs text-red-400/70 mt-1">Compliance screening flagged this wallet. Payments are disabled.</p>
+                <p className="text-sm text-red-400 font-medium flex items-center gap-2"><ShieldAlert className="w-4 h-4" /> {t("common.walletBlocked")}</p>
+                <p className="text-xs text-red-400/70 mt-1">{t("payments.flagged")}</p>
               </div>
             )}
 
             <Tabs defaultValue="single" className="w-full">
               <TabsList className="grid w-full grid-cols-2 bg-muted border-border mb-6">
-                <TabsTrigger value="single" className="flex items-center gap-2"><Send className="w-3.5 h-3.5" /> Single</TabsTrigger>
-                <TabsTrigger value="batch" className="flex items-center gap-2"><Users className="w-3.5 h-3.5" /> Batch</TabsTrigger>
+                <TabsTrigger value="single" className="flex items-center gap-2"><Send className="w-3.5 h-3.5" /> {t("payments.single")}</TabsTrigger>
+                <TabsTrigger value="batch" className="flex items-center gap-2"><Users className="w-3.5 h-3.5" /> {t("payments.batch")}</TabsTrigger>
               </TabsList>
 
               {/* Single Payment Tab */}
               <TabsContent value="single" className="space-y-4">
                 <div className="space-y-2">
-                  <Label className="text-foreground">Recipient Address</Label>
+                  <Label className="text-foreground">{t("payments.recipient")}</Label>
                   <Input type="text" placeholder="0x..." value={recipient} onChange={(e) => setRecipient(e.target.value)}
                     className="bg-input text-foreground border-border" />
-                  {recipient && !isValidAddress && <p className="text-xs text-red-400">Invalid address format</p>}
+                  {recipient && !isValidAddress && <p className="text-xs text-red-400">{t("payments.invalidAddress")}</p>}
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-foreground">Amount</Label>
+                  <Label className="text-foreground">{t("common.amount")}</Label>
                   <div className="flex gap-2">
                     <Input type="number" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)}
                       className="flex-1 bg-input text-foreground border-border" />
                     <Button variant="outline" onClick={handleMaxClick} disabled={!isConnected}
-                      className="border-border text-accent hover:bg-muted bg-transparent">Max</Button>
+                      className="border-border text-accent hover:bg-muted bg-transparent">{t("common.max")}</Button>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-foreground">Memo <span className="text-muted-foreground text-xs">(optional)</span></Label>
-                  <Input type="text" placeholder="Payment for..." value={memo} onChange={(e) => setMemo(e.target.value)}
+                  <Label className="text-foreground">{t("payments.memo")} <span className="text-muted-foreground text-xs">{t("payments.memoOptional")}</span></Label>
+                  <Input type="text" placeholder={t("payments.memoPlaceholder")} value={memo} onChange={(e) => setMemo(e.target.value)}
                     className="bg-input text-foreground border-border" maxLength={256} />
                 </div>
 
                 {/* Exact payment toggle */}
                 <div className="flex items-center justify-between bg-muted/50 rounded-lg p-3">
                   <div>
-                    <p className="text-sm text-foreground font-medium">Exact Amount Mode</p>
+                    <p className="text-sm text-foreground font-medium">{t("payments.exactMode")}</p>
                     <p className="text-xs text-muted-foreground">
                       {useExactPayment
-                        ? "Recipient gets the exact amount. Fee added on top."
-                        : "Fee deducted from amount. Recipient gets amount minus fee."}
+                        ? t("payments.exactOn")
+                        : t("payments.exactOff")}
                     </p>
                   </div>
                   <button onClick={() => setUseExactPayment(!useExactPayment)}
@@ -396,22 +399,22 @@ export default function PaymentsPage() {
                 {/* Cost breakdown */}
                 <div className="bg-muted rounded-lg p-4 space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Amount</span>
+                    <span className="text-muted-foreground">{t("common.amount")}</span>
                     <span className="text-foreground">{amount || "0.00"} {selectedToken}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Protocol Fee</span>
+                    <span className="text-muted-foreground">{t("payments.protocolFee")}</span>
                     <span className="text-foreground">{paymentFee} {selectedToken}</span>
                   </div>
                   {useExactPayment && amount && (
                     <div className="flex justify-between text-sm border-t border-border pt-2">
-                      <span className="text-muted-foreground">You Pay (Total)</span>
+                      <span className="text-muted-foreground">{t("payments.youPay")}</span>
                       <span className="text-foreground font-semibold">{singleTotal.toFixed(2)} {selectedToken}</span>
                     </div>
                   )}
                   {!useExactPayment && amount && (
                     <div className="flex justify-between text-sm border-t border-border pt-2">
-                      <span className="text-muted-foreground">Recipient Gets</span>
+                      <span className="text-muted-foreground">{t("payments.recipientGets")}</span>
                       <span className="text-foreground font-semibold">{Math.max(0, parseFloat(amount) - feeNum).toFixed(2)} {selectedToken}</span>
                     </div>
                   )}
@@ -420,15 +423,15 @@ export default function PaymentsPage() {
                 <StatusBanner status={txStatus} hash={currentTxHash} error={sendError} />
 
                 {!isConnected ? (
-                  <Button className="w-full btn-gradient h-12" disabled>Connect Wallet</Button>
+                  <Button className="w-full btn-gradient h-12" disabled>{t("common.connectWallet")}</Button>
                 ) : needsApproval ? (
                   <Button className="w-full btn-gradient h-12" onClick={handleApprove} disabled={approving || approveConfirming || !amount || !isValidAddress}>
-                    {approving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Approving...</> : approveConfirming ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Confirming...</> : `Approve ${selectedToken}`}
+                    {approving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {t("common.approving")}</> : approveConfirming ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {t("common.confirming")}</> : `${t("common.approve")} ${selectedToken}`}
                   </Button>
                 ) : (
                   <Button className="w-full btn-gradient h-12" onClick={handleSendPayment}
                     disabled={sending || approveConfirming || !amount || !isValidAddress || parseFloat(amount) <= 0 || txStatus !== "idle"}>
-                    {approveConfirming ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Confirming Approval...</> : sending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Sending...</> : "Send Payment"}
+                    {approveConfirming ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {t("common.confirmingApproval")}</> : sending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {t("payments.sending")}</> : t("payments.sendPayment")}
                   </Button>
                 )}
               </TabsContent>
@@ -439,7 +442,7 @@ export default function PaymentsPage() {
                   {batchRows.map((row, idx) => (
                     <div key={idx} className="flex gap-2 items-start">
                       <div className="flex-1 space-y-1">
-                        <Input type="text" placeholder="0x... recipient" value={row.recipient}
+                        <Input type="text" placeholder={t("payments.recipientPlaceholder")} value={row.recipient}
                           onChange={(e) => updateBatchRow(idx, "recipient", e.target.value)}
                           className="bg-input text-foreground border-border text-sm" />
                       </div>
@@ -460,25 +463,25 @@ export default function PaymentsPage() {
 
                 <Button variant="outline" size="sm" onClick={addBatchRow}
                   className="border-border text-accent hover:bg-muted bg-transparent">
-                  <Plus className="w-3.5 h-3.5 mr-1" /> Add Recipient
+                  <Plus className="w-3.5 h-3.5 mr-1" /> {t("payments.addRecipient")}
                 </Button>
 
                 {/* Batch cost summary */}
                 <div className="bg-muted rounded-lg p-4 space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Recipients</span>
+                    <span className="text-muted-foreground">{t("payments.recipients")}</span>
                     <span className="text-foreground">{batchRows.filter(r => r.recipient && r.amount).length}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Total Amount</span>
+                    <span className="text-muted-foreground">{t("payments.totalAmount")}</span>
                     <span className="text-foreground">{batchTotalAmount.toFixed(2)} {selectedToken}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Total Fees</span>
+                    <span className="text-muted-foreground">{t("payments.totalFees")}</span>
                     <span className="text-foreground">{batchTotalFees.toFixed(2)} {selectedToken}</span>
                   </div>
                   <div className="flex justify-between text-sm border-t border-border pt-2">
-                    <span className="text-muted-foreground font-medium">Grand Total</span>
+                    <span className="text-muted-foreground font-medium">{t("payments.grandTotal")}</span>
                     <span className="text-foreground font-bold">{batchGrandTotal.toFixed(2)} {selectedToken}</span>
                   </div>
                 </div>
@@ -486,15 +489,15 @@ export default function PaymentsPage() {
                 <StatusBanner status={batchTxStatus} hash={batchTxHash} error={batchError} />
 
                 {!isConnected ? (
-                  <Button className="w-full btn-gradient h-12" disabled>Connect Wallet</Button>
+                  <Button className="w-full btn-gradient h-12" disabled>{t("common.connectWallet")}</Button>
                 ) : batchNeedsApproval ? (
                   <Button className="w-full btn-gradient h-12" onClick={handleApprove} disabled={approving || approveConfirming}>
-                    {approving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Approving...</> : approveConfirming ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Confirming...</> : `Approve ${selectedToken}`}
+                    {approving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {t("common.approving")}</> : approveConfirming ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {t("common.confirming")}</> : `${t("common.approve")} ${selectedToken}`}
                   </Button>
                 ) : (
                   <Button className="w-full btn-gradient h-12" onClick={handleBatchPayment}
                     disabled={batchSending || approveConfirming || batchTotalAmount <= 0 || batchTxStatus !== "idle"}>
-                    {approveConfirming ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Confirming Approval...</> : batchSending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Sending Batch...</> : `Send Batch Payment`}
+                    {approveConfirming ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {t("common.confirmingApproval")}</> : batchSending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {t("payments.sendingBatch")}</> : t("payments.sendBatch")}
                   </Button>
                 )}
               </TabsContent>
@@ -506,7 +509,7 @@ export default function PaymentsPage() {
         <div className="space-y-6">
           {/* Balances */}
           <div className="bg-card rounded-2xl p-6 border border-border">
-            <h3 className="text-lg font-semibold text-foreground mb-4">Your Balances</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-4">{t("common.yourBalances")}</h3>
             <div className="space-y-3">
               <div className="bg-muted/30 rounded-lg p-4 flex justify-between items-center">
                 <span className="text-muted-foreground">USDC</span>
@@ -521,26 +524,26 @@ export default function PaymentsPage() {
 
           {/* Protocol Stats */}
           <div className="bg-card rounded-2xl p-6 border border-border">
-            <h3 className="text-lg font-semibold text-foreground mb-4">Payment Stats</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-4">{t("payments.stats")}</h3>
             <div className="space-y-3">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Total Protocol Payments</span>
+                <span className="text-muted-foreground">{t("payments.totalProtocolPayments")}</span>
                 <span className="text-foreground font-medium">{totalPayments !== undefined ? totalPayments.toString() : "..."}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Your Payments</span>
+                <span className="text-muted-foreground">{t("payments.yourPayments")}</span>
                 <span className="text-foreground font-medium">{userPaymentCount !== undefined ? userPaymentCount.toString() : isConnected ? "..." : "---"}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Protocol Fee</span>
-                <span className="text-foreground font-medium">{paymentFee} per tx</span>
+                <span className="text-muted-foreground">{t("payments.protocolFee")}</span>
+                <span className="text-foreground font-medium">{paymentFee} {t("payments.perTx")}</span>
               </div>
             </div>
           </div>
 
           {/* History */}
           <div className="bg-card rounded-2xl p-6 border border-border">
-            <h3 className="text-lg font-semibold text-foreground mb-4">Payment History</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-4">{t("payments.history")}</h3>
             <PaymentHistory address={address} />
           </div>
         </div>

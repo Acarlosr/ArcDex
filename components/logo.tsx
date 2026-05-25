@@ -60,7 +60,7 @@ export function Logo({ size = "md", showText = true, href = "/" }: LogoProps) {
 
   if (href) {
     return (
-      <Link href={href} className="hover:opacity-80 transition-opacity" prefetch={true}>
+      <Link href={href} className="hover:opacity-80 transition-opacity" prefetch={false}>
         <LogoContent />
       </Link>
     )

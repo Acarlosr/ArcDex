@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react"
 import { Smartphone, X } from "lucide-react"
+import { useI18n } from "@/lib/i18n"
 
 export function MobileWalletHint() {
+  const { t } = useI18n()
   const [isMobile, setIsMobile] = useState(false)
   const [dismissed, setDismissed] = useState(false)
 
@@ -28,9 +30,9 @@ export function MobileWalletHint() {
     <div className="mb-4 bg-primary/10 border border-primary/30 rounded-lg p-3 flex items-start gap-3">
       <Smartphone className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
       <div className="flex-1">
-        <p className="text-sm text-foreground font-medium">Mobile Wallet Tip</p>
+        <p className="text-sm text-foreground font-medium">{t("mobile.title")}</p>
         <p className="text-xs text-muted-foreground mt-1">
-          For the best experience, open this dApp in your wallet's built-in browser (MetaMask, Trust Wallet, etc.)
+          {t("mobile.text")}
         </p>
       </div>
       <button 
