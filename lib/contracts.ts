@@ -43,8 +43,6 @@ export const TOKENS = {
   // EURC - Euro-denominated stablecoin by Circle (6 decimals)
   EURC: "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a" as const,
 
-  // cirBTC - Circle Wrapped Bitcoin on Arc Testnet
-  CIRBTC: "0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF" as const,
 } as const;
 
 export type TokenSymbol = keyof typeof TOKENS;
@@ -62,12 +60,6 @@ export const TOKEN_INFO = {
     name: "Euro Coin",
     decimals: 6,
     icon: "/tokens/eurc.svg",
-  },
-  [TOKENS.CIRBTC]: {
-    symbol: "cirBTC",
-    name: "Circle Wrapped Bitcoin",
-    decimals: 8,
-    icon: "/tokens/cirbtc.svg",
   },
 } as const;
 
@@ -128,7 +120,7 @@ export const ARCDEX = {
 // POOL DEFINITIONS
 // ============================================================================
 
-export type PoolPair = "USDC_EURC" | "CIRBTC_USDC" | "CIRBTC_EURC";
+export type PoolPair = "USDC_EURC";
 
 export const POOLS: Record<PoolPair, {
   name: string;
@@ -149,26 +141,6 @@ export const POOLS: Record<PoolPair, {
     enabled: true,
     apr: 12.4,
     icon: "💱",
-  },
-  CIRBTC_USDC: {
-    name: "cirBTC / USDC",
-    token0: "CIRBTC",
-    token1: "USDC",
-    lpToken: "",
-    swapContract: "",
-    enabled: false, // Enable after cirBTC pool deployment
-    apr: 6.8,
-    icon: "₿",
-  },
-  CIRBTC_EURC: {
-    name: "cirBTC / EURC",
-    token0: "CIRBTC",
-    token1: "EURC",
-    lpToken: "",
-    swapContract: "",
-    enabled: false, // Enable after cirBTC pool deployment
-    apr: 6.1,
-    icon: "₿",
   },
 };
 

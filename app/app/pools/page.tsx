@@ -36,7 +36,6 @@ export default function PoolsPage() {
   // Get real balances for all tokens
   const { formatted: usdcBalance, isLoading: usdcLoading, refetch: refetchUSDC } = useTokenBalance('USDC')
   const { formatted: eurcBalance, isLoading: eurcLoading, refetch: refetchEURC } = useTokenBalance('EURC')
-  const { formatted: cirbtcBalance, isLoading: cirbtcLoading, refetch: refetchCIRBTC } = useTokenBalance('CIRBTC')
   const { formatted: lpBalance, balance: lpBalanceRaw, isLoading: lpLoading, refetch: refetchLP } = useLPBalance()
   const { totalSupply: lpTotalSupplyRaw } = useLPTotalSupply()
   const { formattedUSDC: poolUSDC, formattedEURC: poolEURC, reserveUSDC, reserveEURC } = useSwapReserves()
@@ -45,7 +44,6 @@ export default function PoolsPage() {
   const getBalance = (token: string) => {
     if (token === 'USDC') return { balance: usdcBalance, loading: usdcLoading }
     if (token === 'EURC') return { balance: eurcBalance, loading: eurcLoading }
-    if (token === 'CIRBTC') return { balance: cirbtcBalance, loading: cirbtcLoading }
     return { balance: '0.00', loading: false }
   }
 
@@ -116,7 +114,6 @@ export default function PoolsPage() {
       const timer = setTimeout(() => {
         refetchUSDC()
         refetchEURC()
-        refetchCIRBTC()
         refetchLP()
         refetchToken0Allowance()
         refetchToken1Allowance()
@@ -127,7 +124,7 @@ export default function PoolsPage() {
       }, 1000)
       return () => clearTimeout(timer)
     }
-  }, [addSuccess, addHash, removeSuccess, removeHash, refetchUSDC, refetchEURC, refetchCIRBTC, refetchLP, refetchToken0Allowance, refetchToken1Allowance])
+  }, [addSuccess, addHash, removeSuccess, removeHash, refetchUSDC, refetchEURC, refetchLP, refetchToken0Allowance, refetchToken1Allowance])
 
   const handleAddLiquidity = async () => {
     if (!amount0 || !amount1 || !pool.enabled) return
@@ -485,13 +482,6 @@ export default function PoolsPage() {
                   <span className="text-foreground">EURC</span>
                 </div>
                 <span className="text-foreground font-medium">{eurcLoading ? "..." : eurcBalance}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white text-xs font-bold">₿</div>
-                  <span className="text-foreground">cirBTC</span>
-                </div>
-                <span className="text-foreground font-medium">{cirbtcLoading ? "..." : cirbtcBalance}</span>
               </div>
               <div className="flex justify-between items-center border-t border-border pt-3">
                 <div className="flex items-center gap-2">

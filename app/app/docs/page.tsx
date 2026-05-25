@@ -245,7 +245,7 @@ function PortugueseDocsPage() {
                     <div>
                         <h1 className="text-4xl font-bold text-foreground mb-4">Introdução</h1>
                         <p className="text-xl text-muted-foreground">
-                            ARCDex é uma plataforma DeFi na Arc Network Testnet para swap, staking, pools de liquidez, pagamentos em stablecoins e suporte experimental a cirBTC.
+                            ARCDex é uma plataforma DeFi na Arc Network Testnet para swap, staking, pools de liquidez e pagamentos em stablecoins.
                         </p>
                     </div>
                     <Card className="bg-card border-primary/30">
@@ -256,7 +256,7 @@ function PortugueseDocsPage() {
                                 <li>Fazer stake de stablecoins para testar yield na Arc Testnet.</li>
                                 <li>Fornecer liquidez em pools e acompanhar sua participação.</li>
                                 <li>Enviar pagamentos on-chain com memo e taxa baixa.</li>
-                                <li>Acompanhar saldos de USDC, EURC e cirBTC pelo app.</li>
+                                <li>Acompanhar saldos de USDC e EURC pelo app.</li>
                             </ul>
                         </CardContent>
                     </Card>
@@ -268,7 +268,7 @@ function PortugueseDocsPage() {
                         {[
                             ["1", "Conecte a carteira", "Use WalletConnect no mobile ou uma extensão EVM no desktop."],
                             ["2", "Adicione a Arc Testnet", "Chain ID 5042034, RPC https://rpc.testnet.arc.network e explorer https://testnet.arcscan.app."],
-                            ["3", "Pegue tokens de teste", "Use o Circle Faucet e selecione a rede Arc para solicitar tokens de testnet como USDC e cirBTC quando disponível."],
+                            ["3", "Pegue tokens de teste", "Use o Circle Faucet e selecione a rede Arc para solicitar USDC e EURC de testnet."],
                             ["4", "Teste o fluxo", "Comece por swap, depois teste pools, stake, pagamentos e portfolio."],
                         ].map(([step, title, body]) => (
                             <Card key={step} className="bg-card border-border">
@@ -613,7 +613,7 @@ function WhyArcDexSection() {
                                 Stablecoin-First Design
                             </h4>
                             <p className="text-muted-foreground text-sm">
-                                Built specifically for stablecoins (USDC, EURC) and Circle assets like cirBTC,
+                                Built specifically for stablecoins (USDC, EURC),
                                 optimized for real-world financial applications.
                             </p>
                         </div>
@@ -997,7 +997,6 @@ function PortfolioSection() {
                             <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
                                 <li>USDC Balance</li>
                                 <li>EURC Balance</li>
-                                <li>cirBTC Balance</li>
                             </ul>
                         </div>
                         <div className="space-y-2">
@@ -1162,7 +1161,6 @@ function TokensSection() {
                     <tbody>
                         <TokenRow symbol="USDC" address="0x3600000000000000000000000000000000000000" decimals={6} type="Native Gas Token" />
                         <TokenRow symbol="EURC" address="0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a" decimals={6} type="Stablecoin" />
-                        <TokenRow symbol="cirBTC" address="0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF" decimals={8} type="Circle Wrapped Bitcoin" />
                     </tbody>
                 </table>
             </div>
@@ -1184,13 +1182,6 @@ function TokensSection() {
                             <p className="text-sm text-muted-foreground">
                                 EURC is the euro-denominated stablecoin issued by Circle. It uses 6 decimals 
                                 and is fully supported for swaps, staking, and payments.
-                            </p>
-                        </div>
-                        <div>
-                            <h4 className="font-semibold text-foreground mb-2">cirBTC (Circle Wrapped Bitcoin)</h4>
-                            <p className="text-sm text-muted-foreground">
-                                cirBTC is Circle Wrapped Bitcoin on Arc Testnet. Testnet cirBTC has no financial value
-                                and is listed in ARCDex for balances, portfolio tracking, and future swap/pool support.
                             </p>
                         </div>
                     </div>

@@ -7,7 +7,6 @@ library Constants {
     // Arc Testnet Official Token Addresses
     address constant USDC = 0x3600000000000000000000000000000000000000;
     address constant EURC = 0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a;
-    address constant CIRBTC = 0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF;
     
     // Permit2 (standard across EVM networks)
     address constant PERMIT2 = 0x000000000022D473030F116dDEE9F6B43aC78BA3;
@@ -18,7 +17,6 @@ library Constants {
     // Token decimals (ERC-20 interface)
     uint8 constant USDC_DECIMALS = 6;
     uint8 constant EURC_DECIMALS = 6;
-    uint8 constant CIRBTC_DECIMALS = 8;
     
     // Protocol fees (in basis points, 1 bp = 0.01%)
     uint256 constant SWAP_FEE_BPS = 30; // 0.3%

@@ -145,11 +145,6 @@ export default function ContractsPage() {
                             address={TOKENS.EURC}
                             description="Euro-denominated stablecoin by Circle"
                         />
-                        <ContractCard
-                            name="cirBTC"
-                            address={TOKENS.CIRBTC}
-                            description="Circle Wrapped Bitcoin on Arc Testnet"
-                        />
                     </div>
                 </section>
 

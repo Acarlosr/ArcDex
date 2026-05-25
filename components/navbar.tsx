@@ -34,7 +34,6 @@ export function Navbar() {
 
   const { formatted: usdcBalance } = useTokenBalance('USDC', isDialogOpen && isConnected)
   const { formatted: eurcBalance } = useTokenBalance('EURC', isDialogOpen && isConnected)
-  const { formatted: cirbtcBalance } = useTokenBalance('CIRBTC', isDialogOpen && isConnected)
 
   useEffect(() => {
     const ua = navigator.userAgent.toLowerCase()
@@ -170,7 +169,7 @@ export function Navbar() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <div className="bg-muted rounded-lg p-3">
                   <p className="text-xs text-muted-foreground mb-1">{t("wallet.usdcBalance")}</p>
                   <p className="text-lg font-semibold text-foreground">{usdcBalance}</p>
@@ -178,10 +177,6 @@ export function Navbar() {
                 <div className="bg-muted rounded-lg p-3">
                   <p className="text-xs text-muted-foreground mb-1">{t("wallet.eurcBalance")}</p>
                   <p className="text-lg font-semibold text-foreground">{eurcBalance}</p>
-                </div>
-                <div className="bg-muted rounded-lg p-3">
-                  <p className="text-xs text-muted-foreground mb-1">cirBTC</p>
-                  <p className="text-lg font-semibold text-foreground">{cirbtcBalance}</p>
                 </div>
               </div>
 
