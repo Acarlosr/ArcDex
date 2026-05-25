@@ -26,10 +26,12 @@ export function Navbar() {
   const [copiedLink, setCopiedLink] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [hasInjectedProvider, setHasInjectedProvider] = useState(false)
+  const [isManualConnecting, setIsManualConnecting] = useState(false)
+  const [connectionError, setConnectionError] = useState<string | null>(null)
   const pathname = usePathname()
 
   const { address, isConnected, isConnecting } = useAccount()
-  const { connect, connectors, isPending } = useConnect()
+  const { connectAsync, connectors, isPending, reset: resetConnect } = useConnect()
   const { disconnect } = useDisconnect()
 
   const { formatted: usdcBalance } = useTokenBalance('USDC', isDialogOpen && isConnected)
@@ -42,25 +44,78 @@ export function Navbar() {
     setHasInjectedProvider(!!(window as any).ethereum)
   }, [])
 
-  const handleWalletConnect = () => {
+  useEffect(() => {
+    if (!isManualConnecting) return
+
+    const timeout = window.setTimeout(() => {
+      setIsManualConnecting(false)
+      setConnectionError(t("wallet.connectionTimedOut"))
+      resetConnect()
+    }, 30000)
+
+    return () => window.clearTimeout(timeout)
+  }, [isManualConnecting, resetConnect, t])
+
+  useEffect(() => {
+    if (isConnected) {
+      setIsManualConnecting(false)
+      setConnectionError(null)
+    }
+  }, [isConnected])
+
+  const openWalletDialog = () => {
+    if (isPending) resetConnect()
+    setConnectionError(null)
+    setIsDialogOpen(true)
+  }
+
+  const handleWalletConnect = async () => {
     const wcConnector = connectors.find(c => c.id === 'walletConnect')
     if (wcConnector) {
-      connect({ connector: wcConnector })
-      setIsDialogOpen(false)
+      try {
+        setConnectionError(null)
+        setIsManualConnecting(true)
+        await connectAsync({ connector: wcConnector })
+        setIsDialogOpen(false)
+      } catch (error) {
+        setConnectionError(error instanceof Error ? error.message : t("wallet.connectionFailed"))
+        resetConnect()
+      } finally {
+        setIsManualConnecting(false)
+      }
+    } else {
+      setConnectionError(t("wallet.walletConnectUnavailable"))
     }
   }
 
-  const handleInjectedConnect = () => {
-    if (!hasInjectedProvider) return
+  const handleInjectedConnect = async () => {
+    if (!hasInjectedProvider) {
+      setConnectionError(t("wallet.noBrowserWallet"))
+      return
+    }
     const injectedConnector = connectors.find(c => c.id === 'injected')
     if (injectedConnector) {
-      connect({ connector: injectedConnector })
-      setIsDialogOpen(false)
+      try {
+        setConnectionError(null)
+        setIsManualConnecting(true)
+        await connectAsync({ connector: injectedConnector })
+        setIsDialogOpen(false)
+      } catch (error) {
+        setConnectionError(error instanceof Error ? error.message : t("wallet.connectionFailed"))
+        resetConnect()
+      } finally {
+        setIsManualConnecting(false)
+      }
+    } else {
+      setConnectionError(t("wallet.noBrowserWallet"))
     }
   }
 
   const handleDisconnect = () => {
     disconnect()
+    resetConnect()
+    setIsManualConnecting(false)
+    setConnectionError(null)
     setIsDialogOpen(false)
   }
 
@@ -128,12 +183,12 @@ export function Navbar() {
             <span className="text-sm text-muted-foreground font-medium">{t("nav.arcTestnet")}</span>
 
             {isConnected && address ? (
-              <Button onClick={() => setIsDialogOpen(true)} variant="outline" className="border-border text-foreground hover:bg-muted">
+              <Button onClick={openWalletDialog} variant="outline" className="border-border text-foreground hover:bg-muted">
                 {formatAddress(address)}
               </Button>
             ) : (
-              <Button onClick={() => setIsDialogOpen(true)} className="bg-primary text-primary-foreground hover:bg-primary/90" disabled={isConnecting || isPending}>
-                {isConnecting || isPending ? (
+              <Button onClick={openWalletDialog} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                {isConnecting || isPending || isManualConnecting ? (
                   <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t("wallet.connecting")}</>
                 ) : (
                   t("wallet.connect")
@@ -186,9 +241,28 @@ export function Navbar() {
             </div>
           ) : (
             <div className="space-y-4">
+              {connectionError && (
+                <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+                  <p className="font-medium">{t("wallet.connectionFailed")}</p>
+                  <p className="mt-1 text-xs opacity-80">{connectionError}</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      resetConnect()
+                      setIsManualConnecting(false)
+                      setConnectionError(null)
+                    }}
+                    className="mt-2 text-xs font-semibold underline underline-offset-4"
+                  >
+                    {t("wallet.tryAgain")}
+                  </button>
+                </div>
+              )}
+
               {/* WalletConnect */}
               <button
                 onClick={handleWalletConnect}
+                disabled={isManualConnecting}
                 className="w-full p-4 rounded-xl bg-primary/10 hover:bg-primary/20 text-foreground text-sm font-medium transition-all border border-primary/30 flex items-center gap-3"
               >
                 <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
@@ -207,6 +281,7 @@ export function Navbar() {
               {showBrowserWalletButton && (
                 <button
                   onClick={handleInjectedConnect}
+                  disabled={isManualConnecting}
                   className="w-full p-3 rounded-lg bg-muted hover:bg-muted/80 text-foreground text-sm font-medium transition-colors border border-border flex items-center gap-3"
                 >
                   <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center">

@@ -55,6 +55,11 @@ export const translations = {
     "wallet.eurcBalance": "EURC Balance",
     "wallet.usdcFaucet": "USDC Faucet",
     "wallet.explorer": "Explorer",
+    "wallet.connectionFailed": "Connection failed",
+    "wallet.connectionTimedOut": "Connection timed out. Please try again or open the dApp inside your wallet browser.",
+    "wallet.walletConnectUnavailable": "WalletConnect is not available. Please refresh the page and try again.",
+    "wallet.noBrowserWallet": "No browser wallet detected. Install MetaMask/Rabby or use WalletConnect.",
+    "wallet.tryAgain": "Try again",
 
     "landing.badge": "Live on Arc Network Testnet",
     "landing.heroPrefix": "The Future of",
@@ -429,6 +434,11 @@ export const translations = {
     "wallet.eurcBalance": "Saldo EURC",
     "wallet.usdcFaucet": "Faucet USDC",
     "wallet.explorer": "Explorer",
+    "wallet.connectionFailed": "Falha na conexão",
+    "wallet.connectionTimedOut": "A conexão demorou demais. Tente novamente ou abra o dApp no navegador da carteira.",
+    "wallet.walletConnectUnavailable": "WalletConnect não está disponível. Recarregue a página e tente novamente.",
+    "wallet.noBrowserWallet": "Nenhuma carteira de navegador detectada. Instale MetaMask/Rabby ou use WalletConnect.",
+    "wallet.tryAgain": "Tentar novamente",
 
     "landing.badge": "Ativo na Arc Network Testnet",
     "landing.heroPrefix": "O Futuro do",
