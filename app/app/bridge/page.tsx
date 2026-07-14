@@ -17,6 +17,7 @@ import {
   XCircle,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useI18n } from "@/lib/i18n"
 import { CCTP, CHAINLINK_CCIP } from "@/lib/contracts"
 import {
   ARC_TESTNET_CHAIN_ID,
@@ -39,20 +40,10 @@ const ARC_CHAIN = {
 type SourceChain = (typeof SOURCE_CHAINS)[number]
 type BridgeDirection = "toArc" | "fromArc"
 
-const STEP_LABELS: Record<BridgeStep, string> = {
-  idle: "",
-  approving: "Aprovando USDC...",
-  burning: "Queimando USDC na origem...",
-  attesting: "Aguardando atestação da Circle...",
-  minting: "Emitindo USDC na rede de destino...",
-  success: "Bridge concluído",
-  error: "Bridge interrompido",
-}
-
 const STEP_ORDER: BridgeStep[] = ["approving", "burning", "attesting", "minting", "success"]
 const VALID_USDC_AMOUNT = /^(?:0|[1-9]\d*)(?:\.\d{1,6})?$/
 
-function StepProgress({ current }: { current: BridgeStep }) {
+function StepProgress({ current, labels }: { current: BridgeStep; labels: Record<BridgeStep, string> }) {
   if (current === "idle" || current === "error") return null
 
   return (
@@ -86,7 +77,7 @@ function StepProgress({ current }: { current: BridgeStep }) {
                   ? "font-semibold text-foreground"
                   : "text-muted-foreground"
             }`}>
-              {STEP_LABELS[item]}
+              {labels[item]}
             </span>
           </div>
         )
@@ -96,6 +87,7 @@ function StepProgress({ current }: { current: BridgeStep }) {
 }
 
 export default function BridgePage() {
+  const { t } = useI18n()
   const { isConnected } = useAccount()
   const [sourceChain, setSourceChain] = useState<SourceChain>(SOURCE_CHAINS[0])
   const [direction, setDirection] = useState<BridgeDirection>("toArc")
@@ -123,6 +115,15 @@ export default function BridgePage() {
     fromChainId: fromChain.id,
     toChainId: toChain.id,
     amount,
+  }
+  const stepLabels: Record<BridgeStep, string> = {
+    idle: "",
+    approving: t("bridge.step.approving"),
+    burning: t("bridge.step.burning"),
+    attesting: t("bridge.step.attesting"),
+    minting: t("bridge.step.minting"),
+    success: t("bridge.step.success"),
+    error: t("bridge.step.error"),
   }
 
   useEffect(() => {
@@ -163,19 +164,19 @@ export default function BridgePage() {
       <div className="mb-8">
         <h1 className="flex items-center gap-3 text-3xl font-bold text-foreground">
           <Globe className="h-8 w-8 text-primary" />
-          Bridge USDC
+          {t("bridge.title")}
         </h1>
         <p className="mt-1 text-muted-foreground">
-          Movimente USDC entre a Arc Testnet, Ethereum Sepolia e Base Sepolia.
+          {t("bridge.subtitle")}
         </p>
       </div>
 
       <div className="mb-6 flex items-start gap-3 rounded-xl border border-primary/20 bg-primary/8 p-4">
         <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
         <div className="text-sm">
-          <p className="font-medium text-foreground">Circle Bridge Kit (App Kits) · CCTP v2</p>
+          <p className="font-medium text-foreground">{t("bridge.infoTitle")}</p>
           <p className="mt-0.5 text-muted-foreground">
-            O USDC é queimado na origem e emitido nativamente no destino. O ArcDex não custodia seus fundos.
+            {t("bridge.infoText")}
           </p>
         </div>
       </div>
@@ -185,9 +186,9 @@ export default function BridgePage() {
           <div className="mb-6 flex items-start gap-3 rounded-xl border border-green-500/25 bg-green-500/10 p-4">
             <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-green-500" />
             <div>
-              <p className="font-semibold text-green-500">Bridge concluído com sucesso</p>
+              <p className="font-semibold text-green-500">{t("bridge.successTitle")}</p>
               <p className="mt-1 text-xs text-muted-foreground">
-                {amount} USDC foi processado para {toChain.name}.
+                {t("bridge.successText", { amount, chain: toChain.name })}
               </p>
               {explorerUrl && (
                 <a
@@ -196,7 +197,7 @@ export default function BridgePage() {
                   rel="noreferrer"
                   className="mt-2 inline-flex items-center gap-1 text-xs text-green-400 hover:underline"
                 >
-                  Ver transação no explorer <ExternalLink className="h-3 w-3" />
+                  {t("bridge.viewExplorer")} <ExternalLink className="h-3 w-3" />
                 </a>
               )}
               <button
@@ -204,7 +205,7 @@ export default function BridgePage() {
                 onClick={handleReset}
                 className="mt-3 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
               >
-                <RefreshCw className="h-3 w-3" /> Novo bridge
+                <RefreshCw className="h-3 w-3" /> {t("bridge.newBridge")}
               </button>
             </div>
           </div>
@@ -214,7 +215,7 @@ export default function BridgePage() {
           <div className="mb-6 flex items-start gap-3 rounded-xl border border-destructive/25 bg-destructive/10 p-4">
             <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
             <div className="flex-1">
-              <p className="font-semibold text-destructive">O bridge foi interrompido</p>
+              <p className="font-semibold text-destructive">{t("bridge.errorTitle")}</p>
               <p className="mt-1 text-xs text-destructive/80">{error}</p>
               {explorerUrl && (
                 <a
@@ -223,7 +224,7 @@ export default function BridgePage() {
                   rel="noreferrer"
                   className="mt-2 inline-flex items-center gap-1 text-xs text-primary hover:underline"
                 >
-                  Conferir última transação <ExternalLink className="h-3 w-3" />
+                  {t("bridge.checkLastTx")} <ExternalLink className="h-3 w-3" />
                 </a>
               )}
               <div className="mt-3 flex gap-3">
@@ -234,7 +235,7 @@ export default function BridgePage() {
                     disabled={isBridging}
                     className="flex items-center gap-1 text-xs font-semibold text-primary disabled:opacity-50"
                   >
-                    <RefreshCw className="h-3 w-3" /> Continuar fluxo
+                    <RefreshCw className="h-3 w-3" /> {t("bridge.continueFlow")}
                   </button>
                 )}
                 <button
@@ -242,7 +243,7 @@ export default function BridgePage() {
                   onClick={handleReset}
                   className="text-xs text-muted-foreground hover:text-foreground"
                 >
-                  Reiniciar
+                  {t("bridge.restart")}
                 </button>
               </div>
             </div>
@@ -253,12 +254,12 @@ export default function BridgePage() {
           <>
             <div className="mb-6 flex items-center gap-4">
               <div className="flex-1 rounded-xl border border-border bg-muted p-4">
-                <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">De</p>
+                <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("bridge.from")}</p>
                 <div className="flex items-center gap-2">
                   <span className="text-2xl">{fromChain.logo}</span>
                   <div>
                     <p className="font-bold text-foreground">{fromChain.name}</p>
-                    <p className="text-xs text-muted-foreground">CCTP Domain {fromChain.cctpDomain}</p>
+                    <p className="text-xs text-muted-foreground">{t("bridge.cctpDomain", { domain: fromChain.cctpDomain })}</p>
                   </div>
                 </div>
               </div>
@@ -266,8 +267,8 @@ export default function BridgePage() {
               <button
                 type="button"
                 onClick={handleDirectionToggle}
-                aria-label={`Inverter direção: ${toChain.name} para ${fromChain.name}`}
-                title="Inverter origem e destino"
+                aria-label={t("bridge.invertAria", { from: toChain.name, to: fromChain.name })}
+                title={t("bridge.invertTitle")}
                 className="group flex shrink-0 flex-col items-center gap-1 rounded-xl border border-primary/25 bg-primary/8 px-3 py-2 transition-all hover:border-primary/50 hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <ArrowRightLeft className="h-5 w-5 text-primary transition-transform group-hover:rotate-180" />
@@ -275,12 +276,12 @@ export default function BridgePage() {
               </button>
 
               <div className="flex-1 rounded-xl border border-primary/25 bg-primary/8 p-4">
-                <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">Para</p>
+                <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("bridge.to")}</p>
                 <div className="flex items-center gap-2">
                   <span className="text-2xl">{toChain.logo}</span>
                   <div>
                     <p className="font-bold text-foreground">{toChain.name}</p>
-                    <p className="text-xs text-muted-foreground">CCTP Domain {toChain.cctpDomain}</p>
+                    <p className="text-xs text-muted-foreground">{t("bridge.cctpDomain", { domain: toChain.cctpDomain })}</p>
                   </div>
                 </div>
               </div>
@@ -288,7 +289,7 @@ export default function BridgePage() {
 
             <div className="mb-5">
               <label className="mb-2 block text-sm font-medium text-muted-foreground">
-                {isToArc ? "Rede de origem" : "Rede de destino"}
+                {isToArc ? t("bridge.originNetwork") : t("bridge.destinationNetwork")}
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {SOURCE_CHAINS.map((chain) => (
@@ -311,7 +312,7 @@ export default function BridgePage() {
 
             <div className="mb-5">
               <label htmlFor="bridge-amount" className="mb-2 block text-sm font-medium text-muted-foreground">
-                Quantidade de USDC
+                {t("bridge.amountLabel")}
               </label>
               <div className="flex gap-3">
                 <div className="flex w-28 items-center rounded-xl border border-border bg-muted px-4 py-3 font-semibold text-foreground">
@@ -331,29 +332,29 @@ export default function BridgePage() {
               </div>
               {amount.length > 0 && !isValidAmount && (
                 <p className="mt-2 flex items-center gap-1 text-xs text-amber-500">
-                  <AlertCircle className="h-3.5 w-3.5" /> Use um valor maior que zero, com até 6 casas decimais.
+                  <AlertCircle className="h-3.5 w-3.5" /> {t("bridge.amountError")}
                 </p>
               )}
             </div>
 
             <div className="mb-6 space-y-2.5 rounded-xl border border-border bg-muted/50 p-4">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Taxa de gas estimada</span>
+                <span className="text-muted-foreground">{t("bridge.estimatedGas")}</span>
                 <span className="font-medium text-foreground">
                   {isEstimating
                     ? <Loader2 className="inline h-3.5 w-3.5 animate-spin" />
-                    : estimatedFee ?? "Informe um valor"
+                    : estimatedFee ?? t("bridge.enterAmount")
                   }
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Tempo</span>
-                <span className="font-medium text-foreground">Varia conforme a atestação</span>
+                <span className="text-muted-foreground">{t("bridge.time")}</span>
+                <span className="font-medium text-foreground">{t("bridge.timeValue")}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Segurança</span>
+                <span className="text-muted-foreground">{t("bridge.security")}</span>
                 <span className="flex items-center gap-1.5 font-medium text-green-500">
-                  <ShieldCheck className="h-3.5 w-3.5" /> USDC nativo via CCTP
+                  <ShieldCheck className="h-3.5 w-3.5" /> {t("bridge.securityValue")}
                 </span>
               </div>
             </div>
@@ -362,11 +363,11 @@ export default function BridgePage() {
 
         {step !== "idle" && step !== "success" && step !== "error" && (
           <div className="mb-6 rounded-xl border border-primary/20 bg-primary/8 p-5">
-            <p className="mb-1 font-semibold text-foreground">Bridge em andamento</p>
+            <p className="mb-1 font-semibold text-foreground">{t("bridge.inProgress")}</p>
             <p className="mb-3 text-xs text-muted-foreground">
               {amount} USDC · {fromChain.name} → {toChain.name}
             </p>
-            <StepProgress current={step} />
+            <StepProgress current={step} labels={stepLabels} />
             {explorerUrl && (
               <a
                 href={explorerUrl}
@@ -374,7 +375,7 @@ export default function BridgePage() {
                 rel="noreferrer"
                 className="mt-4 inline-flex items-center gap-1 text-xs text-primary hover:underline"
               >
-                Ver última transação <ExternalLink className="h-3 w-3" />
+                {t("bridge.viewLastTx")} <ExternalLink className="h-3 w-3" />
               </a>
             )}
           </div>
@@ -382,7 +383,7 @@ export default function BridgePage() {
 
         {!isConnected ? (
           <div className="rounded-xl border border-border bg-muted p-4 text-center text-sm text-muted-foreground">
-            Conecte sua carteira pelo menu superior para usar o bridge.
+            {t("bridge.connectWallet")}
           </div>
         ) : step === "idle" || step === "error" ? (
           <Button
@@ -398,18 +399,18 @@ export default function BridgePage() {
         ) : step === "success" ? null : (
           <Button disabled className="h-12 w-full text-base font-semibold" variant="outline">
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            {STEP_LABELS[step]}
+            {stepLabels[step]}
           </Button>
         )}
       </div>
 
       <div className="card-professional mt-8 rounded-2xl p-6">
-        <h3 className="mb-4 font-semibold text-foreground">Como o fluxo funciona</h3>
+        <h3 className="mb-4 font-semibold text-foreground">{t("bridge.howTitle")}</h3>
         <div className="space-y-4">
           {[
-            { step: "1", title: "Aprovação e queima", description: "Você aprova o USDC e confirma a queima na rede de origem." },
-            { step: "2", title: "Atestação Circle", description: "A Circle valida a mensagem CCTP correspondente à queima." },
-            { step: "3", title: "Emissão no destino", description: "A mesma quantidade, descontadas eventuais taxas aplicáveis, é emitida na rede de destino." },
+            { step: "1", title: t("bridge.howStep1Title"), description: t("bridge.howStep1Text") },
+            { step: "2", title: t("bridge.howStep2Title"), description: t("bridge.howStep2Text") },
+            { step: "3", title: t("bridge.howStep3Title"), description: t("bridge.howStep3Text") },
           ].map((item) => (
             <div key={item.step} className="flex gap-4">
               <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-primary/30 bg-primary/15 text-xs font-bold text-primary">
@@ -432,7 +433,7 @@ export default function BridgePage() {
             rel="noreferrer"
             className="flex items-center gap-1 text-xs text-primary hover:underline"
           >
-            Documentação oficial <ExternalLink className="h-3 w-3" />
+            {t("bridge.officialDocs")} <ExternalLink className="h-3 w-3" />
           </a>
         </div>
       </div>
@@ -443,20 +444,19 @@ export default function BridgePage() {
             <Globe className="h-4 w-4 text-primary" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-foreground">Chainlink CCIP na Arc Testnet</p>
+            <p className="text-sm font-semibold text-foreground">{t("bridge.ccipTitle")}</p>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              A lane Ethereum Sepolia ↔ Arc está disponível para mensageria cross-chain. O ArcDex já possui uma
-              implementação segura de sender e receiver, ainda não implantada nas redes públicas.
+              {t("bridge.ccipText")}
             </p>
             <div className="mt-3 grid gap-2 text-[11px] sm:grid-cols-2">
               <div className="rounded-lg border border-border/70 bg-background/35 px-3 py-2">
-                <span className="block text-muted-foreground">Arc chain selector</span>
+                <span className="block text-muted-foreground">{t("bridge.arcSelector")}</span>
                 <strong className="break-all font-mono text-foreground">
                   {CHAINLINK_CCIP.arcTestnet.chainSelector}
                 </strong>
               </div>
               <div className="rounded-lg border border-border/70 bg-background/35 px-3 py-2">
-                <span className="block text-muted-foreground">Arc CCIP Router</span>
+                <span className="block text-muted-foreground">{t("bridge.arcRouter")}</span>
                 <strong className="break-all font-mono text-foreground">
                   {CHAINLINK_CCIP.arcTestnet.router}
                 </strong>
@@ -464,7 +464,7 @@ export default function BridgePage() {
             </div>
             <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
               <span className="text-[11px] font-medium text-amber-500">
-                Transferência de tokens via CCIP ainda indisponível nesta lane; o bridge de USDC usa CCTP.
+                {t("bridge.ccipWarning")}
               </span>
               <a
                 href="https://docs.chain.link/ccip/directory/testnet/chain/arc-testnet"
@@ -472,7 +472,7 @@ export default function BridgePage() {
                 rel="noreferrer"
                 className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline"
               >
-                Ver diretório CCIP <ExternalLink className="h-3 w-3" />
+                {t("bridge.viewCcipDirectory")} <ExternalLink className="h-3 w-3" />
               </a>
             </div>
           </div>
@@ -485,12 +485,12 @@ export default function BridgePage() {
             <Landmark className="h-4 w-4 text-primary" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-foreground">Preparado para interoperabilidade de ativos tokenizados</p>
+            <p className="text-sm font-semibold text-foreground">{t("bridge.tokenizedTitle")}</p>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              O bridge atual é exclusivo para USDC via CCTP. Uma futura integração com ativos como wDREX dependerá de emissão autorizada, registro do token na lane CCIP, controles de compliance e auditoria independente.
+              {t("bridge.tokenizedText")}
             </p>
             <p className="mt-2 text-[11px] font-medium text-amber-500">
-              O protótipo CCIP do ArcDex ainda não foi implantado. Não existe integração oficial com DREX ou Banco Central.
+              {t("bridge.tokenizedWarning")}
             </p>
           </div>
         </div>
