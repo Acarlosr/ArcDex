@@ -34,6 +34,10 @@ export default function DocsPage() {
         return <PortugueseDocsPage />
     }
 
+    if (language === "es") {
+        return <SpanishDocsPage />
+    }
+
     return (
         <div className="flex min-h-screen -mx-6 -mt-8">
             {/* Sidebar */}
@@ -360,6 +364,171 @@ function PortugueseDocsPage() {
                             <div>
                                 <h3 className="font-semibold text-foreground">Onde vejo as transações?</h3>
                                 <p className="text-sm text-muted-foreground mt-1">Use a aba Histórico ou abra o endereço da carteira no ArcScan.</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </section>
+            </main>
+        </div>
+    )
+}
+
+function SpanishDocsPage() {
+    const items = [
+        { href: "#intro", label: "Introducción", icon: BookOpen },
+        { href: "#quick-start", label: "Inicio rápido", icon: Zap },
+        { href: "#features", label: "Funciones", icon: Info },
+        { href: "#contracts", label: "Contratos", icon: FileCode },
+        { href: "#security", label: "Buenas prácticas", icon: Shield },
+        { href: "#faq", label: "FAQ", icon: HelpCircle },
+    ]
+
+    return (
+        <div className="flex min-h-screen -mx-6 -mt-8">
+            <aside className="w-64 bg-card border-r border-border fixed h-full overflow-y-auto">
+                <div className="p-6 space-y-6">
+                    <div className="space-y-2">
+                        <h2 className="text-lg font-bold text-foreground">Documentación</h2>
+                        <p className="text-xs text-muted-foreground">Guía práctica de ARCDex</p>
+                    </div>
+                    <nav className="space-y-1">
+                        {items.map((item) => {
+                            const Icon = item.icon
+                            return (
+                                <a
+                                    key={item.href}
+                                    href={item.href}
+                                    className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                                >
+                                    <Icon className="w-4 h-4" />
+                                    <span className="font-medium">{item.label}</span>
+                                </a>
+                            )
+                        })}
+                    </nav>
+                </div>
+            </aside>
+
+            <main className="ml-64 flex-1 p-8 max-w-4xl space-y-8">
+                <section id="intro" className="space-y-4">
+                    <div>
+                        <h1 className="text-4xl font-bold text-foreground mb-4">Introducción</h1>
+                        <p className="text-xl text-muted-foreground">
+                            ARCDex es una plataforma DeFi en Arc Network Testnet para swaps, staking, pools de liquidez y pagos en stablecoins.
+                        </p>
+                    </div>
+                    <Card className="bg-card border-primary/30">
+                        <CardContent className="p-6 space-y-3">
+                            <h3 className="text-lg font-semibold text-foreground">Qué puedes hacer</h3>
+                            <ul className="space-y-2 text-muted-foreground list-disc list-inside">
+                                <li>Intercambiar USDC y EURC con liquidación rápida.</li>
+                                <li>Hacer stake de stablecoins para probar yield en Arc Testnet.</li>
+                                <li>Aportar liquidez en pools y seguir tu participación.</li>
+                                <li>Enviar pagos on-chain con memo y baja comisión.</li>
+                                <li>Seguir saldos de USDC y EURC desde la app.</li>
+                            </ul>
+                        </CardContent>
+                    </Card>
+                </section>
+
+                <section id="quick-start" className="space-y-4">
+                    <h2 className="text-3xl font-bold text-foreground">Inicio rápido</h2>
+                    <div className="grid gap-4">
+                        {[
+                            ["1", "Conecta la wallet", "Usa WalletConnect en móvil o una extensión EVM en desktop."],
+                            ["2", "Agrega Arc Testnet", "Chain ID 5042034, RPC https://rpc.testnet.arc.network y explorer https://testnet.arcscan.app."],
+                            ["3", "Obtén tokens de prueba", "Usa Circle Faucet y selecciona la red Arc para solicitar USDC y EURC de testnet."],
+                            ["4", "Prueba el flujo", "Empieza por swap y luego prueba pools, stake, pagos y portafolio."],
+                        ].map(([step, title, body]) => (
+                            <Card key={step} className="bg-card border-border">
+                                <CardContent className="p-5 flex gap-4">
+                                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold">{step}</span>
+                                    <div>
+                                        <h3 className="font-semibold text-foreground">{title}</h3>
+                                        <p className="text-sm text-muted-foreground mt-1">{body}</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                </section>
+
+                <section id="features" className="space-y-4">
+                    <h2 className="text-3xl font-bold text-foreground">Funciones</h2>
+                    <div className="grid md:grid-cols-2 gap-4">
+                        {[
+                            [Zap, "Swap", "Intercambio entre stablecoins con cotización e historial."],
+                            [Droplets, "Pools", "Agrega o retira liquidez y mira tu participación en el pool."],
+                            [TrendingUp, "Stake", "Stake, unstake, recompensas y diagnóstico de treasury."],
+                            [Send, "Pagos", "Pago individual o por lote para direcciones EVM."],
+                            [PieChart, "Portafolio", "Saldos, valor estimado e historial vía ArcScan."],
+                            [History, "Historial", "Atajos al explorer y a los contratos principales."],
+                        ].map(([Icon, title, body]) => {
+                            const FeatureIcon = Icon as typeof Zap
+                            return (
+                                <Card key={String(title)} className="bg-card border-border">
+                                    <CardContent className="p-5">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <FeatureIcon className="w-4 h-4 text-primary" />
+                                            <h3 className="font-semibold text-foreground">{String(title)}</h3>
+                                        </div>
+                                        <p className="text-sm text-muted-foreground">{String(body)}</p>
+                                    </CardContent>
+                                </Card>
+                            )
+                        })}
+                    </div>
+                </section>
+
+                <section id="contracts" className="space-y-4">
+                    <h2 className="text-3xl font-bold text-foreground">Contratos y red</h2>
+                    <Card className="bg-card border-border">
+                        <CardContent className="p-6 space-y-3">
+                            <p className="text-muted-foreground">
+                                Los contratos de ARCDex están desplegados en Arc Testnet. Verifica direcciones y transacciones en ArcScan antes de probar.
+                            </p>
+                            <div className="grid md:grid-cols-2 gap-3">
+                                <Link href="/app/contracts" prefetch={false} className="inline-flex items-center gap-2 text-primary hover:underline text-sm">
+                                    Ver contratos en la app <ArrowRight className="w-4 h-4" />
+                                </Link>
+                                <a href="https://testnet.arcscan.app" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-primary hover:underline text-sm">
+                                    Abrir ArcScan <ExternalLink className="w-4 h-4" />
+                                </a>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </section>
+
+                <section id="security" className="space-y-4">
+                    <h2 className="text-3xl font-bold text-foreground">Buenas prácticas</h2>
+                    <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
+                        <p className="text-sm text-amber-700 dark:text-amber-200">
+                            ARCDex está en testnet. Usa solo tokens de prueba, revisa la red en la wallet y nunca envíes fondos reales a contratos de prueba.
+                        </p>
+                    </div>
+                    <ul className="space-y-2 text-muted-foreground list-disc list-inside">
+                        <li>Confirma que tu wallet esté en Arc Testnet antes de firmar.</li>
+                        <li>Usa cantidades pequeñas para probar cada flujo.</li>
+                        <li>Verifica las transacciones en ArcScan después de cada operación.</li>
+                        <li>No compartas seed phrase, clave privada ni códigos de autenticación.</li>
+                    </ul>
+                </section>
+
+                <section id="faq" className="space-y-4">
+                    <h2 className="text-3xl font-bold text-foreground">FAQ</h2>
+                    <Card className="bg-card border-border">
+                        <CardContent className="p-6 space-y-4">
+                            <div>
+                                <h3 className="font-semibold text-foreground">¿Es dinero real?</h3>
+                                <p className="text-sm text-muted-foreground mt-1">No. La app usa Arc Testnet y tokens de prueba.</p>
+                            </div>
+                            <div>
+                                <h3 className="font-semibold text-foreground">¿Por qué la wallet necesita aprobar tokens?</h3>
+                                <p className="text-sm text-muted-foreground mt-1">La aprobación permite que el contrato use el token en esa operación, como swap, pool, stake o pago.</p>
+                            </div>
+                            <div>
+                                <h3 className="font-semibold text-foreground">¿Dónde veo las transacciones?</h3>
+                                <p className="text-sm text-muted-foreground mt-1">Usa la pestaña Historial o abre la dirección de la wallet en ArcScan.</p>
                             </div>
                         </CardContent>
                     </Card>

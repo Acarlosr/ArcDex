@@ -17,8 +17,8 @@ export function Logo({ size = "md", showText = true, href = "/" }: LogoProps) {
 
   const LogoContent = () => (
     <div className="flex items-center gap-2.5">
-      {/* Logo Icon — simbolo Arc com gradiente roxo, magenta e azul */}
-      <div className={`${sizes[size].box} rounded-lg overflow-hidden shrink-0`}>
+      {/* Logo ArcDex — monograma AD com órbita multi-chain */}
+      <div className={`${sizes[size].box} rounded-lg overflow-hidden shrink-0 shadow-[0_0_24px_rgba(168,85,247,0.22)]`}>
         <svg
           viewBox="0 0 192 192"
           fill="none"
@@ -26,23 +26,32 @@ export function Logo({ size = "md", showText = true, href = "/" }: LogoProps) {
           className="w-full h-full"
         >
           <defs>
-            <linearGradient id="arcLogoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#7B16D8" />
-              <stop offset="55%" stopColor="#E72FAE" />
-              <stop offset="100%" stopColor="#3195FF" />
+            <radialGradient id="arcDexLogoGlow" cx="35%" cy="20%" r="85%">
+              <stop offset="0%" stopColor="#FF3BD5" />
+              <stop offset="52%" stopColor="#7C3AED" />
+              <stop offset="100%" stopColor="#06121F" />
+            </radialGradient>
+            <linearGradient id="arcDexLogoStroke" x1="34" y1="40" x2="158" y2="152" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#F43FCE" />
+              <stop offset="48%" stopColor="#8B5CF6" />
+              <stop offset="100%" stopColor="#38BDF8" />
+            </linearGradient>
+            <linearGradient id="arcDexLogoMark" x1="50" y1="52" x2="139" y2="140" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#FFFFFF" />
+              <stop offset="45%" stopColor="#F5D0FE" />
+              <stop offset="100%" stopColor="#BAE6FD" />
             </linearGradient>
           </defs>
-          <rect width="192" height="192" rx="36" fill="url(#arcLogoGrad)" />
-          <g transform="translate(20, 20) scale(0.79)">
-            <path
-              d="M101.141 53H136.632C151.023 53 162.689 64.6662 162.689 79.0573V112.904H148.112V79.0573C148.112 78.7105 148.098 78.3662 148.072 78.0251L112.581 112.898C112.701 112.902 112.821 112.904 112.941 112.904H148.112V126.672H112.941C98.5504 126.672 86.5638 114.891 86.5638 100.5V66.7434H101.141V100.5C101.141 101.15 101.191 101.792 101.289 102.422L137.56 66.7816C137.255 66.7563 136.945 66.7434 136.632 66.7434H101.141V53Z"
-              fill="white"
-            />
-            <path
-              d="M65.2926 124.136L14 66.7372H34.6355L64.7495 100.436V66.7372H80.1365V118.47C80.1365 126.278 70.4953 129.958 65.2926 124.136Z"
-              fill="white"
-            />
-          </g>
+          <rect width="192" height="192" rx="44" fill="#07030D" />
+          <rect x="10" y="10" width="172" height="172" rx="38" fill="url(#arcDexLogoGlow)" />
+          <path d="M37 111C55 57 132 42 157 86" stroke="url(#arcDexLogoStroke)" strokeWidth="8" strokeLinecap="round" opacity="0.9" />
+          <path d="M155 81L160 102L139 97" stroke="#38BDF8" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" opacity="0.95" />
+          <path d="M154 122C119 158 58 146 38 99" stroke="#F43FCE" strokeWidth="5" strokeLinecap="round" strokeDasharray="10 12" opacity="0.65" />
+          <circle cx="45" cy="91" r="6" fill="#38BDF8" />
+          <circle cx="147" cy="121" r="5" fill="#F43FCE" />
+          <path d="M50 136L79 54H95L124 136H105L99 118H75L69 136H50ZM80 102H94L87 80L80 102Z" fill="url(#arcDexLogoMark)" />
+          <path d="M118 60H139C155 60 166 72 166 96C166 120 155 132 139 132H118V116H138C145 116 150 109 150 96C150 83 145 76 138 76H134V132H118V60Z" fill="url(#arcDexLogoMark)" />
+          <path d="M61 148H132" stroke="#FFFFFF" strokeWidth="6" strokeLinecap="round" opacity="0.72" />
         </svg>
       </div>
 
@@ -67,20 +76,35 @@ export function Logo({ size = "md", showText = true, href = "/" }: LogoProps) {
 
 export function LogoMini() {
   return (
-    <div className="w-8 h-8 rounded-lg overflow-hidden">
+    <div className="w-8 h-8 rounded-lg overflow-hidden shadow-[0_0_24px_rgba(168,85,247,0.22)]">
       <svg viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
         <defs>
-          <linearGradient id="arcLogoMiniGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#7B16D8" />
-            <stop offset="55%" stopColor="#E72FAE" />
-            <stop offset="100%" stopColor="#3195FF" />
+          <radialGradient id="arcDexLogoMiniGlow" cx="35%" cy="20%" r="85%">
+            <stop offset="0%" stopColor="#FF3BD5" />
+            <stop offset="52%" stopColor="#7C3AED" />
+            <stop offset="100%" stopColor="#06121F" />
+          </radialGradient>
+          <linearGradient id="arcDexLogoMiniStroke" x1="34" y1="40" x2="158" y2="152" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#F43FCE" />
+            <stop offset="48%" stopColor="#8B5CF6" />
+            <stop offset="100%" stopColor="#38BDF8" />
+          </linearGradient>
+          <linearGradient id="arcDexLogoMiniMark" x1="50" y1="52" x2="139" y2="140" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#FFFFFF" />
+            <stop offset="45%" stopColor="#F5D0FE" />
+            <stop offset="100%" stopColor="#BAE6FD" />
           </linearGradient>
         </defs>
-        <rect width="192" height="192" rx="36" fill="url(#arcLogoMiniGrad)" />
-        <g transform="translate(20, 20) scale(0.79)">
-          <path d="M101.141 53H136.632C151.023 53 162.689 64.6662 162.689 79.0573V112.904H148.112V79.0573C148.112 78.7105 148.098 78.3662 148.072 78.0251L112.581 112.898C112.701 112.902 112.821 112.904 112.941 112.904H148.112V126.672H112.941C98.5504 126.672 86.5638 114.891 86.5638 100.5V66.7434H101.141V100.5C101.141 101.15 101.191 101.792 101.289 102.422L137.56 66.7816C137.255 66.7563 136.945 66.7434 136.632 66.7434H101.141V53Z" fill="white"/>
-          <path d="M65.2926 124.136L14 66.7372H34.6355L64.7495 100.436V66.7372H80.1365V118.47C80.1365 126.278 70.4953 129.958 65.2926 124.136Z" fill="white"/>
-        </g>
+        <rect width="192" height="192" rx="44" fill="#07030D" />
+        <rect x="10" y="10" width="172" height="172" rx="38" fill="url(#arcDexLogoMiniGlow)" />
+        <path d="M37 111C55 57 132 42 157 86" stroke="url(#arcDexLogoMiniStroke)" strokeWidth="8" strokeLinecap="round" opacity="0.9" />
+        <path d="M155 81L160 102L139 97" stroke="#38BDF8" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" opacity="0.95" />
+        <path d="M154 122C119 158 58 146 38 99" stroke="#F43FCE" strokeWidth="5" strokeLinecap="round" strokeDasharray="10 12" opacity="0.65" />
+        <circle cx="45" cy="91" r="6" fill="#38BDF8" />
+        <circle cx="147" cy="121" r="5" fill="#F43FCE" />
+        <path d="M50 136L79 54H95L124 136H105L99 118H75L69 136H50ZM80 102H94L87 80L80 102Z" fill="url(#arcDexLogoMiniMark)" />
+        <path d="M118 60H139C155 60 166 72 166 96C166 120 155 132 139 132H118V116H138C145 116 150 109 150 96C150 83 145 76 138 76H134V132H118V60Z" fill="url(#arcDexLogoMiniMark)" />
+        <path d="M61 148H132" stroke="#FFFFFF" strokeWidth="6" strokeLinecap="round" opacity="0.72" />
       </svg>
     </div>
   )

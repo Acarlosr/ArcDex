@@ -1,18 +1,20 @@
 "use client"
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
+import { spanishTranslations } from "./i18n-es"
 
-export type Language = "en" | "pt-BR"
+export type Language = "en" | "pt-BR" | "es"
 
 const LANGUAGE_STORAGE_KEY = "arcdex-language"
 const DEFAULT_LANGUAGE: Language = "en"
 
-export const translations = {
+const baseTranslations = {
   en: {
     "language.label": "Language",
     "language.switch": "Switch language",
     "language.en": "EN",
     "language.pt": "PT-BR",
+    "language.es": "ES",
     "theme.toggle": "Toggle theme",
     "theme.toLight": "Switch to light mode",
     "theme.toDark": "Switch to dark mode",
@@ -392,6 +394,7 @@ export const translations = {
     "language.switch": "Trocar idioma",
     "language.en": "EN",
     "language.pt": "PT-BR",
+    "language.es": "ES",
     "theme.toggle": "Alternar tema",
     "theme.toLight": "Mudar para modo claro",
     "theme.toDark": "Mudar para modo escuro",
@@ -768,7 +771,19 @@ export const translations = {
   },
 } as const
 
-type TranslationKey = keyof typeof translations.en
+type BaseTranslationKey = keyof typeof baseTranslations.en
+
+const esTranslations: Record<BaseTranslationKey, string> = {
+  ...baseTranslations.en,
+  ...spanishTranslations,
+}
+
+export const translations = {
+  ...baseTranslations,
+  es: esTranslations,
+} as const
+
+type TranslationKey = BaseTranslationKey
 
 interface I18nContextValue {
   language: Language
@@ -779,7 +794,7 @@ interface I18nContextValue {
 const I18nContext = createContext<I18nContextValue | null>(null)
 
 function isLanguage(value: string | null): value is Language {
-  return value === "en" || value === "pt-BR"
+  return value === "en" || value === "pt-BR" || value === "es"
 }
 
 export function I18nProvider({ children }: { children: ReactNode }) {
