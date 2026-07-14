@@ -5,7 +5,7 @@ import { useAccount } from "wagmi"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Loader2 } from "lucide-react"
+import { Loader2, ExternalLink, CheckCircle2 } from "lucide-react"
 import {
   useTokenBalance,
   useTokenAllowance,
@@ -13,7 +13,7 @@ import {
   usePaymentFee,
   useSendPayment,
 } from "@/hooks/use-contracts"
-import { ARCDEX, PROTOCOL } from "@/lib/contracts"
+import { ARCDEX, PROTOCOL, ARCSCAN_URL } from "@/lib/contracts"
 
 export function PaymentsSection() {
   const { isConnected, address } = useAccount()
@@ -61,7 +61,7 @@ export function PaymentsSection() {
         amount,
         to: `${recipient.slice(0, 6)}...${recipient.slice(-4)}`,
         ref: memo || "No memo",
-        tx: `${hash.slice(0, 6)}...${hash.slice(-4)}`,
+        tx: hash, // full hash for ArcScan link
       }
       setRecentPayments((prev) => [newPayment, ...prev.slice(0, 4)])
       setRecipient("")
@@ -202,12 +202,30 @@ export function PaymentsSection() {
           </Button>
         )}
 
+        {/* Success Banner with ArcScan link */}
+        {sendSuccess && hash && (
+          <div className="mb-4 flex items-start gap-3 p-3 rounded-xl bg-green-500/10 border border-green-500/25">
+            <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-green-500">Pagamento enviado!</p>
+              <a
+                href={`${ARCSCAN_URL}/tx/${hash}`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 text-xs text-green-400 hover:underline mt-0.5"
+              >
+                Ver no ArcScan <ExternalLink className="h-3 w-3" />
+              </a>
+            </div>
+          </div>
+        )}
+
         {sendError && (
           <p className="text-xs text-destructive text-center mb-4">{sendError.message.slice(0, 100)}</p>
         )}
 
         <p className="text-xs text-muted-foreground text-center">
-          Payments are processed on Arc Testnet. Fee: {paymentFee} {token} per transaction.
+          Payments processed on Arc Testnet. Fee: {paymentFee} {token} per transaction.
         </p>
       </div>
 
@@ -237,14 +255,15 @@ export function PaymentsSection() {
                     <td className="py-2 text-foreground">{row.amount}</td>
                     <td className="py-2 text-foreground text-xs">{row.to}</td>
                     <td className="py-2 text-muted-foreground">{row.ref}</td>
-                    <td className="py-2 text-accent text-xs">
+                    <td className="py-2 text-xs">
                       <a
-                        href={`https://testnet.arcscan.app/tx/${row.tx}`}
+                        href={`${ARCSCAN_URL}/tx/${row.tx}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="hover:underline"
+                        className="inline-flex items-center gap-1 text-primary hover:underline"
                       >
-                        {row.tx}
+                        {row.tx.length > 12 ? `${row.tx.slice(0, 6)}…${row.tx.slice(-4)}` : row.tx}
+                        <ExternalLink className="h-3 w-3 opacity-60" />
                       </a>
                     </td>
                   </tr>

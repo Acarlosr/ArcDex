@@ -221,9 +221,9 @@ export default function SwapPage() {
   // Track local approval to bypass stale allowance cache
   const [justApproved, setJustApproved] = useState(false)
 
-  const getBalance = (token: SwapToken) => {
-    if (token === 'USDC') return { balance: usdcBalance, loading: usdcLoading }
+  const getBalance = (token: SwapToken): { balance: string; loading: boolean } => {
     if (token === 'EURC') return { balance: eurcBalance, loading: eurcLoading }
+    return { balance: usdcBalance, loading: usdcLoading }
   }
 
   const fromBalance = getBalance(fromToken).balance
@@ -482,6 +482,24 @@ export default function SwapPage() {
                   t("nav.swap")
                 )}
               </Button>
+            )}
+
+            {/* Swap success banner */}
+            {swapSuccess && swapHash && (
+              <div className="mt-4 flex items-start gap-3 p-3 rounded-xl bg-green-500/10 border border-green-500/25">
+                <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-green-500">Swap confirmado!</p>
+                  <a
+                    href={`${ARCSCAN_URL}/tx/${swapHash}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-xs text-green-400 hover:underline mt-0.5"
+                  >
+                    Ver no ArcScan <ExternalLink className="h-3 w-3" />
+                  </a>
+                </div>
+              </div>
             )}
 
             {swapError && (

@@ -1,10 +1,10 @@
 // ============================================================================
-// ArcDex Contract Configuration - Arc Testnet (Chain ID: 5042034)
+// ArcDex Contract Configuration - Arc Testnet (Chain ID: 5042002)
 // ============================================================================
 
 // Arc Testnet Chain Configuration
 export const CHAIN_CONFIG = {
-  id: 5042034,
+  id: 5042002,
   name: "Arc Testnet",
   nativeCurrency: {
     name: "USDC",
@@ -43,6 +43,8 @@ export const TOKENS = {
   // EURC - Euro-denominated stablecoin by Circle (6 decimals)
   EURC: "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a" as const,
 
+  // QCAD - Canadian Dollar stablecoin by Stablecorp (6 decimals) - StableFX
+  QCAD: "0x4A08A0843F7f7dEe35014b8D58B25eaFD85b3B28" as const,
 } as const;
 
 export type TokenSymbol = keyof typeof TOKENS;
@@ -54,12 +56,24 @@ export const TOKEN_INFO = {
     name: "USD Coin",
     decimals: 6,
     icon: "/tokens/usdc.svg",
+    flag: "🇺🇸",
+    color: "#2775CA",
   },
   [TOKENS.EURC]: {
     symbol: "EURC",
     name: "Euro Coin",
     decimals: 6,
     icon: "/tokens/eurc.svg",
+    flag: "🇪🇺",
+    color: "#003399",
+  },
+  [TOKENS.QCAD]: {
+    symbol: "QCAD",
+    name: "Canadian Dollar",
+    decimals: 6,
+    icon: "/tokens/qcad.svg",
+    flag: "🇨🇦",
+    color: "#FF0000",
   },
 } as const;
 
@@ -73,6 +87,27 @@ export const CCTP = {
   MessageTransmitterV2: "0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275" as const,
   TokenMinterV2: "0xb43db544E2c27092c107639Ad201b3dEfAbcF192" as const,
   MessageV2: "0xbaC0179bB358A8936169a63408C8481D582390C4" as const,
+} as const;
+
+// ============================================================================
+// CHAINLINK CCIP - Mensageria Ethereum Sepolia <-> Arc Testnet
+// ============================================================================
+
+export const CHAINLINK_CCIP = {
+  arcTestnet: {
+    router: "0xdE4E7FED43FAC37EB21aA0643d9852f75332eab8" as const,
+    chainSelector: "3034092155422581607",
+    rmnProxy: "0xD610B8f58689de7755947C05342A2DFaC30ebD57" as const,
+    tokenAdminRegistry: "0xd3e461C55676B10634a5F81b747c324B85686Dd1" as const,
+    registryModuleOwner: "0x524B83ae8208490151339c626fd0E35b964483e3" as const,
+    linkToken: "0x3F1f176e347235858DD6Db905DDBA09Eaf25478a" as const,
+  },
+  ethereumSepolia: {
+    router: "0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59" as const,
+    chainSelector: "16015286601757825753",
+  },
+  // A lane atual permite mensageria; o diretorio oficial lista zero tokens na Arc.
+  tokenTransfersEnabled: false,
 } as const;
 
 // ============================================================================

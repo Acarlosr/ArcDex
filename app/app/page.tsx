@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { ArrowRight, Zap, TrendingUp, Droplets, Send, PieChart, Rocket, HelpCircle } from "lucide-react"
+import { ArrowRight, Zap, TrendingUp, Droplets, Send, PieChart, Rocket, HelpCircle, Globe } from "lucide-react"
 import { OnboardingModal } from "@/components/onboarding-modal"
 import { Button } from "@/components/ui/button"
 import { Logo } from "@/components/logo"
@@ -49,7 +49,7 @@ export default function AppHome() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           <Link href="/app/swap" prefetch={false} className="group">
             <div className="card-professional p-6 hover:shadow-lg hover:shadow-primary/10 h-full">
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-all">
@@ -59,6 +59,20 @@ export default function AppHome() {
               <p className="text-muted-foreground text-sm mb-4">{t("app.swapTokensText")}</p>
               <div className="flex items-center gap-2 text-primary group-hover:translate-x-1 transition-transform">
                 <span className="text-sm font-semibold">{t("app.goToSwap")}</span>
+                <ArrowRight className="w-4 h-4" />
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/app/bridge" prefetch={false} className="group">
+            <div className="card-professional p-6 hover:shadow-lg hover:shadow-primary/10 h-full">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-all">
+                <Globe className="w-6 h-6 text-primary" />
+              </div>
+              <h2 className="text-lg font-bold text-foreground mb-2">Bridge</h2>
+              <p className="text-muted-foreground text-sm mb-4">Traga USDC de Ethereum Sepolia ou Base Sepolia para a Arc Testnet via Circle CCTP v2.</p>
+              <div className="flex items-center gap-2 text-primary group-hover:translate-x-1 transition-transform">
+                <span className="text-sm font-semibold">Ir para Bridge</span>
                 <ArrowRight className="w-4 h-4" />
               </div>
             </div>
@@ -141,8 +155,8 @@ export default function AppHome() {
             </div>
             <div>
               <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">{t("app.supportedTokens")}</p>
-              <p className="text-xl font-bold text-foreground">USDC, EURC</p>
-              <p className="text-sm text-muted-foreground mt-1">{t("app.stablecoinFocus")}</p>
+              <p className="text-xl font-bold text-foreground">USDC, EURC, QCAD</p>
+              <p className="text-sm text-muted-foreground mt-1">Multi-stablecoin + bridge USDC via CCTP</p>
             </div>
           </div>
         </div>

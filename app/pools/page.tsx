@@ -12,7 +12,7 @@ export default function PoolsPage() {
   const [liquidityPercentage, setLiquidityPercentage] = useState(50)
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-[#0A304F] via-[#114B6E] to-[#D1D5DB] text-slate-50">
+    <main className="min-h-screen bg-background arc-gradient-bg text-foreground">
       <div className="space-y-8">
         <div>
           <h1 className="text-4xl font-bold text-foreground mb-2">Liquidity Pools</h1>

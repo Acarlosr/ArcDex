@@ -6,7 +6,6 @@ The project is designed as a testnet showcase dApp, with a strong focus on **UX 
 
 ![Arc Testnet](https://img.shields.io/badge/Network-Arc%20Testnet-00D4FF)
 ![Next.js](https://img.shields.io/badge/Next.js-16-black)
-![Vulnerabilities](https://img.shields.io/badge/vulnerabilities-0-green)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 🌐 **Live Demo:** [https://arc-dex.vercel.app](https://arc-dex.vercel.app)
@@ -23,6 +22,8 @@ The project is designed as a testnet showcase dApp, with a strong focus on **UX 
 - 🌊 **Liquidity Pools** — Add/remove liquidity, earn fees
 - 🥩 **Staking** — Stake tokens and claim rewards
 - 💸 **P2P Payments** — Send stablecoins with minimal fees
+- 🌐 **USDC Bridge** — Bring USDC from Ethereum Sepolia or Base Sepolia to Arc Testnet through Circle CCTP v2
+- 🔗 **CCIP Messaging Prototype** — Secure Ethereum Sepolia → Arc settlement messages using Chainlink CCIP v1.6
 - 📊 **Portfolio Dashboard** — Real-time balances, transaction history, and charts
 
 **Built with:** Next.js 16, React 19, Wagmi v3, Foundry (Solidity)
@@ -87,6 +88,17 @@ ArcDex leverages Arc's stablecoin-native architecture to provide:
 - Payments UI implemented
 - ArcDexPayments contract deployed
 - Full Web3 integration planned for future phase
+
+### 🌐 USDC Bridge
+- Browser-wallet flow powered by Circle Bridge Kit and the Viem adapter
+- Supported routes: Ethereum Sepolia → Arc Testnet and Base Sepolia → Arc Testnet
+- Native USDC burn-and-mint flow through CCTP v2
+- Per-step progress, explorer links, fee estimation, and explicit error recovery
+- The current bridge supports USDC only; EURC and tokenized assets are not presented as bridgeable
+
+### Interoperability roadmap
+
+ArcDex now includes tested Chainlink CCIP sender/receiver contracts for message-only settlement between Ethereum Sepolia and Arc Testnet. Deployment is pending, and the official Arc lane currently lists no transferable CCIP tokens. Assets related to the DREX ecosystem are not integrated in the current release; any future wDREX flow still requires an authorized issuer, token registration, compliance controls and an independent security audit.
 
 ---
 
