@@ -1,5 +1,5 @@
 import type React from "react"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Inter, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
 import { Web3Provider } from "@/components/web3-provider"
@@ -14,10 +14,18 @@ export const metadata: Metadata = {
   title: "ARCDex V2 - DeFi Trading on Arc Network",
   description: "Multi-page DeFi dApp for trading on Arc Network Testnet",
   generator: 'v0.app',
+  applicationName: "ArcDex",
   icons: {
-    icon: '/favicon.svg',
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
     apple: '/apple-icon.png',
   },
+}
+
+export const viewport: Viewport = {
+  themeColor: "#4B0830",
 }
 
 export default function RootLayout({
