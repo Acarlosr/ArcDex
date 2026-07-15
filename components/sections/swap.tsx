@@ -54,8 +54,8 @@ export function SwapSection() {
       return
     }
     try {
-      // Approve max amount for convenience
-      await approve(fromToken, ARCDEX.Swap, "999999999999")
+      // Approve only the exact amount needed for this swap (not an unlimited allowance)
+      await approve(fromToken, ARCDEX.Swap, fromAmount)
     } catch (error) {
       console.error("Swap: Approve error", error)
     }

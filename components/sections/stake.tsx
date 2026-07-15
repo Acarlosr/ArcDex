@@ -80,12 +80,17 @@ export function StakeSection() {
       console.warn("Stake: Invalid token selected for approval")
       return
     }
+    if (!stakeAmount || hasInvalidStakeAmount) {
+      console.warn("Stake: Cannot approve - invalid stake amount")
+      return
+    }
     setApproveStatus("pending")
     setApproveErrorMsg("")
     resetApprove()
     try {
-      console.log(`Stake: Approving ${selectedToken} for staking contract...`)
-      const hash = await approve(selectedToken, ARCDEX.Staking, "999999999999")
+      console.log(`Stake: Approving ${stakeAmount} ${selectedToken} for staking contract...`)
+      // Approve only the exact amount being staked (not an unlimited allowance)
+      const hash = await approve(selectedToken, ARCDEX.Staking, stakeAmount)
       console.log(`Stake: Approve tx submitted: ${hash}`)
       setApproveStatus("confirming")
       // The useEffect for approveSuccess will handle the rest

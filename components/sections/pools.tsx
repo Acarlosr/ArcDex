@@ -72,16 +72,26 @@ export function PoolsSection() {
 
   // Handlers with error handling
   const handleApproveUsdc = async () => {
+    if (!usdcAmount || parsedUsdc <= BigInt(0)) {
+      console.warn("Pools: Cannot approve USDC - no amount specified")
+      return
+    }
     try {
-      await approveUsdc("USDC", ARCDEX.Swap, "999999999999")
+      // Approve only the exact amount being added (not an unlimited allowance)
+      await approveUsdc("USDC", ARCDEX.Swap, usdcAmount)
     } catch (error) {
       console.error("Pools: Approve USDC error", error)
     }
   }
 
   const handleApproveEurc = async () => {
+    if (!eurcAmount || parsedEurc <= BigInt(0)) {
+      console.warn("Pools: Cannot approve EURC - no amount specified")
+      return
+    }
     try {
-      await approveEurc("EURC", ARCDEX.Swap, "999999999999")
+      // Approve only the exact amount being added (not an unlimited allowance)
+      await approveEurc("EURC", ARCDEX.Swap, eurcAmount)
     } catch (error) {
       console.error("Pools: Approve EURC error", error)
     }
