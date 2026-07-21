@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation"
 import { Droplet, Loader2, Copy, Check, ExternalLink, Smartphone, Shield, ShieldAlert, ShieldCheck } from "lucide-react"
 import { useAccount, useConnect, useDisconnect } from "wagmi"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { useTokenBalance } from "@/hooks/use-contracts"
 import { Logo } from "@/components/logo"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -280,6 +280,9 @@ export function Navbar() {
                 </>
               ) : t("wallet.connect")}
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              {t("wallet.connect")}
+            </DialogDescription>
           </DialogHeader>
 
           {isConnected && address ? (

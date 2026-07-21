@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useAccount } from "wagmi"
 import {
   AlertCircle,
@@ -15,6 +15,7 @@ import {
   RefreshCw,
   ShieldCheck,
   XCircle,
+  ChevronDown,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useI18n } from "@/lib/i18n"
@@ -24,20 +25,14 @@ import {
   type BridgeStep,
   useBridgeKit,
 } from "@/hooks/useBridgeKit"
+import { useBridgeBalance } from "@/hooks/useBridgeBalance"
+import { BRIDGE_SOURCE_CHAINS, ARC_CHAIN_INFO, getGasInfo, type BridgeChainInfo } from "@/lib/bridge-chains"
+import { useNativeBalance } from "@/hooks/useNativeBalance"
 
-const SOURCE_CHAINS = [
-  { id: 11_155_111, name: "Ethereum Sepolia", shortName: "Sepolia", logo: "🔷", cctpDomain: 0 },
-  { id: 84_532, name: "Base Sepolia", shortName: "Base", logo: "🔵", cctpDomain: 6 },
-] as const
+const SOURCE_CHAINS = BRIDGE_SOURCE_CHAINS
+const ARC_CHAIN = ARC_CHAIN_INFO
 
-const ARC_CHAIN = {
-  id: ARC_TESTNET_CHAIN_ID,
-  name: "Arc Testnet",
-  logo: "⚡",
-  cctpDomain: CCTP.domain,
-} as const
-
-type SourceChain = (typeof SOURCE_CHAINS)[number]
+type SourceChain = BridgeChainInfo
 type BridgeDirection = "toArc" | "fromArc"
 
 const STEP_ORDER: BridgeStep[] = ["approving", "burning", "attesting", "minting", "success"]
@@ -92,6 +87,8 @@ export default function BridgePage() {
   const [sourceChain, setSourceChain] = useState<SourceChain>(SOURCE_CHAINS[0])
   const [direction, setDirection] = useState<BridgeDirection>("toArc")
   const [amount, setAmount] = useState("")
+  const [chainMenuOpen, setChainMenuOpen] = useState(false)
+  const chainMenuRef = useRef<HTMLDivElement>(null)
 
   const {
     step,
@@ -111,6 +108,14 @@ export default function BridgePage() {
   const isToArc = direction === "toArc"
   const fromChain = isToArc ? sourceChain : ARC_CHAIN
   const toChain = isToArc ? ARC_CHAIN : sourceChain
+  const { formatted: fromBalance, isLoading: balanceLoading } = useBridgeBalance(fromChain.id)
+  // CCTP needs gas on both ends: burn on source, mint on destination
+  const fromGas = useNativeBalance(fromChain.id)
+  const toGas = useNativeBalance(toChain.id)
+  const fromGasInfo = getGasInfo(fromChain.id)
+  const toGasInfo = getGasInfo(toChain.id)
+  const missingSourceGas = fromGas.isEmpty
+  const missingDestGas = toGas.isEmpty
   const bridgeParams = {
     fromChainId: fromChain.id,
     toChainId: toChain.id,
@@ -144,8 +149,20 @@ export default function BridgePage() {
     }
   }
 
+  useEffect(() => {
+    if (!chainMenuOpen) return
+    const onClickOutside = (event: MouseEvent) => {
+      if (chainMenuRef.current && !chainMenuRef.current.contains(event.target as Node)) {
+        setChainMenuOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", onClickOutside)
+    return () => document.removeEventListener("mousedown", onClickOutside)
+  }, [chainMenuOpen])
+
   const handleSourceChange = (chain: SourceChain) => {
     setSourceChain(chain)
+    setChainMenuOpen(false)
     reset()
   }
 
@@ -200,15 +217,19 @@ export default function BridgePage() {
                   {t("bridge.viewExplorer")} <ExternalLink className="h-3 w-3" />
                 </a>
               )}
-              <button
-                type="button"
-                onClick={handleReset}
-                className="mt-3 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-              >
-                <RefreshCw className="h-3 w-3" /> {t("bridge.newBridge")}
-              </button>
             </div>
           </div>
+        )}
+
+        {step === "success" && (
+          <Button
+            type="button"
+            onClick={handleReset}
+            variant="outline"
+            className="mb-6 h-11 w-full text-sm font-semibold"
+          >
+            <RefreshCw className="mr-2 h-4 w-4" /> {t("bridge.newBridge")}
+          </Button>
         )}
 
         {step === "error" && error && (
@@ -291,29 +312,70 @@ export default function BridgePage() {
               <label className="mb-2 block text-sm font-medium text-muted-foreground">
                 {isToArc ? t("bridge.originNetwork") : t("bridge.destinationNetwork")}
               </label>
-              <div className="grid grid-cols-2 gap-2">
-                {SOURCE_CHAINS.map((chain) => (
-                  <button
-                    key={chain.id}
-                    type="button"
-                    onClick={() => handleSourceChange(chain)}
-                    className={`rounded-xl border p-3 text-center transition-all ${
-                      sourceChain.id === chain.id
-                        ? "border-primary/40 bg-primary/10"
-                        : "border-border bg-muted hover:border-primary/20"
-                    }`}
+              <div className="relative" ref={chainMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setChainMenuOpen((open) => !open)}
+                  aria-haspopup="listbox"
+                  aria-expanded={chainMenuOpen}
+                  className="flex w-full items-center justify-between rounded-xl border border-border bg-muted px-4 py-3 text-left transition-colors hover:border-primary/30"
+                >
+                  <span className="flex items-center gap-2.5">
+                    <span className="text-xl">{sourceChain.logo}</span>
+                    <span className="font-semibold text-foreground">{sourceChain.name}</span>
+                  </span>
+                  <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${chainMenuOpen ? "rotate-180" : ""}`} />
+                </button>
+
+                {chainMenuOpen && (
+                  <div
+                    role="listbox"
+                    className="absolute z-20 mt-2 max-h-72 w-full overflow-y-auto rounded-xl border border-border bg-popover p-1 shadow-xl"
                   >
-                    <div className="mb-1 text-xl">{chain.logo}</div>
-                    <div className="text-xs font-semibold text-foreground">{chain.shortName}</div>
-                  </button>
-                ))}
+                    {SOURCE_CHAINS.map((chain) => (
+                      <button
+                        key={chain.id}
+                        type="button"
+                        role="option"
+                        aria-selected={sourceChain.id === chain.id}
+                        onClick={() => handleSourceChange(chain)}
+                        className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${
+                          sourceChain.id === chain.id ? "bg-primary/15" : "hover:bg-muted"
+                        }`}
+                      >
+                        <span className="text-xl">{chain.logo}</span>
+                        <span className="flex-1 text-sm font-medium text-foreground">{chain.name}</span>
+                        <span className="text-[10px] text-muted-foreground">CCTP {chain.cctpDomain}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
             <div className="mb-5">
-              <label htmlFor="bridge-amount" className="mb-2 block text-sm font-medium text-muted-foreground">
-                {t("bridge.amountLabel")}
-              </label>
+              <div className="mb-2 flex items-center justify-between">
+                <label htmlFor="bridge-amount" className="block text-sm font-medium text-muted-foreground">
+                  {t("bridge.amountLabel")}
+                </label>
+                {isConnected && (
+                  <span className="text-xs text-muted-foreground">
+                    Balance:{" "}
+                    {balanceLoading ? (
+                      <Loader2 className="inline h-3 w-3 animate-spin" />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleAmountChange(fromBalance)}
+                        className="font-semibold text-foreground hover:text-primary transition-colors"
+                        title="Usar saldo máximo"
+                      >
+                        {Number(fromBalance).toLocaleString("en-US", { maximumFractionDigits: 6 })} USDC
+                      </button>
+                    )}
+                  </span>
+                )}
+              </div>
               <div className="flex gap-3">
                 <div className="flex w-28 items-center rounded-xl border border-border bg-muted px-4 py-3 font-semibold text-foreground">
                   USDC
@@ -329,6 +391,14 @@ export default function BridgePage() {
                   aria-invalid={amount.length > 0 && !isValidAmount}
                   className="input-arc flex-1 rounded-xl border border-border bg-muted px-4 py-3 text-lg font-medium text-foreground"
                 />
+                <button
+                  type="button"
+                  onClick={() => handleAmountChange(fromBalance)}
+                  disabled={!isConnected || balanceLoading || Number(fromBalance) <= 0}
+                  className="rounded-xl border border-border bg-muted px-4 py-3 text-sm font-semibold text-primary hover:bg-primary/10 transition-colors disabled:opacity-40"
+                >
+                  MAX
+                </button>
               </div>
               {amount.length > 0 && !isValidAmount && (
                 <p className="mt-2 flex items-center gap-1 text-xs text-amber-500">
@@ -386,16 +456,42 @@ export default function BridgePage() {
             {t("bridge.connectWallet")}
           </div>
         ) : step === "idle" || step === "error" ? (
-          <Button
-            type="button"
-            onClick={() => void bridge(bridgeParams)}
-            disabled={!isValidAmount || isBridging}
-            className="btn-arc-primary h-12 w-full text-base font-semibold"
-          >
-            {isBridging ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Bridge {amount || "0"} USDC
-            {!isBridging ? <ArrowRight className="ml-2 h-4 w-4" /> : null}
-          </Button>
+          <>
+            {(missingSourceGas || missingDestGas) && (
+              <div className="mb-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm">
+                <p className="flex items-center gap-2 font-semibold text-amber-500">
+                  <AlertCircle className="h-4 w-4" /> Falta gás para completar o bridge
+                </p>
+                <p className="mt-1 text-muted-foreground">
+                  O CCTP exige gás na origem (queima) e no destino (mint). Você não tem saldo nativo em:
+                </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {missingSourceGas && (
+                    <a href={fromGasInfo.faucet} target="_blank" rel="noopener noreferrer"
+                       className="inline-flex items-center gap-1 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-500 hover:bg-amber-500/20">
+                      Faucet {fromChain.name} ({fromGasInfo.symbol}) <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
+                  {missingDestGas && (
+                    <a href={toGasInfo.faucet} target="_blank" rel="noopener noreferrer"
+                       className="inline-flex items-center gap-1 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-500 hover:bg-amber-500/20">
+                      Faucet {toChain.name} ({toGasInfo.symbol}) <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+            <Button
+              type="button"
+              onClick={() => void bridge(bridgeParams)}
+              disabled={!isValidAmount || isBridging || missingSourceGas || missingDestGas}
+              className="btn-arc-primary h-12 w-full text-base font-semibold"
+            >
+              {isBridging ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Bridge {amount || "0"} USDC
+              {!isBridging ? <ArrowRight className="ml-2 h-4 w-4" /> : null}
+            </Button>
+          </>
         ) : step === "success" ? null : (
           <Button disabled className="h-12 w-full text-base font-semibold" variant="outline">
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

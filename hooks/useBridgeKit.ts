@@ -12,16 +12,12 @@ import { useCallback, useState } from "react"
 import { useAccount } from "wagmi"
 import { formatUnits, type EIP1193Provider } from "viem"
 import type { BridgeKit, BridgeResult } from "@circle-fin/bridge-kit"
+import { CHAIN_ID_TO_BRIDGE_CHAIN as BRIDGE_MAP } from "@/lib/bridge-chains"
 
 export const ARC_TESTNET_CHAIN_ID = 5_042_002
 
-type SupportedBridgeChain = "Ethereum_Sepolia" | "Base_Sepolia" | "Arc_Testnet"
-
-export const CHAIN_ID_TO_BRIDGE_CHAIN: Record<number, SupportedBridgeChain> = {
-  11_155_111: "Ethereum_Sepolia",
-  84_532: "Base_Sepolia",
-  [ARC_TESTNET_CHAIN_ID]: "Arc_Testnet",
-}
+// All CCTP source/destination chains, derived from the canonical registry.
+export const CHAIN_ID_TO_BRIDGE_CHAIN: Record<number, string> = BRIDGE_MAP
 
 export type BridgeStep =
   | "idle"

@@ -58,7 +58,7 @@ function formatAddress(addr: string): string {
   return `${addr.slice(0, 6)}...${addr.slice(-4)}`
 }
 
-function PaymentHistory({ address }: { address: string | undefined }) {
+function PaymentHistory({ address, refreshKey }: { address: string | undefined; refreshKey?: string | number }) {
   const { t } = useI18n()
   const [transactions, setTransactions] = useState<PaymentTx[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -91,7 +91,10 @@ function PaymentHistory({ address }: { address: string | undefined }) {
     }
   }, [address, t])
 
-  useEffect(() => { fetchPayments() }, [fetchPayments])
+  // Re-fetch on mount AND whenever refreshKey changes (bumped by the parent
+  // right after a payment/batch confirms). Without this, a successful payment
+  // never showed up here until the whole page was manually reloaded.
+  useEffect(() => { fetchPayments() }, [fetchPayments, refreshKey])
 
   if (!address) return <p className="text-muted-foreground text-center py-6">{t("payments.connectHistory")}</p>
   if (isLoading) return (
@@ -110,7 +113,12 @@ function PaymentHistory({ address }: { address: string | undefined }) {
       <Button variant="outline" size="sm" onClick={fetchPayments}><RefreshCw className="w-3 h-3 mr-1" /> {t("common.retry")}</Button>
     </div>
   )
-  if (transactions.length === 0) return <p className="text-muted-foreground text-center py-6 text-sm">{t("payments.noPayments")}</p>
+  if (transactions.length === 0) return (
+    <div className="text-center py-6">
+      <p className="text-muted-foreground text-sm mb-3">{t("payments.noPayments")}</p>
+      <Button variant="outline" size="sm" onClick={fetchPayments}><RefreshCw className="w-3 h-3 mr-1" /> {t("common.refresh")}</Button>
+    </div>
+  )
 
   return (
     <div className="space-y-2">
@@ -166,6 +174,9 @@ export default function PaymentsPage() {
   const [batchTxStatus, setBatchTxStatus] = useState<TxStatus>("idle")
   const [batchTxHash, setBatchTxHash] = useState<string | null>(null)
 
+  // Bumped after a payment confirms so <PaymentHistory> refetches from ArcScan
+  const [historyRefreshKey, setHistoryRefreshKey] = useState(0)
+
   const { isConnected, address } = useAccount()
 
   const { formatted: usdcBalance, isLoading: usdcLoading, refetch: refetchUSDC } = useTokenBalance('USDC')
@@ -175,7 +186,7 @@ export default function PaymentsPage() {
 
   const { formatted: paymentFee } = usePaymentFee()
   const { allowance, refetch: refetchAllowance } = useTokenAllowance(selectedToken, ARCDEX.Payments)
-  const { totalPayments, userPaymentCount } = usePaymentStats()
+  const { totalPayments, userPaymentCount, refetch: refetchPaymentStats } = usePaymentStats()
 
   const { approve, isPending: approving, isConfirming: approveConfirming, isSuccess: approveSuccess, hash: approveHash } = useApprove()
   const [justApproved, setJustApproved] = useState(false)
@@ -226,8 +237,15 @@ export default function PaymentsPage() {
       setTxStatus("confirmed")
       setTimeout(() => { refetchUSDC(); refetchEURC(); refetchAllowance(); setJustApproved(false); setAmount(""); setRecipient(""); setMemo("") }, 1000)
       setTimeout(() => { setTxStatus("idle"); setCurrentTxHash(null) }, 6000)
+      // Refresh on-chain stats + the ArcScan-backed history. Staggered because
+      // the explorer indexer can lag a few seconds behind the confirmed tx.
+      refetchPaymentStats()
+      setHistoryRefreshKey((k) => k + 1)
+      const h1 = setTimeout(() => { refetchPaymentStats(); setHistoryRefreshKey((k) => k + 1) }, 3000)
+      const h2 = setTimeout(() => { refetchPaymentStats(); setHistoryRefreshKey((k) => k + 1) }, 7000)
+      return () => { clearTimeout(h1); clearTimeout(h2) }
     }
-  }, [sendSuccess, sendHash, refetchUSDC, refetchEURC, refetchAllowance])
+  }, [sendSuccess, sendHash, refetchUSDC, refetchEURC, refetchAllowance, refetchPaymentStats])
   useEffect(() => {
     if (sendError) { setTxStatus("failed"); setTimeout(() => { setTxStatus("idle"); setCurrentTxHash(null) }, 5000) }
   }, [sendError])
@@ -240,8 +258,13 @@ export default function PaymentsPage() {
       setBatchTxStatus("confirmed")
       setTimeout(() => { refetchUSDC(); refetchEURC(); refetchAllowance(); setJustApproved(false); setBatchRows([{ recipient: "", amount: "" }, { recipient: "", amount: "" }]) }, 1000)
       setTimeout(() => { setBatchTxStatus("idle"); setBatchTxHash(null) }, 6000)
+      refetchPaymentStats()
+      setHistoryRefreshKey((k) => k + 1)
+      const h1 = setTimeout(() => { refetchPaymentStats(); setHistoryRefreshKey((k) => k + 1) }, 3000)
+      const h2 = setTimeout(() => { refetchPaymentStats(); setHistoryRefreshKey((k) => k + 1) }, 7000)
+      return () => { clearTimeout(h1); clearTimeout(h2) }
     }
-  }, [batchSuccess, batchHash, refetchUSDC, refetchEURC, refetchAllowance])
+  }, [batchSuccess, batchHash, refetchUSDC, refetchEURC, refetchAllowance, refetchPaymentStats])
   useEffect(() => {
     if (batchError) { setBatchTxStatus("failed"); setTimeout(() => { setBatchTxStatus("idle"); setBatchTxHash(null) }, 5000) }
   }, [batchError])
@@ -544,7 +567,7 @@ export default function PaymentsPage() {
           {/* History */}
           <div className="bg-card rounded-2xl p-6 border border-border">
             <h3 className="text-lg font-semibold text-foreground mb-4">{t("payments.history")}</h3>
-            <PaymentHistory address={address} />
+            <PaymentHistory address={address} refreshKey={historyRefreshKey} />
           </div>
         </div>
       </div>

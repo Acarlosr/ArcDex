@@ -98,11 +98,27 @@ export default function StakePage() {
   const { claimAllRewards, isPending: claiming, isSuccess: claimSuccess } = useClaimRewards()
   const [justApproved, setJustApproved] = useState(false)
 
+  // These 5 treasury diagnostic reads are extra load on top of the ~11 other
+  // RPC calls the Stake page already fires on mount (staked balance, pending
+  // rewards, APR, total staked x2 tokens, token balance, allowance...). Firing
+  // all ~16 at once was enough to trip the public testnet RPC's rate limit
+  // (429 Too Many Requests). Since this diagnostic info is not time-critical,
+  // delay it briefly so it doesn't compete with the page's primary data in
+  // the very first render, and cache it longer so it isn't re-fetched on
+  // every remount/reconnect.
+  const [treasuryDiagReady, setTreasuryDiagReady] = useState(false)
+  useEffect(() => {
+    const timer = setTimeout(() => setTreasuryDiagReady(true), 1500)
+    return () => clearTimeout(timer)
+  }, [])
+  const TREASURY_QUERY_OPTS = { staleTime: 5 * 60_000, gcTime: 10 * 60_000, retry: false } as const
+
   // Treasury diagnostic: read treasury address from staking contract
   const { data: treasuryAddress } = useReadContract({
     address: ARCDEX.Staking as `0x${string}`,
     abi: ARCDEX_STAKING_ABI,
     functionName: 'treasury',
+    query: { enabled: treasuryDiagReady, ...TREASURY_QUERY_OPTS },
   })
 
   // Treasury diagnostic: check if treasury has enough EURC balance
@@ -111,7 +127,7 @@ export default function StakePage() {
     abi: ERC20_ABI,
     functionName: 'balanceOf',
     args: treasuryAddress ? [treasuryAddress as `0x${string}`] : undefined,
-    query: { enabled: !!treasuryAddress },
+    query: { enabled: !!treasuryAddress, ...TREASURY_QUERY_OPTS },
   })
 
   // Treasury diagnostic: check if treasury approved staking contract for EURC
@@ -120,7 +136,7 @@ export default function StakePage() {
     abi: ERC20_ABI,
     functionName: 'allowance',
     args: treasuryAddress ? [treasuryAddress as `0x${string}`, ARCDEX.Staking as `0x${string}`] : undefined,
-    query: { enabled: !!treasuryAddress },
+    query: { enabled: !!treasuryAddress, ...TREASURY_QUERY_OPTS },
   })
 
   // Treasury diagnostic: same for USDC
@@ -129,7 +145,7 @@ export default function StakePage() {
     abi: ERC20_ABI,
     functionName: 'balanceOf',
     args: treasuryAddress ? [treasuryAddress as `0x${string}`] : undefined,
-    query: { enabled: !!treasuryAddress },
+    query: { enabled: !!treasuryAddress, ...TREASURY_QUERY_OPTS },
   })
 
   const { data: treasuryUsdcAllowance } = useReadContract({
@@ -137,7 +153,7 @@ export default function StakePage() {
     abi: ERC20_ABI,
     functionName: 'allowance',
     args: treasuryAddress ? [treasuryAddress as `0x${string}`, ARCDEX.Staking as `0x${string}`] : undefined,
-    query: { enabled: !!treasuryAddress },
+    query: { enabled: !!treasuryAddress, ...TREASURY_QUERY_OPTS },
   })
 
   // Detect treasury issues for each token

@@ -1,13 +1,14 @@
 'use client'
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { WagmiProvider, createConfig } from 'wagmi'
+import { WagmiProvider, createConfig, createStorage, cookieStorage } from 'wagmi'
 import { fallback, http } from 'viem'
 import { injected, walletConnect } from 'wagmi/connectors'
 import { useState, useEffect, type ReactNode } from 'react'
 import { CHAIN_CONFIG } from '@/lib/contracts'
 
-const RPC_OPTS = { timeout: 20000, retryCount: 3, retryDelay: 1000 }
+// Lower retry count so a rate-limited (429) RPC doesn't hammer with retries
+const RPC_OPTS = { timeout: 20000, retryCount: 1, retryDelay: 1500 }
 const ARC_RPC_URLS = [
   CHAIN_CONFIG.rpcUrls.default.http[0],
   'https://rpc.blockdaemon.testnet.arc.network',
@@ -55,12 +56,19 @@ function createWagmiConfig() {
     return createConfig({
         chains: [arcTestnet],
         connectors,
+        // Persist the last connection so a page refresh restores the wallet
+        storage: createStorage({
+            storage: typeof window !== 'undefined' ? window.localStorage : cookieStorage,
+            key: 'arcdex.wagmi',
+        }),
         transports: {
             [arcTestnet.id]: fallback(
                 ARC_RPC_URLS.map((url) => http(url, RPC_OPTS)),
                 { rank: false }
             ),
         },
+        // Poll new blocks every 12s instead of the ~4s default to cut RPC 429s
+        pollingInterval: 12_000,
         ssr: true,
     })
 }
@@ -91,7 +99,7 @@ export function Web3Provider({ children }: { children: ReactNode }) {
     }
 
     return (
-        <WagmiProvider config={wagmiConfig} reconnectOnMount={false}>
+        <WagmiProvider config={wagmiConfig} reconnectOnMount={true}>
             <QueryClientProvider client={queryClient}>
                 {children}
             </QueryClientProvider>

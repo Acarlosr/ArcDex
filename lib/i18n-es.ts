@@ -265,6 +265,7 @@ export const spanishTranslations = {
   "pools.yourLp": "Tu LP",
   "pools.lpBalance": "Saldo de tokens LP",
   "pools.yourPoolShare": "Tu participación en el pool",
+  "pools.history": "Transacciones Recientes",
 
   "payments.title": "Pagos",
   "payments.subtitle": "Envía stablecoins a cualquier dirección en Arc Network.",

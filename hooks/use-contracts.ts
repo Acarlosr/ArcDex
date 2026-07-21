@@ -54,7 +54,13 @@ export function useTokenAllowance(token: 'USDC' | 'EURC', spender: string) {
 
 export function useApprove() {
     const { writeContract, writeContractAsync, data: hash, isPending, error, reset } = useWriteContract()
-    const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
+    const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+        hash,
+        confirmations: 1,
+        timeout: 120_000, // stop waiting after 2 min so the UI never hangs forever
+        pollingInterval: 2_000,
+        query: { enabled: !!hash },
+    })
 
     const approve = async (token: 'USDC' | 'EURC', spender: string, amount: string) => {
         const tokenAddress = TOKENS[token]
@@ -126,7 +132,13 @@ export function useGetAmountOut(tokenIn: 'USDC' | 'EURC', amountIn: string) {
 
 export function useSwap() {
     const { writeContractAsync, data: hash, isPending, error } = useWriteContract()
-    const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
+    const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+        hash,
+        confirmations: 1,
+        timeout: 120_000, // stop waiting after 2 min so the UI never hangs forever
+        pollingInterval: 2_000,
+        query: { enabled: !!hash },
+    })
 
     const swap = async (tokenIn: 'USDC' | 'EURC', amountIn: string, minAmountOut: string) => {
         const tokenAddress = TOKENS[tokenIn]
@@ -153,7 +165,13 @@ export function useSwap() {
 
 export function useAddLiquidity() {
     const { writeContractAsync, data: hash, isPending, error } = useWriteContract()
-    const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
+    const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+        hash,
+        confirmations: 1,
+        timeout: 120_000, // stop waiting after 2 min so the UI never hangs forever
+        pollingInterval: 2_000,
+        query: { enabled: !!hash },
+    })
 
     const addLiquidity = async (amountUSDC: string, amountEURC: string) => {
         const parsedUSDC = parseTokenAmount(amountUSDC)
@@ -179,7 +197,13 @@ export function useAddLiquidity() {
 
 export function useRemoveLiquidity() {
     const { writeContractAsync, data: hash, isPending, error } = useWriteContract()
-    const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
+    const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+        hash,
+        confirmations: 1,
+        timeout: 120_000, // stop waiting after 2 min so the UI never hangs forever
+        pollingInterval: 2_000,
+        query: { enabled: !!hash },
+    })
 
     const removeLiquidity = async (lpTokenAmount: string) => {
         const parsedAmount = parseTokenAmount(lpTokenAmount)
@@ -217,6 +241,12 @@ export function useStakedBalance(token: 'USDC' | 'EURC') {
         args: address ? [address, tokenAddress as `0x${string}`] : undefined,
         query: {
             enabled: !!address,
+            // Avoid re-firing this on every remount; the Stake page already
+            // fires ~16 reads on mount and was tripping the public RPC's 429
+            // rate limit. Manual refetch() still runs right after a stake/
+            // unstake tx confirms.
+            staleTime: 30_000,
+            retry: false,
         },
     })
 
@@ -239,6 +269,8 @@ export function usePendingRewards(token: 'USDC' | 'EURC') {
         args: address ? [address, tokenAddress as `0x${string}`] : undefined,
         query: {
             enabled: !!address,
+            staleTime: 30_000,
+            retry: false,
         },
     })
 
@@ -258,6 +290,10 @@ export function useAPR(token: 'USDC' | 'EURC') {
         abi: ARCDEX_STAKING_ABI,
         functionName: 'getAPR',
         args: [tokenAddress as `0x${string}`],
+        query: {
+            staleTime: 5 * 60_000, // APR rarely changes minute to minute
+            retry: false,
+        },
     })
 
     const aprData = data as [bigint, bigint, bigint] | undefined
@@ -278,6 +314,10 @@ export function useTotalStaked(token: 'USDC' | 'EURC') {
         abi: ARCDEX_STAKING_ABI,
         functionName: 'totalStaked',
         args: [tokenAddress as `0x${string}`],
+        query: {
+            staleTime: 30_000,
+            retry: false,
+        },
     })
 
     return {
@@ -290,7 +330,13 @@ export function useTotalStaked(token: 'USDC' | 'EURC') {
 
 export function useStake() {
     const { writeContractAsync, data: hash, isPending, error } = useWriteContract()
-    const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
+    const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+        hash,
+        confirmations: 1,
+        timeout: 120_000, // stop waiting after 2 min so the UI never hangs forever
+        pollingInterval: 2_000,
+        query: { enabled: !!hash },
+    })
 
     const stake = async (token: 'USDC' | 'EURC', amount: string) => {
         const tokenAddress = TOKENS[token]
@@ -316,7 +362,13 @@ export function useStake() {
 
 export function useUnstake() {
     const { writeContractAsync, data: hash, isPending, error } = useWriteContract()
-    const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
+    const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+        hash,
+        confirmations: 1,
+        timeout: 120_000, // stop waiting after 2 min so the UI never hangs forever
+        pollingInterval: 2_000,
+        query: { enabled: !!hash },
+    })
 
     const unstake = async (token: 'USDC' | 'EURC', amount: string) => {
         const tokenAddress = TOKENS[token]
@@ -342,7 +394,13 @@ export function useUnstake() {
 
 export function useClaimRewards() {
     const { writeContract, data: hash, isPending, error } = useWriteContract()
-    const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
+    const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+        hash,
+        confirmations: 1,
+        timeout: 120_000, // stop waiting after 2 min so the UI never hangs forever
+        pollingInterval: 2_000,
+        query: { enabled: !!hash },
+    })
 
     const claimRewards = async (token: 'USDC' | 'EURC') => {
         const tokenAddress = TOKENS[token]
@@ -395,7 +453,13 @@ export function usePaymentFee() {
 
 export function useSendPayment() {
     const { writeContract, data: hash, isPending, error } = useWriteContract()
-    const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
+    const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+        hash,
+        confirmations: 1,
+        timeout: 120_000, // stop waiting after 2 min so the UI never hangs forever
+        pollingInterval: 2_000,
+        query: { enabled: !!hash },
+    })
 
     const sendPayment = async (
         token: 'USDC' | 'EURC',
@@ -444,7 +508,13 @@ export function useSendPayment() {
 
 export function useBatchPayment() {
     const { writeContract, data: hash, isPending, error } = useWriteContract()
-    const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
+    const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+        hash,
+        confirmations: 1,
+        timeout: 120_000, // stop waiting after 2 min so the UI never hangs forever
+        pollingInterval: 2_000,
+        query: { enabled: !!hash },
+    })
 
     const batchPayment = async (
         token: 'USDC' | 'EURC',
@@ -479,13 +549,13 @@ export function useBatchPayment() {
 export function usePaymentStats() {
     const { address } = useAccount()
 
-    const { data: totalPayments, isLoading: totalLoading } = useReadContract({
+    const { data: totalPayments, isLoading: totalLoading, refetch: refetchTotalPayments } = useReadContract({
         address: ARCDEX.Payments as `0x${string}`,
         abi: ARCDEX_PAYMENTS_ABI,
         functionName: 'totalPayments',
     })
 
-    const { data: userCount, isLoading: userLoading } = useReadContract({
+    const { data: userCount, isLoading: userLoading, refetch: refetchUserCount } = useReadContract({
         address: ARCDEX.Payments as `0x${string}`,
         abi: ARCDEX_PAYMENTS_ABI,
         functionName: 'userPaymentCount',
@@ -493,10 +563,16 @@ export function usePaymentStats() {
         query: { enabled: !!address },
     })
 
+    const refetch = () => {
+        refetchTotalPayments()
+        refetchUserCount()
+    }
+
     return {
         totalPayments: totalPayments as bigint | undefined,
         userPaymentCount: userCount as bigint | undefined,
         isLoading: totalLoading || userLoading,
+        refetch,
     }
 }
 

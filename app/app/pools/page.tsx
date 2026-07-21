@@ -20,6 +20,7 @@ import {
 } from "@/hooks/use-contracts"
 import { ARCDEX, POOLS, PoolPair, parseTokenAmount } from "@/lib/contracts"
 import { MobileWalletHint } from "@/components/mobile-wallet-hint"
+import { TransactionHistoryCard } from "@/components/transaction-history-card"
 import { PriceChart } from "@/components/price-chart"
 import { useI18n } from "@/lib/i18n"
 
@@ -30,7 +31,7 @@ export default function PoolsPage() {
   const [amount0, setAmount0] = useState("")
   const [amount1, setAmount1] = useState("")
 
-  const { isConnected } = useAccount()
+  const { address, isConnected } = useAccount()
   const pool = POOLS[selectedPool]
 
   // Get real balances for all tokens
@@ -558,6 +559,22 @@ export default function PoolsPage() {
         <StatCard title={`Pool ${pool.token1}`} value={pool.enabled ? poolEURC || "0.00" : "—"} subtitle={`${pool.token1} in pool`} />
         <StatCard title={t("pools.yourLp")} value={pool.enabled ? (lpLoading ? "..." : lpBalance) : "—"} subtitle={t("pools.lpBalance")} />
         <StatCard title={t("pools.share")} value={pool.enabled ? `${poolShare}%` : "—"} subtitle={t("pools.yourPoolShare")} />
+      </div>
+
+      {/* Transaction History - filtered to this pool's contract */}
+      <div className="mt-8">
+        <TransactionHistoryCard
+          address={address}
+          contractAddress={pool.swapContract}
+          title={t("pools.history")}
+          refreshKey={`${selectedPool}-${addHash ?? ""}-${removeHash ?? ""}-${approveHash ?? ""}`}
+          methodLabels={{
+            addLiquidity: t("pools.addLiquidity"),
+            removeLiquidity: t("pools.removeLiquidity"),
+            approve: "Approve",
+            swap: t("nav.swap"),
+          }}
+        />
       </div>
     </div>
   )

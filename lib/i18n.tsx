@@ -276,6 +276,7 @@ const baseTranslations = {
     "pools.yourLp": "Your LP",
     "pools.lpBalance": "LP token balance",
     "pools.yourPoolShare": "Your share of pool",
+    "pools.history": "Recent Transactions",
 
     "payments.title": "Payments",
     "payments.subtitle": "Send stablecoins to any address on Arc Network.",
@@ -710,6 +711,7 @@ const baseTranslations = {
     "pools.yourLp": "Seu LP",
     "pools.lpBalance": "Saldo de token LP",
     "pools.yourPoolShare": "Sua participação no pool",
+    "pools.history": "Transações Recentes",
 
     "payments.title": "Pagamentos",
     "payments.subtitle": "Envie stablecoins para qualquer endereço na Arc Network.",

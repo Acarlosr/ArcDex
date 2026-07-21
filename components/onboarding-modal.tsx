@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { CheckCircle2, Wallet, Globe, Droplet, Zap, ChevronRight, ChevronLeft, ExternalLink } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
@@ -116,6 +116,9 @@ export function OnboardingModal({ open, onOpenChange }: OnboardingModalProps) {
                     <DialogTitle className="text-foreground flex items-center gap-2">
                         <span className="text-cyan-400">🚀</span> {t("onboarding.title")}
                     </DialogTitle>
+                    <DialogDescription className="sr-only">
+                        {t("onboarding.title")}
+                    </DialogDescription>
                 </DialogHeader>
 
                 {/* Progress Indicator */}
