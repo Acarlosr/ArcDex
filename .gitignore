@@ -46,4 +46,5 @@ contracts/arcdex-contracts/local.env
 # build/artifacts/backups
 *.pdf
 backups_*/
+backups/full_backup_20260421/
 contracts/**/broadcast/**/run-*.json
