@@ -17,7 +17,7 @@ import { CHAIN_ID_TO_BRIDGE_CHAIN as BRIDGE_MAP } from "@/lib/bridge-chains"
 export const ARC_TESTNET_CHAIN_ID = 5_042_002
 
 // All CCTP source/destination chains, derived from the canonical registry.
-export const CHAIN_ID_TO_BRIDGE_CHAIN: Record<number, string> = BRIDGE_MAP
+export const CHAIN_ID_TO_BRIDGE_CHAIN = BRIDGE_MAP
 
 export type BridgeStep =
   | "idle"

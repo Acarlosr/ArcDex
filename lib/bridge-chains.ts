@@ -11,13 +11,14 @@
  * it is intentionally excluded from this EVM dropdown.
  */
 
+import type { BridgeChain } from "@circle-fin/bridge-kit"
 import { RPC_URLS } from "./contracts"
 
 export interface BridgeChainInfo {
   /** EVM chain id */
   id: number
   /** Circle Bridge Kit enum string */
-  bridgeChain: string
+  bridgeChain: `${BridgeChain}`
   name: string
   shortName: string
   logo: string
@@ -105,7 +106,7 @@ export function getGasInfo(chainId: number): GasInfo {
 }
 
 /** chainId -> Circle BridgeChain enum string */
-export const CHAIN_ID_TO_BRIDGE_CHAIN: Record<number, string> = Object.fromEntries(
+export const CHAIN_ID_TO_BRIDGE_CHAIN: Record<number, `${BridgeChain}`> = Object.fromEntries(
   ALL_BRIDGE_CHAINS.map((c) => [c.id, c.bridgeChain]),
 )
 
