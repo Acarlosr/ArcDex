@@ -1,11 +1,11 @@
 import { http } from 'wagmi'
-import { CHAIN_CONFIG } from './contracts'
+import { CHAIN_CONFIG, IS_MAINNET, RPC_URLS } from './contracts'
 
 // Reown Project ID (from WalletConnect Cloud / Reown)
 export const REOWN_PROJECT_ID = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID || process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '62a5e53db0163b7e29bc8b76c22d04cc'
 
-// Define Arc Testnet chain for AppKit
-export const arcTestnet = {
+// Chain ativa (Arc Mainnet ou Arc Testnet, conforme lib/network.ts)
+export const arcChain = {
     id: CHAIN_CONFIG.id,
     name: CHAIN_CONFIG.name,
     nativeCurrency: CHAIN_CONFIG.nativeCurrency,
@@ -17,14 +17,16 @@ export const arcTestnet = {
 // Metadata for AppKit modal
 export const APPKIT_METADATA = {
     name: 'ARCDex V2',
-    description: 'DeFi Trading Platform on Arc Network Testnet - Swap, Stake, Pools & Payments',
+    description: IS_MAINNET
+        ? 'DeFi Trading Platform on Arc — Swap, Pools, Bridge & Payments'
+        : 'DeFi Trading Platform on Arc Testnet — Swap, Pools, Bridge & Payments',
     url: 'https://www.arc-dex.xyz',
     icons: ['https://www.arc-dex.xyz/icon.png'],
 }
 
 // Transport configuration
 export const wagmiTransports = {
-    [arcTestnet.id]: http(CHAIN_CONFIG.rpcUrls.default.http[0]),
+    [arcChain.id]: http(RPC_URLS[0]),
 }
 
 // Mobile detection utility
@@ -47,4 +49,5 @@ export const WALLET_DEEP_LINKS = {
 }
 
 // Export for backwards compatibility
-export { arcTestnet as chain }
+export { arcChain as chain }
+export { arcChain as arcTestnet }

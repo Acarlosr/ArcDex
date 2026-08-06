@@ -56,7 +56,6 @@ qrModalOptions: {
 
 Todos os componentes agora têm logs detalhados:
 - ✅ Swap: logs de approve e swap
-- ✅ Stake: logs de stake, unstake e claim
 - ✅ Pools: logs de add/remove liquidity
 - ✅ Payments: logs de pagamentos
 
@@ -238,10 +237,10 @@ Após o deploy, teste e verifique os logs:
 
 **Solução**:
 1. Abra a wallet
-2. Mude para **Arc Testnet**
+2. Mude para a rede Arc ativa (**Arc Mainnet** a partir de 16/09/2026, **Arc Testnet** antes disso)
 3. Se não tiver, adicione manualmente:
-   - **Network Name**: Arc Testnet
-   - **RPC URL**: https://rpc-testnet.arc.network
+   - **Network Name**: Arc Testnet (pré-mainnet)
+   - **RPC URL**: https://rpc.testnet.arc.io
    - **Chain ID**: 5042002
    - **Currency Symbol**: USDC
    - **Explorer**: https://testnet.arcscan.app

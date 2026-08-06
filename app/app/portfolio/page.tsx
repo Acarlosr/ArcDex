@@ -9,8 +9,7 @@ import { useCompliance } from "@/hooks/useCompliance"
 import { useI18n } from "@/lib/i18n"
 
 // ArcScan API configuration
-const ARCSCAN_API = "https://testnet.arcscan.app/api"
-const ARCSCAN_URL = "https://testnet.arcscan.app"
+import { ARCSCAN_API, ARCSCAN_URL, NETWORK_LABEL } from "@/lib/contracts"
 
 // Transaction type from ArcScan API (Etherscan-compatible)
 interface ArcScanTx {
@@ -56,7 +55,6 @@ function getTxType(tx: ArcScanTx, userAddress: string): { type: string; icon: 's
 
     // Check for known function names
     if (fn.includes('swap')) return { type: 'Swap', icon: 'contract' }
-    if (fn.includes('stake') || fn.includes('unstake')) return { type: 'Stake', icon: 'contract' }
     if (fn.includes('addliquidity') || fn.includes('removeliquidity')) return { type: 'LP', icon: 'contract' }
     if (fn.includes('approve')) return { type: 'Approve', icon: 'contract' }
     if (fn.includes('transfer')) return { type: 'Transfer', icon: from === user ? 'sent' : 'received' }
@@ -79,7 +77,7 @@ const TOKEN_CONFIG = [
     { key: 'EURC' as const, symbol: 'EURC', name: 'Euro Coin', icon: '€', bgColor: 'bg-blue-600', coingeckoId: 'euro-coin', defaultPrice: 1.00 },
 ]
 
-// Default prices (fallback for testnet)
+// Preços padrão (fallback quando não há oráculo)
 const DEFAULT_PRICES: Record<string, number> = {
     USDC: 1.00,
     EURC: 1.00,
@@ -725,7 +723,7 @@ export default function PortfolioPage() {
                                 <span className="text-primary-foreground font-bold">A</span>
                             </div>
                             <div>
-                                <p className="font-medium text-foreground">Arc Testnet</p>
+                                <p className="font-medium text-foreground">{NETWORK_LABEL}</p>
                                 <p className="text-sm text-muted-foreground">Chain ID: 5042002</p>
                             </div>
                         </div>

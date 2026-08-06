@@ -22,11 +22,6 @@ library Constants {
     uint256 constant SWAP_FEE_BPS = 30; // 0.3%
     uint256 constant PAYMENT_FEE = 50000; // 0.05 USDC (6 decimals)
     
-    // Staking APR (in basis points)
-    uint256 constant USDC_BASE_APR_BPS = 800; // 8%
-    uint256 constant USDC_BOOST_APR_BPS = 200; // 2%
-    uint256 constant EURC_BASE_APR_BPS = 600; // 6%
-    uint256 constant EURC_BOOST_APR_BPS = 200; // 2%
     
     // Basis points denominator
     uint256 constant BPS_DENOMINATOR = 10000;

@@ -13,7 +13,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { LanguageToggle } from "@/components/language-toggle"
 import { useI18n } from "@/lib/i18n"
 import { useCompliance } from "@/hooks/useCompliance"
-import { ARCSCAN_URL } from "@/lib/contracts"
+import { ARCSCAN_URL, FAUCET_URL, IS_MAINNET, NETWORK_LABEL } from "@/lib/contracts"
 
 const WALLET_DEEP_LINKS = {
   metamask: 'https://metamask.app.link/dapp/www.arc-dex.xyz/app',
@@ -149,7 +149,6 @@ export function Navbar() {
     { label: "Bridge", href: "/app/bridge" },
     { label: t("nav.pools"), href: "/app/pools" },
     { label: t("nav.payments"), href: "/app/payments" },
-    { label: t("nav.stake"), href: "/app/stake" },
     { label: t("nav.portfolio"), href: "/app/portfolio" },
     { label: t("nav.history"), href: "/app/history" },
   ]
@@ -205,11 +204,12 @@ export function Navbar() {
             <ThemeToggle />
             <LanguageToggle />
 
-            {/* Faucet */}
+            {/* Faucets — só existem em testnet */}
+            {!IS_MAINNET && FAUCET_URL && (
             <div className="flex items-center gap-1">
               <div className="relative group">
                 <a
-                  href="https://faucet.circle.com"
+                  href={FAUCET_URL}
                   target="_blank"
                   rel="noreferrer"
                   aria-label="Circle Faucet"
@@ -237,11 +237,16 @@ export function Navbar() {
                 </div>
               </div>
             </div>
+            )}
 
-            {/* Arc Testnet badge */}
-            <span className="hidden sm:flex badge-arc badge-arc-blue items-center gap-1.5">
+            {/* Badge da rede ativa */}
+            <span
+              className={`hidden sm:flex badge-arc items-center gap-1.5 ${
+                IS_MAINNET ? "badge-arc-green" : "badge-arc-blue"
+              }`}
+            >
               <span className="w-1.5 h-1.5 rounded-full bg-current opacity-70 animate-pulse" />
-              Arc Testnet
+              {NETWORK_LABEL}
             </span>
 
             {/* Wallet button */}
@@ -438,10 +443,13 @@ export function Navbar() {
 
               {/* Faucet / Explorer */}
               <div className="flex gap-2">
-                <a href="https://faucet.circle.com" target="_blank" rel="noreferrer" className="flex-1 px-3 py-2 rounded-lg bg-primary/8 border border-primary/20 text-primary text-xs font-semibold hover:bg-primary/15 transition-colors text-center">
-                  {t("wallet.usdcFaucet")}
-                </a>
+                {!IS_MAINNET && FAUCET_URL && (
+                  <a href={FAUCET_URL} target="_blank" rel="noreferrer" className="flex-1 px-3 py-2 rounded-lg bg-primary/8 border border-primary/20 text-primary text-xs font-semibold hover:bg-primary/15 transition-colors text-center">
+                    {t("wallet.usdcFaucet")}
+                  </a>
+                )}
                 <a href={ARCSCAN_URL} target="_blank" rel="noreferrer" className="flex-1 px-3 py-2 rounded-lg bg-muted border border-border text-muted-foreground text-xs font-medium hover:bg-muted/70 transition-colors text-center">
+
                   ArcScan ↗
                 </a>
               </div>

@@ -5,11 +5,11 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { ExternalLink } from "lucide-react"
 import { useAccount } from "wagmi"
-import { ARCDEX } from "@/lib/contracts"
+import { ARCDEX, ARCSCAN_URL } from "@/lib/contracts"
 import { useI18n } from "@/lib/i18n"
 
-// Correct Arc Testnet Explorer URL
-const EXPLORER_URL = "https://testnet.arcscan.app"
+// Explorer da rede ativa (mainnet ou testnet)
+const EXPLORER_URL = ARCSCAN_URL
 
 export default function HistoryPage() {
   const { t } = useI18n()
@@ -40,7 +40,7 @@ export default function HistoryPage() {
       <div className="bg-card rounded-2xl p-6 border border-border">
         {/* Filter Tabs */}
         <Tabs defaultValue="all" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-muted border-border mb-6">
+          <TabsList className="grid w-full grid-cols-3 bg-muted border-border mb-6">
             <TabsTrigger value="all" onClick={() => setFilterToken("all")}>
               All
             </TabsTrigger>
@@ -49,9 +49,6 @@ export default function HistoryPage() {
             </TabsTrigger>
             <TabsTrigger value="EURC" onClick={() => setFilterToken("EURC")}>
               EURC
-            </TabsTrigger>
-            <TabsTrigger value="Stake" onClick={() => setFilterToken("Stake")}>
-              Stake
             </TabsTrigger>
           </TabsList>
 
@@ -85,13 +82,6 @@ export default function HistoryPage() {
                         className="border-border text-foreground hover:bg-muted"
                       >
                         {t("history.swapContract")}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => window.open(`${EXPLORER_URL}/address/${ARCDEX.Staking}`, '_blank')}
-                        className="border-border text-foreground hover:bg-muted"
-                      >
-                        {t("history.stakingContract")}
                       </Button>
                     </div>
                   </div>
@@ -127,17 +117,6 @@ export default function HistoryPage() {
                     className="text-xs text-cyan-400 font-mono hover:underline"
                   >
                     {ARCDEX.Swap}
-                  </a>
-                </div>
-                <div className="bg-muted/50 rounded-xl p-4">
-                  <p className="text-sm text-muted-foreground mb-1">{t("history.stakingContract")}</p>
-                  <a
-                    href={`${EXPLORER_URL}/address/${ARCDEX.Staking}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-cyan-400 font-mono hover:underline"
-                  >
-                    {ARCDEX.Staking}
                   </a>
                 </div>
                 <div className="bg-muted/50 rounded-xl p-4">

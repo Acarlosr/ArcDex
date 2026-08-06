@@ -2,7 +2,7 @@
   "name": "arcdex",
   "version": "1.0.0",
   "private": true,
-  "description": "Decentralized exchange on Arc Testnet - Swap, Staking, Pools, Payments",
+  "description": "Decentralized exchange on Arc — Swap, Pools, Bridge, Payments",
   "scripts": {
     "build": "next build --webpack",
     "dev": "next dev --turbopack",

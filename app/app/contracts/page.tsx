@@ -90,9 +90,9 @@ export default function ContractsPage() {
                     <div className="flex items-start gap-3">
                         <Shield className="w-5 h-5 text-amber-400 mt-0.5" />
                         <div>
-                            <h3 className="font-semibold text-amber-700 dark:text-amber-200 mb-1">{t("contracts.testnetStatus")}</h3>
+                            <h3 className="font-semibold text-amber-700 dark:text-amber-200 mb-1">{t("contracts.securityStatus")}</h3>
                             <p className="text-sm text-amber-700 dark:text-amber-200/80">
-                                {t("contracts.testnetText")}
+                                {t("contracts.securityText")}
                             </p>
                         </div>
                     </div>
@@ -109,11 +109,6 @@ export default function ContractsPage() {
                             name="Swap (AMM)"
                             address={ARCDEX.Swap}
                             description="Automated Market Maker for USDC/EURC swaps with 0.3% fee"
-                        />
-                        <ContractCard
-                            name="Staking Vault"
-                            address={ARCDEX.Staking}
-                            description="Stake USDC/EURC to earn testnet yield"
                         />
                         <ContractCard
                             name="Payments"
@@ -182,7 +177,7 @@ export default function ContractsPage() {
                             <span className="text-sm text-foreground font-medium">ArcScan</span>
                         </a>
                         <a
-                            href="https://docs.arc.network"
+                            href="https://docs.arc.io"
                             target="_blank"
                             rel="noreferrer"
                             className="flex items-center gap-2 p-3 rounded-lg bg-card hover:bg-muted border border-border hover:border-primary/30 transition-colors"

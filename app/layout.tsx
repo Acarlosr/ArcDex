@@ -11,16 +11,25 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
 const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" })
 
 export const metadata: Metadata = {
-  title: "ARCDex V2 - DeFi Trading on Arc Network",
-  description: "Multi-page DeFi dApp for trading on Arc Network Testnet",
-  generator: 'v0.app',
+  metadataBase: new URL("https://www.arc-dex.xyz"),
+  title: "ARCDex — DeFi on Arc Mainnet",
+  description: "Swap, bridge, pools and stablecoin payments on Arc — Circle's Layer 1 for onchain finance. Public Mainnet live September 16, 2026.",
   applicationName: "ArcDex",
+  manifest: "/site.webmanifest",
   icons: {
+    // Order matters: browsers/crawlers use the first matching entry. A real
+    // favicon.ico at the root is what Google's favicon fetcher looks for
+    // first — without it, search results can fall back to a generic icon
+    // (e.g. the platform's default logo) instead of the ArcDex mark.
     icon: [
-      { url: '/favicon.svg', type: 'image/svg+xml' },
-      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: "/favicon.ico", sizes: "48x48", type: "image/x-icon" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/icon.svg", type: "image/svg+xml" },
     ],
-    apple: '/apple-icon.png',
+    shortcut: "/favicon.ico",
+    apple: "/apple-icon.png",
   },
 }
 

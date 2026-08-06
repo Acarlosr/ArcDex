@@ -16,12 +16,12 @@ import {
   usePaymentFee,
   usePaymentStats,
 } from "@/hooks/use-contracts"
-import { ARCDEX, parseTokenAmount, ARCSCAN_URL } from "@/lib/contracts"
+import { ARCDEX, parseTokenAmount, ARCSCAN_API, ARCSCAN_URL } from "@/lib/contracts"
 import { MobileWalletHint } from "@/components/mobile-wallet-hint"
 import { useCompliance } from "@/hooks/useCompliance"
 import { useI18n } from "@/lib/i18n"
 
-const ARCSCAN_API = "https://testnet.arcscan.app/api"
+
 
 type TxStatus = "idle" | "signing" | "pending" | "confirmed" | "failed"
 

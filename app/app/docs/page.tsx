@@ -6,13 +6,24 @@ import { Badge } from "@/components/ui/badge"
 import { ExternalLink, Copy, Check, BookOpen, Zap, FileCode, DollarSign, Gift, Users, HelpCircle, BarChart3, History, AlertTriangle, Code2, Shield, Settings, ArrowRight, Info, TrendingUp, Droplets, Send, PieChart } from "lucide-react"
 import Link from "next/link"
 import { useI18n } from "@/lib/i18n"
+import {
+    ARCDEX,
+    ARCSCAN_URL,
+    CHAIN_CONFIG,
+    FAUCET_URL,
+    IS_MAINNET,
+    MAINNET_LAUNCH_LABEL,
+    MAINNET_PENDING,
+    NETWORK_LABEL,
+    RPC_URLS,
+    TOKENS,
+} from "@/lib/contracts"
 
 type Section = 
   | "introduction" 
   | "quick-start" 
   | "why-arcdex"
   | "features-swap" 
-  | "features-stake" 
   | "features-pools" 
   | "features-payments"
   | "features-portfolio"
@@ -86,12 +97,6 @@ export default function DocsPage() {
                                 label="Swap Tokens"
                                 active={activeSection === "features-swap"}
                                 onClick={() => setActiveSection("features-swap")}
-                            />
-                            <NavItem
-                                icon={<TrendingUp className="w-4 h-4" />}
-                                label="Stake & Earn"
-                                active={activeSection === "features-stake"}
-                                onClick={() => setActiveSection("features-stake")}
                             />
                             <NavItem
                                 icon={<Droplets className="w-4 h-4" />}
@@ -190,7 +195,6 @@ export default function DocsPage() {
                 {activeSection === "quick-start" && <QuickStartSection />}
                 {activeSection === "why-arcdex" && <WhyArcDexSection />}
                 {activeSection === "features-swap" && <SwapSection />}
-                {activeSection === "features-stake" && <StakeSection />}
                 {activeSection === "features-pools" && <PoolsSection />}
                 {activeSection === "features-payments" && <PaymentsSection />}
                 {activeSection === "features-portfolio" && <PortfolioSection />}
@@ -249,7 +253,7 @@ function PortugueseDocsPage() {
                     <div>
                         <h1 className="text-4xl font-bold text-foreground mb-4">Introdução</h1>
                         <p className="text-xl text-muted-foreground">
-                            ARCDex é uma plataforma DeFi na Arc Network Testnet para swap, staking, pools de liquidez e pagamentos em stablecoins.
+                            ARCDex é uma plataforma DeFi na Arc Network para swap, pools de liquidez, bridge e pagamentos em stablecoins.
                         </p>
                     </div>
                     <Card className="bg-card border-primary/30">
@@ -257,7 +261,7 @@ function PortugueseDocsPage() {
                             <h3 className="text-lg font-semibold text-foreground">O que você pode fazer</h3>
                             <ul className="space-y-2 text-muted-foreground list-disc list-inside">
                                 <li>Trocar USDC e EURC com liquidação rápida.</li>
-                                <li>Fazer stake de stablecoins para testar yield na Arc Testnet.</li>
+                                <li>Trazer USDC de outras redes via bridge CCTP v2.</li>
                                 <li>Fornecer liquidez em pools e acompanhar sua participação.</li>
                                 <li>Enviar pagamentos on-chain com memo e taxa baixa.</li>
                                 <li>Acompanhar saldos de USDC e EURC pelo app.</li>
@@ -271,9 +275,9 @@ function PortugueseDocsPage() {
                     <div className="grid gap-4">
                         {[
                             ["1", "Conecte a carteira", "Use WalletConnect no mobile ou uma extensão EVM no desktop."],
-                            ["2", "Adicione a Arc Testnet", "Chain ID 5042034, RPC https://rpc.testnet.arc.network e explorer https://testnet.arcscan.app."],
-                            ["3", "Pegue tokens de teste", "Use o Circle Faucet e selecione a rede Arc para solicitar USDC e EURC de testnet."],
-                            ["4", "Teste o fluxo", "Comece por swap, depois teste pools, stake, pagamentos e portfolio."],
+                            [  "2", `Adicione a ${NETWORK_LABEL}`, `Chain ID ${CHAIN_CONFIG.id}, RPC ${RPC_URLS[0]} e explorer ${ARCSCAN_URL}.`],
+                            [  "3", IS_MAINNET ? "Traga USDC para a Arc" : "Pegue tokens de teste", IS_MAINNET ? "Use o bridge CCTP v2 para trazer USDC de outra rede, ou deposite direto na Arc." : "Use o Circle Faucet e selecione a rede Arc para solicitar USDC e EURC de testnet."],
+                            ["4", "Teste o fluxo", "Comece por swap, depois bridge, pools, pagamentos e portfolio."],
                         ].map(([step, title, body]) => (
                             <Card key={step} className="bg-card border-border">
                                 <CardContent className="p-5 flex gap-4">
@@ -294,8 +298,7 @@ function PortugueseDocsPage() {
                         {[
                             [Zap, "Swap", "Troca entre stablecoins com cotação e histórico."],
                             [Droplets, "Pools", "Adicionar ou remover liquidez e ver participação no pool."],
-                            [TrendingUp, "Stake", "Stake, unstake, recompensas e diagnóstico da treasury."],
-                            [Send, "Pagamentos", "Pagamento único ou em lote para endereços EVM."],
+                                                        [Send, "Pagamentos", "Pagamento único ou em lote para endereços EVM."],
                             [PieChart, "Portfólio", "Saldos, valor estimado e histórico via ArcScan."],
                             [History, "Histórico", "Atalhos para explorer e contratos principais."],
                         ].map(([Icon, title, body]) => {
@@ -320,13 +323,13 @@ function PortugueseDocsPage() {
                     <Card className="bg-card border-border">
                         <CardContent className="p-6 space-y-3">
                             <p className="text-muted-foreground">
-                                Os contratos do ARCDex estão implantados na Arc Testnet. Verifique endereços e transações no ArcScan antes de testar.
+                                Os contratos do ARCDex estão implantados na {NETWORK_LABEL}. Verifique endereços e transações no ArcScan antes de operar.
                             </p>
                             <div className="grid md:grid-cols-2 gap-3">
                                 <Link href="/app/contracts" prefetch={false} className="inline-flex items-center gap-2 text-primary hover:underline text-sm">
                                     Ver contratos no app <ArrowRight className="w-4 h-4" />
                                 </Link>
-                                <a href="https://testnet.arcscan.app" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-primary hover:underline text-sm">
+                                <a href={ARCSCAN_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-primary hover:underline text-sm">
                                     Abrir ArcScan <ExternalLink className="w-4 h-4" />
                                 </a>
                             </div>
@@ -338,11 +341,11 @@ function PortugueseDocsPage() {
                     <h2 className="text-3xl font-bold text-foreground">Boas práticas</h2>
                     <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
                         <p className="text-sm text-amber-700 dark:text-amber-200">
-                            ARCDex está em testnet. Use apenas tokens de teste, revise a rede na carteira e nunca envie fundos reais para contratos de teste.
+                            {IS_MAINNET ? "ARCDex opera com fundos reais na Arc Mainnet. Transações são irreversíveis e os contratos não passaram por auditoria externa." : "ARCDex está em testnet. Use apenas tokens de teste e nunca envie fundos reais para contratos de teste."}
                         </p>
                     </div>
                     <ul className="space-y-2 text-muted-foreground list-disc list-inside">
-                        <li>Confirme se sua carteira está na Arc Testnet antes de assinar.</li>
+                        <li>Confirme se sua carteira está na {NETWORK_LABEL} antes de assinar.</li>
                         <li>Use pequenas quantidades para testar cada fluxo.</li>
                         <li>Verifique transações no ArcScan após cada operação.</li>
                         <li>Não compartilhe seed phrase, chave privada ou códigos de autenticação.</li>
@@ -355,11 +358,11 @@ function PortugueseDocsPage() {
                         <CardContent className="p-6 space-y-4">
                             <div>
                                 <h3 className="font-semibold text-foreground">É dinheiro real?</h3>
-                                <p className="text-sm text-muted-foreground mt-1">Não. O app usa Arc Testnet e tokens de teste.</p>
+                                <p className="text-sm text-muted-foreground mt-1">{IS_MAINNET ? "Sim. Na Arc Mainnet os valores são reais — confira sempre antes de assinar." : "Não. O app usa Arc Testnet e tokens de teste."}</p>
                             </div>
                             <div>
                                 <h3 className="font-semibold text-foreground">Por que a carteira precisa aprovar tokens?</h3>
-                                <p className="text-sm text-muted-foreground mt-1">Aprovação permite que o contrato use o token naquela operação, como swap, pool, stake ou pagamento.</p>
+                                <p className="text-sm text-muted-foreground mt-1">Aprovação permite que o contrato use o token naquela operação, como swap, pool, bridge ou pagamento.</p>
                             </div>
                             <div>
                                 <h3 className="font-semibold text-foreground">Onde vejo as transações?</h3>
@@ -414,7 +417,7 @@ function SpanishDocsPage() {
                     <div>
                         <h1 className="text-4xl font-bold text-foreground mb-4">Introducción</h1>
                         <p className="text-xl text-muted-foreground">
-                            ARCDex es una plataforma DeFi en Arc Network Testnet para swaps, staking, pools de liquidez y pagos en stablecoins.
+                            ARCDex es una plataforma DeFi en Arc Network para swaps, pools de liquidez, bridge y pagos en stablecoins.
                         </p>
                     </div>
                     <Card className="bg-card border-primary/30">
@@ -422,7 +425,7 @@ function SpanishDocsPage() {
                             <h3 className="text-lg font-semibold text-foreground">Qué puedes hacer</h3>
                             <ul className="space-y-2 text-muted-foreground list-disc list-inside">
                                 <li>Intercambiar USDC y EURC con liquidación rápida.</li>
-                                <li>Hacer stake de stablecoins para probar yield en Arc Testnet.</li>
+                                <li>Traer USDC desde otras redes mediante bridge CCTP v2.</li>
                                 <li>Aportar liquidez en pools y seguir tu participación.</li>
                                 <li>Enviar pagos on-chain con memo y baja comisión.</li>
                                 <li>Seguir saldos de USDC y EURC desde la app.</li>
@@ -436,9 +439,9 @@ function SpanishDocsPage() {
                     <div className="grid gap-4">
                         {[
                             ["1", "Conecta la wallet", "Usa WalletConnect en móvil o una extensión EVM en desktop."],
-                            ["2", "Agrega Arc Testnet", "Chain ID 5042034, RPC https://rpc.testnet.arc.network y explorer https://testnet.arcscan.app."],
-                            ["3", "Obtén tokens de prueba", "Usa Circle Faucet y selecciona la red Arc para solicitar USDC y EURC de testnet."],
-                            ["4", "Prueba el flujo", "Empieza por swap y luego prueba pools, stake, pagos y portafolio."],
+                            [  "2", `Agrega ${NETWORK_LABEL}`, `Chain ID ${CHAIN_CONFIG.id}, RPC ${RPC_URLS[0]} y explorer ${ARCSCAN_URL}.`],
+                            [  "3", IS_MAINNET ? "Trae USDC a Arc" : "Obtén tokens de prueba", IS_MAINNET ? "Usa el bridge CCTP v2 para traer USDC desde otra red, o deposita directo en Arc." : "Usa Circle Faucet y selecciona la red Arc para solicitar USDC y EURC de testnet."],
+                            ["4", "Prueba el flujo", "Empieza por swap y luego bridge, pools, pagos y portafolio."],
                         ].map(([step, title, body]) => (
                             <Card key={step} className="bg-card border-border">
                                 <CardContent className="p-5 flex gap-4">
@@ -459,8 +462,7 @@ function SpanishDocsPage() {
                         {[
                             [Zap, "Swap", "Intercambio entre stablecoins con cotización e historial."],
                             [Droplets, "Pools", "Agrega o retira liquidez y mira tu participación en el pool."],
-                            [TrendingUp, "Stake", "Stake, unstake, recompensas y diagnóstico de treasury."],
-                            [Send, "Pagos", "Pago individual o por lote para direcciones EVM."],
+                                                        [Send, "Pagos", "Pago individual o por lote para direcciones EVM."],
                             [PieChart, "Portafolio", "Saldos, valor estimado e historial vía ArcScan."],
                             [History, "Historial", "Atajos al explorer y a los contratos principales."],
                         ].map(([Icon, title, body]) => {
@@ -485,13 +487,13 @@ function SpanishDocsPage() {
                     <Card className="bg-card border-border">
                         <CardContent className="p-6 space-y-3">
                             <p className="text-muted-foreground">
-                                Los contratos de ARCDex están desplegados en Arc Testnet. Verifica direcciones y transacciones en ArcScan antes de probar.
+                                Los contratos de ARCDex están desplegados en {NETWORK_LABEL}. Verifica direcciones y transacciones en ArcScan antes de operar.
                             </p>
                             <div className="grid md:grid-cols-2 gap-3">
                                 <Link href="/app/contracts" prefetch={false} className="inline-flex items-center gap-2 text-primary hover:underline text-sm">
                                     Ver contratos en la app <ArrowRight className="w-4 h-4" />
                                 </Link>
-                                <a href="https://testnet.arcscan.app" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-primary hover:underline text-sm">
+                                <a href={ARCSCAN_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-primary hover:underline text-sm">
                                     Abrir ArcScan <ExternalLink className="w-4 h-4" />
                                 </a>
                             </div>
@@ -503,11 +505,11 @@ function SpanishDocsPage() {
                     <h2 className="text-3xl font-bold text-foreground">Buenas prácticas</h2>
                     <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
                         <p className="text-sm text-amber-700 dark:text-amber-200">
-                            ARCDex está en testnet. Usa solo tokens de prueba, revisa la red en la wallet y nunca envíes fondos reales a contratos de prueba.
+                            {IS_MAINNET ? "ARCDex opera con fondos reales en Arc Mainnet. Las transacciones son irreversibles y los contratos no han sido auditados externamente." : "ARCDex está en testnet. Usa solo tokens de prueba y nunca envíes fondos reales a contratos de prueba."}
                         </p>
                     </div>
                     <ul className="space-y-2 text-muted-foreground list-disc list-inside">
-                        <li>Confirma que tu wallet esté en Arc Testnet antes de firmar.</li>
+                        <li>Confirma que tu wallet esté en {NETWORK_LABEL} antes de firmar.</li>
                         <li>Usa cantidades pequeñas para probar cada flujo.</li>
                         <li>Verifica las transacciones en ArcScan después de cada operación.</li>
                         <li>No compartas seed phrase, clave privada ni códigos de autenticación.</li>
@@ -520,11 +522,11 @@ function SpanishDocsPage() {
                         <CardContent className="p-6 space-y-4">
                             <div>
                                 <h3 className="font-semibold text-foreground">¿Es dinero real?</h3>
-                                <p className="text-sm text-muted-foreground mt-1">No. La app usa Arc Testnet y tokens de prueba.</p>
+                                <p className="text-sm text-muted-foreground mt-1">{IS_MAINNET ? "Sí. En Arc Mainnet los valores son reales — revisa siempre antes de firmar." : "No. La app usa Arc Testnet y tokens de prueba."}</p>
                             </div>
                             <div>
                                 <h3 className="font-semibold text-foreground">¿Por qué la wallet necesita aprobar tokens?</h3>
-                                <p className="text-sm text-muted-foreground mt-1">La aprobación permite que el contrato use el token en esa operación, como swap, pool, stake o pago.</p>
+                                <p className="text-sm text-muted-foreground mt-1">La aprobación permite que el contrato use el token en esa operación, como swap, pool, bridge o pago.</p>
                             </div>
                             <div>
                                 <h3 className="font-semibold text-foreground">¿Dónde veo las transacciones?</h3>
@@ -561,7 +563,7 @@ function IntroductionSection() {
             <div>
                 <h1 className="text-4xl font-bold text-foreground mb-4">Introduction</h1>
                 <p className="text-xl text-muted-foreground">
-                    Welcome to ARCDex - A decentralized exchange built on Arc Network Testnet
+                    Welcome to ARCDex — a decentralized exchange built on Arc Network
                 </p>
             </div>
 
@@ -569,11 +571,11 @@ function IntroductionSection() {
                 <CardContent className="p-6">
                     <h3 className="text-lg font-semibold text-foreground mb-3">What is ARCDex?</h3>
                     <p className="text-muted-foreground mb-4">
-                        ARCDex is a comprehensive DeFi platform built on Arc Network Testnet that enables:
+                        ARCDex is a comprehensive DeFi platform built on Arc Network that enables:
                     </p>
                     <ul className="space-y-2 text-muted-foreground list-disc list-inside">
                         <li><strong className="text-foreground">Token Swaps</strong> - Exchange USDC ↔ EURC with minimal slippage using AMM</li>
-                        <li><strong className="text-foreground">Staking</strong> - Earn up to 10% APR on USDC and 8% APR on EURC deposits</li>
+                        <li><strong className="text-foreground">Bridge</strong> - Move USDC in and out of Arc with Circle CCTP v2</li>
                         <li><strong className="text-foreground">Liquidity Pools</strong> - Provide liquidity and earn 0.3% trading fees</li>
                         <li><strong className="text-foreground">P2P Payments</strong> - Send stablecoins with on-chain memos</li>
                         <li><strong className="text-foreground">Portfolio Dashboard</strong> - Track balances, transactions, and portfolio value</li>
@@ -618,9 +620,17 @@ function IntroductionSection() {
             </Card>
 
             <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
-                <p className="text-sm text-amber-200">
-                    <strong>⚠️ Testnet Only:</strong> ARCDex is currently deployed on Arc Testnet for evaluation purposes. 
-                    Do not use real funds. All tokens are testnet tokens with no real value.
+                <p className="text-sm text-amber-700 dark:text-amber-200">
+                    {IS_MAINNET ? (
+                        <><strong>⚠️ Real funds:</strong> ARCDex runs on Arc Mainnet. Transactions are
+                        irreversible and involve real value. The contracts have not been audited — use at your own risk.</>
+                    ) : MAINNET_PENDING ? (
+                        <><strong>⚠️ Pre-launch:</strong> Arc Public Mainnet goes live on {MAINNET_LAUNCH_LABEL}.
+                        Until then ARCDex runs on Arc Testnet with test tokens that hold no real value.</>
+                    ) : (
+                        <><strong>⚠️ Testnet:</strong> ARCDex is running on Arc Testnet. Do not use real funds.
+                        All tokens are testnet tokens with no real value.</>
+                    )}
                 </p>
             </div>
         </div>
@@ -650,47 +660,64 @@ function QuickStartSection() {
                     </div>
                 </StepCard>
 
-                <StepCard step={2} title="Add Arc Testnet">
+                <StepCard step={2} title={`Add ${NETWORK_LABEL}`}>
                     <p className="text-muted-foreground mb-3">
-                        Add Arc Testnet to your wallet manually or let ARCDex add it automatically when you connect.
+                        Add {NETWORK_LABEL} to your wallet manually or let ARCDex add it automatically when you connect.
                     </p>
                     <div className="bg-muted p-3 rounded-lg text-sm">
                         <p className="font-semibold text-foreground mb-2">Network Details:</p>
                         <ul className="space-y-1 text-muted-foreground font-mono text-xs">
-                            <li>• Network Name: Arc Testnet</li>
-                            <li>• Chain ID: 5042002</li>
-                            <li>• RPC URL: https://rpc.testnet.arc.network</li>
+                            <li>• Network Name: {CHAIN_CONFIG.name}</li>
+                            <li>• Chain ID: {CHAIN_CONFIG.id}</li>
+                            <li>• RPC URL: {RPC_URLS[0]}</li>
                             <li>• Currency Symbol: USDC</li>
-                            <li>• Block Explorer: https://testnet.arcscan.app</li>
+                            <li>• Block Explorer: {ARCSCAN_URL}</li>
                         </ul>
                     </div>
                 </StepCard>
 
-                <StepCard step={3} title="Get Testnet Tokens">
-                    <p className="text-muted-foreground mb-3">
-                        You need USDC for gas fees and trading. Get testnet tokens from the Circle Faucet:
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                        <a 
-                            href="https://faucet.circle.com" 
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
-                        >
-                            Get Testnet USDC <ExternalLink className="w-4 h-4" />
-                        </a>
-                        <a 
-                            href="https://faucet.circle.com" 
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-muted text-foreground rounded-lg hover:bg-muted/80 transition-colors text-sm font-medium border border-border"
-                        >
-                            Get Testnet EURC <ExternalLink className="w-4 h-4" />
-                        </a>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-2">
-                        Select <strong>Arc Testnet</strong> as the network when requesting tokens.
-                    </p>
+                <StepCard step={3} title={IS_MAINNET ? "Fund Your Wallet" : "Get Testnet Tokens"}>
+                    {IS_MAINNET ? (
+                        <>
+                            <p className="text-muted-foreground mb-3">
+                                You need USDC on Arc for gas and trading. Bridge it in from another chain with
+                                Circle CCTP v2, or deposit directly from an exchange that supports Arc.
+                            </p>
+                            <Link
+                                href="/app/bridge"
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
+                            >
+                                Open Bridge <ArrowRight className="w-4 h-4" />
+                            </Link>
+                        </>
+                    ) : (
+                        <>
+                            <p className="text-muted-foreground mb-3">
+                                You need USDC for gas fees and trading. Get testnet tokens from the Circle Faucet:
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                                <a
+                                    href={FAUCET_URL ?? "https://faucet.circle.com"}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
+                                >
+                                    Get Testnet USDC <ExternalLink className="w-4 h-4" />
+                                </a>
+                                <a
+                                    href={FAUCET_URL ?? "https://faucet.circle.com"}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="inline-flex items-center gap-2 px-4 py-2 bg-muted text-foreground rounded-lg hover:bg-muted/80 transition-colors text-sm font-medium border border-border"
+                                >
+                                    Get Testnet EURC <ExternalLink className="w-4 h-4" />
+                                </a>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-2">
+                                Select <strong>{CHAIN_CONFIG.name}</strong> as the network when requesting tokens.
+                            </p>
+                        </>
+                    )}
                 </StepCard>
 
                 <StepCard step={4} title="Connect Wallet">
@@ -715,8 +742,8 @@ function QuickStartSection() {
                         <Link href="/app/swap" className="flex items-center gap-2 text-primary hover:underline text-sm">
                             <ArrowRight className="w-4 h-4" /> Swap USDC for EURC
                         </Link>
-                        <Link href="/app/stake" className="flex items-center gap-2 text-primary hover:underline text-sm">
-                            <ArrowRight className="w-4 h-4" /> Stake tokens to earn APY
+                        <Link href="/app/bridge" className="flex items-center gap-2 text-primary hover:underline text-sm">
+                            <ArrowRight className="w-4 h-4" /> Bridge USDC into Arc
                         </Link>
                         <Link href="/app/pools" className="flex items-center gap-2 text-primary hover:underline text-sm">
                             <ArrowRight className="w-4 h-4" /> Provide liquidity
@@ -762,7 +789,7 @@ function WhyArcDexSection() {
                                 Fast Finality
                             </h4>
                             <p className="text-muted-foreground text-sm">
-                                Sub-second transaction confirmation means your swaps, stakes, and payments are 
+                                Sub-second transaction confirmation means your swaps, bridges, and payments are 
                                 confirmed almost instantly.
                             </p>
                         </div>
@@ -799,7 +826,7 @@ function WhyArcDexSection() {
                                 <Check className="w-4 h-4 text-green-400" />
                                 <span className="font-medium text-foreground">Complete DeFi Suite</span>
                             </div>
-                            <p className="text-sm text-muted-foreground">Swap, stake, provide liquidity, and send payments all in one platform</p>
+                            <p className="text-sm text-muted-foreground">Swap, bridge, provide liquidity, and send payments all in one platform</p>
                         </div>
                         <div className="space-y-2">
                             <div className="flex items-center gap-2">
@@ -893,89 +920,6 @@ function SwapSection() {
                             <strong>💡 Tip:</strong> For stablecoin swaps, 0.5% slippage is usually sufficient. 
                             Increase only if your transaction is failing.
                         </p>
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
-    )
-}
-
-function StakeSection() {
-    return (
-        <div className="space-y-6">
-            <div>
-                <h1 className="text-4xl font-bold text-foreground mb-4">Stake & Earn</h1>
-                <p className="text-xl text-muted-foreground">Earn yield by staking your stablecoins</p>
-            </div>
-
-            <Card className="bg-card border-border">
-                <CardContent className="p-6 space-y-4">
-                    <h3 className="text-lg font-semibold text-foreground">APY Rates</h3>
-                    <div className="grid md:grid-cols-2 gap-4">
-                        <div className="bg-muted p-4 rounded-lg">
-                            <p className="font-semibold text-foreground mb-2">USDC Staking</p>
-                            <p className="text-2xl font-bold text-primary">10% APR</p>
-                            <p className="text-sm text-muted-foreground mt-1">8% Base + 2% Boost</p>
-                        </div>
-                        <div className="bg-muted p-4 rounded-lg">
-                            <p className="font-semibold text-foreground mb-2">EURC Staking</p>
-                            <p className="text-2xl font-bold text-primary">8% APR</p>
-                            <p className="text-sm text-muted-foreground mt-1">6% Base + 2% Boost</p>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-
-            <Card className="bg-card border-border">
-                <CardContent className="p-6 space-y-4">
-                    <h3 className="text-lg font-semibold text-foreground">How Staking Works</h3>
-                    <p className="text-muted-foreground">
-                        When you stake tokens, they are locked in the staking contract and you earn rewards based on the APR. 
-                        Rewards accumulate over time and can be claimed at any time.
-                    </p>
-                    <div className="bg-muted p-4 rounded-lg space-y-2">
-                        <p className="text-sm"><strong className="text-foreground">No Lock Period:</strong> Unstake at any time (testnet feature)</p>
-                        <p className="text-sm"><strong className="text-foreground">Rewards:</strong> Accumulate continuously based on APR</p>
-                        <p className="text-sm"><strong className="text-foreground">Claim:</strong> Claim rewards individually or all at once</p>
-                        <p className="text-sm"><strong className="text-foreground">Minimum:</strong> No minimum stake amount required</p>
-                    </div>
-                </CardContent>
-            </Card>
-
-            <Card className="bg-card border-border">
-                <CardContent className="p-6 space-y-4">
-                    <h3 className="text-lg font-semibold text-foreground">Step-by-Step Guide</h3>
-                    <ol className="space-y-3 list-decimal list-inside text-muted-foreground">
-                        <li>
-                            <strong className="text-foreground">Open Stake Panel:</strong> Click "Open Stake Panel" on the Stake page
-                        </li>
-                        <li>
-                            <strong className="text-foreground">Select Token:</strong> Choose USDC or EURC to stake
-                        </li>
-                        <li>
-                            <strong className="text-foreground">Enter Amount:</strong> Enter the amount you want to stake or click "Max"
-                        </li>
-                        <li>
-                            <strong className="text-foreground">Approve (First Time):</strong> Approve the staking contract to spend your tokens
-                        </li>
-                        <li>
-                            <strong className="text-foreground">Stake:</strong> Click "Stake" and confirm the transaction
-                        </li>
-                        <li>
-                            <strong className="text-foreground">View Rewards:</strong> Check the "Claim" tab to see pending rewards
-                        </li>
-                    </ol>
-                </CardContent>
-            </Card>
-
-            <Card className="bg-card border-border">
-                <CardContent className="p-6 space-y-4">
-                    <h3 className="text-lg font-semibold text-foreground">Important Notes</h3>
-                    <div className="space-y-2 text-sm text-muted-foreground">
-                        <p>• <strong className="text-foreground">Validation:</strong> The system validates your balance and allowance before allowing staking</p>
-                        <p>• <strong className="text-foreground">Errors:</strong> If you see "insufficient allowance", approve the token first</p>
-                        <p>• <strong className="text-foreground">Rewards:</strong> Rewards are calculated based on time staked and APR</p>
-                        <p>• <strong className="text-foreground">Unstaking:</strong> You can unstake any amount up to your staked balance</p>
                     </div>
                 </CardContent>
             </Card>
@@ -1142,9 +1086,8 @@ function PortfolioSection() {
                             </div>
                             <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
                                 <li>Total Balance</li>
-                                <li>Staked Value</li>
                                 <li>LP Positions</li>
-                                <li>Pending Rewards</li>
+                                <li>Trading Fees Earned</li>
                             </ul>
                         </div>
                         <div className="space-y-2">
@@ -1189,12 +1132,12 @@ function PortfolioSection() {
                     <p className="text-muted-foreground">
                         The Portfolio dashboard reads your on-chain balances in real-time using wagmi hooks. 
                         Transaction history is fetched from the ArcScan Explorer API and automatically classified 
-                        into categories (Swaps, Staking, Liquidity, Transfers).
+                        into categories (Swaps, Bridge, Liquidity, Transfers).
                     </p>
                     <div className="bg-muted p-4 rounded-lg">
                         <p className="text-sm text-muted-foreground">
                             <strong className="text-foreground">Note:</strong> Portfolio values are estimated based on 
-                            off-chain price data. All values are labeled as "Estimated (testnet)" for transparency.
+                            off-chain price data. All estimated values are labeled as such for transparency.
                         </p>
                     </div>
                 </CardContent>
@@ -1216,7 +1159,7 @@ function HistorySection() {
                     <h3 className="text-lg font-semibold text-foreground">Features</h3>
                     <ul className="space-y-2 text-muted-foreground">
                         <li>• View all transactions for your connected wallet</li>
-                        <li>• Automatic transaction classification (Swap, Staking, Liquidity, Transfer)</li>
+                        <li>• Automatic transaction classification (Swap, Bridge, Liquidity, Transfer)</li>
                         <li>• Direct links to ArcScan Explorer</li>
                         <li>• Transaction details including amounts, fees, and status</li>
                         <li>• Filter by transaction type</li>
@@ -1235,9 +1178,9 @@ function HistorySection() {
                             </p>
                         </div>
                         <div className="bg-muted p-3 rounded-lg">
-                            <p className="font-semibold text-foreground mb-1">Staking Transactions</p>
+                            <p className="font-semibold text-foreground mb-1">Bridge Transactions</p>
                             <p className="text-sm text-muted-foreground">
-                                Stake, unstake, and claim reward transactions
+                                Cross-chain USDC deposits and withdrawals via CCTP v2
                             </p>
                         </div>
                         <div className="bg-muted p-3 rounded-lg">
@@ -1264,31 +1207,25 @@ function ContractsSection() {
         <div className="space-y-6">
             <div>
                 <h1 className="text-4xl font-bold text-foreground mb-4">Smart Contracts</h1>
-                <p className="text-xl text-muted-foreground">Verified contract addresses on Arc Testnet</p>
+                <p className="text-xl text-muted-foreground">Verified contract addresses on {NETWORK_LABEL}</p>
             </div>
 
             <div className="space-y-3">
                 <ContractCard
                     name="ArcDexSwap"
-                    address="0x6e25a59770b243113efd205b8722fe2aa942ba21"
+                    address={ARCDEX.Swap}
                     desc="Automated Market Maker for USDC/EURC swaps using constant product formula (x * y = k)"
                     functions={["swap", "addLiquidity", "removeLiquidity", "getReserves", "getAmountOut"]}
                 />
                 <ContractCard
-                    name="ArcDexStaking"
-                    address="0xe58b6a269ab1c65e62203bd131ef5935214ce726"
-                    desc="Yield vault for staking USDC and EURC with APR rewards (10% USDC, 8% EURC)"
-                    functions={["stake", "unstake", "claimRewards", "claimAllRewards", "getStakedBalance", "getPendingRewards", "getAPR"]}
-                />
-                <ContractCard
                     name="ArcDexLP"
-                    address="0x5dc0ff7148cd906817e6d07cf2317fedd0f04a03"
+                    address={ARCDEX.LP}
                     desc="ERC-20 Liquidity Provider tokens representing pool shares for USDC/EURC pool"
                     functions={["balanceOf", "totalSupply", "transfer", "approve", "mint", "burn"]}
                 />
                 <ContractCard
                     name="ArcDexPayments"
-                    address="0x9dd9ce65012b595a9dae8014ea6d1f4a8cc21a68"
+                    address={ARCDEX.Payments}
                     desc="P2P payment system with on-chain memo support (0.05 USDC fee per payment)"
                     functions={["sendPayment", "sendExactPayment", "paymentFee"]}
                 />
@@ -1314,7 +1251,7 @@ function TokensSection() {
         <div className="space-y-6">
             <div>
                 <h1 className="text-4xl font-bold text-foreground mb-4">Supported Tokens</h1>
-                <p className="text-xl text-muted-foreground">ERC20 tokens available on Arc Testnet</p>
+                <p className="text-xl text-muted-foreground">ERC20 tokens available on {NETWORK_LABEL}</p>
             </div>
 
             <div className="overflow-x-auto">
@@ -1328,8 +1265,8 @@ function TokensSection() {
                         </tr>
                     </thead>
                     <tbody>
-                        <TokenRow symbol="USDC" address="0x3600000000000000000000000000000000000000" decimals={6} type="Native Gas Token" />
-                        <TokenRow symbol="EURC" address="0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a" decimals={6} type="Stablecoin" />
+                        <TokenRow symbol="USDC" address={TOKENS.USDC} decimals={6} type="Native Gas Token" />
+                        <TokenRow symbol="EURC" address={TOKENS.EURC} decimals={6} type="Stablecoin" />
                     </tbody>
                 </table>
             </div>
@@ -1350,7 +1287,7 @@ function TokensSection() {
                             <h4 className="font-semibold text-foreground mb-2">EURC (Euro Coin)</h4>
                             <p className="text-sm text-muted-foreground">
                                 EURC is the euro-denominated stablecoin issued by Circle. It uses 6 decimals 
-                                and is fully supported for swaps, staking, and payments.
+                                and is fully supported for swaps, pools, and payments.
                             </p>
                         </div>
                     </div>
@@ -1365,7 +1302,7 @@ function NetworkSection() {
         <div className="space-y-6">
             <div>
                 <h1 className="text-4xl font-bold text-foreground mb-4">Network Configuration</h1>
-                <p className="text-xl text-muted-foreground">Add Arc Testnet to your wallet</p>
+                <p className="text-xl text-muted-foreground">Add {NETWORK_LABEL} to your wallet</p>
             </div>
 
             <Card className="bg-card border-border">
@@ -1373,17 +1310,17 @@ function NetworkSection() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <span className="text-muted-foreground text-sm">Network Name</span>
-                            <p className="font-semibold">Arc Testnet</p>
+                            <p className="font-semibold">{CHAIN_CONFIG.name}</p>
                         </div>
                         <div className="space-y-2">
                             <span className="text-muted-foreground text-sm">Chain ID</span>
-                            <p className="font-mono">5042002</p>
+                            <p className="font-mono">{CHAIN_CONFIG.id}</p>
                         </div>
                         <div className="space-y-2">
                             <span className="text-muted-foreground text-sm">RPC URL</span>
                             <div className="flex items-center gap-2">
-                                <p className="font-mono text-sm bg-muted p-2 rounded flex-1">https://rpc.testnet.arc.network</p>
-                                <CopyButton text="https://rpc.testnet.arc.network" />
+                                <p className="font-mono text-sm bg-muted p-2 rounded flex-1">{RPC_URLS[0]}</p>
+                                <CopyButton text={RPC_URLS[0]} />
                             </div>
                         </div>
                         <div className="space-y-2">
@@ -1392,16 +1329,18 @@ function NetworkSection() {
                         </div>
                         <div className="space-y-2">
                             <span className="text-muted-foreground text-sm">Block Explorer</span>
-                            <a href="https://testnet.arcscan.app" target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1">
-                                testnet.arcscan.app <ExternalLink size={14} />
+                            <a href={ARCSCAN_URL} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1">
+                                {ARCSCAN_URL.replace(/^https:\/\//, "")} <ExternalLink size={14} />
                             </a>
                         </div>
-                        <div className="space-y-2">
-                            <span className="text-muted-foreground text-sm">Faucet</span>
-                            <a href="https://faucet.circle.com" target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1">
-                                faucet.circle.com <ExternalLink size={14} />
-                            </a>
-                        </div>
+                        {FAUCET_URL && (
+                            <div className="space-y-2">
+                                <span className="text-muted-foreground text-sm">Faucet</span>
+                                <a href={FAUCET_URL} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1">
+                                    faucet.circle.com <ExternalLink size={14} />
+                                </a>
+                            </div>
+                        )}
                     </div>
                 </CardContent>
             </Card>
@@ -1414,7 +1353,7 @@ function NetworkSection() {
                         <li>Click "Add Network" or "Add Network Manually"</li>
                         <li>Enter the network details from above</li>
                         <li>Click "Save" to add the network</li>
-                        <li>Switch to Arc Testnet to start using ARCDex</li>
+                        <li>Switch to {NETWORK_LABEL} to start using ARCDex</li>
                     </ol>
                 </CardContent>
             </Card>
@@ -1453,14 +1392,6 @@ function APIReferenceSection() {
                             <p className="font-mono text-sm font-semibold text-foreground mb-1">useGetAmountOut(tokenIn, amountIn)</p>
                             <p className="text-xs text-muted-foreground">Calculate output amount for a swap</p>
                         </div>
-                        <div className="bg-muted p-3 rounded-lg">
-                            <p className="font-mono text-sm font-semibold text-foreground mb-1">useStakedBalance(token)</p>
-                            <p className="text-xs text-muted-foreground">Get staked balance for a token</p>
-                        </div>
-                        <div className="bg-muted p-3 rounded-lg">
-                            <p className="font-mono text-sm font-semibold text-foreground mb-1">usePendingRewards(token)</p>
-                            <p className="text-xs text-muted-foreground">Get pending staking rewards</p>
-                        </div>
                     </div>
                 </CardContent>
             </Card>
@@ -1472,10 +1403,6 @@ function APIReferenceSection() {
                         <div className="bg-muted p-3 rounded-lg">
                             <p className="font-mono text-sm font-semibold text-foreground mb-1">ArcDexSwap.swap(tokenIn, amountIn, minAmountOut)</p>
                             <p className="text-xs text-muted-foreground">Swap tokens with slippage protection</p>
-                        </div>
-                        <div className="bg-muted p-3 rounded-lg">
-                            <p className="font-mono text-sm font-semibold text-foreground mb-1">ArcDexStaking.stake(token, amount)</p>
-                            <p className="text-xs text-muted-foreground">Stake tokens to earn rewards</p>
                         </div>
                         <div className="bg-muted p-3 rounded-lg">
                             <p className="font-mono text-sm font-semibold text-foreground mb-1">ArcDexPayments.sendPayment(token, recipient, amount, memo)</p>
@@ -1525,7 +1452,7 @@ function ErrorCodesSection() {
                     code="Network error"
                     title="Network Connection Issue"
                     description="Unable to connect to Arc Network"
-                    solution="Check your internet connection and ensure you're connected to Arc Testnet in your wallet."
+                    solution={`Check your internet connection and ensure you're connected to ${NETWORK_LABEL} in your wallet.`}
                 />
             </div>
         </div>
@@ -1556,8 +1483,8 @@ function TroubleshootingSection() {
                         <div>
                             <p className="font-semibold text-foreground mb-1">Wrong network</p>
                             <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                                <li>Switch to Arc Testnet in your wallet</li>
-                                <li>Add Arc Testnet if it's not in your network list</li>
+                                <li>Switch to {NETWORK_LABEL} in your wallet</li>
+                                <li>Add {NETWORK_LABEL} if it's not in your network list</li>
                                 <li>Check the network configuration in the docs</li>
                             </ul>
                         </div>
@@ -1605,8 +1532,8 @@ function TroubleshootingSection() {
                         <div>
                             <p className="font-semibold text-foreground mb-1">Zero balance showing</p>
                             <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                                <li>Get testnet tokens from the faucet</li>
-                                <li>Ensure you're on Arc Testnet</li>
+                                <li>{IS_MAINNET ? "Top up USDC via the bridge" : "Get testnet tokens from the faucet"}</li>
+                                <li>Ensure you're on {NETWORK_LABEL}</li>
                                 <li>Check your wallet address is correct</li>
                             </ul>
                         </div>
@@ -1652,17 +1579,6 @@ function BestPracticesSection() {
 
             <Card className="bg-card border-border">
                 <CardContent className="p-6 space-y-4">
-                    <h3 className="text-lg font-semibold text-foreground">Staking</h3>
-                    <ul className="space-y-2 text-muted-foreground">
-                        <li>• <strong className="text-foreground">Claim regularly:</strong> Claim rewards periodically to compound earnings</li>
-                        <li>• <strong className="text-foreground">Monitor APR:</strong> APR rates may change, check current rates before staking</li>
-                        <li>• <strong className="text-foreground">Understand risks:</strong> While testnet is safe, understand smart contract risks</li>
-                    </ul>
-                </CardContent>
-            </Card>
-
-            <Card className="bg-card border-border">
-                <CardContent className="p-6 space-y-4">
                     <h3 className="text-lg font-semibold text-foreground">Liquidity Provision</h3>
                     <ul className="space-y-2 text-muted-foreground">
                         <li>• <strong className="text-foreground">Understand impermanent loss:</strong> Research before providing liquidity</li>
@@ -1686,11 +1602,11 @@ function FAQSection() {
             <div className="space-y-4">
                 <FAQItem
                     question="Is ARCDex safe to use?"
-                    answer="ARCDex is deployed on Arc Testnet for testing purposes. The smart contracts use OpenZeppelin libraries and include security features like ReentrancyGuard. However, this is testnet software - always do your own research and never use real funds on testnet."
+                    answer="ARCDex smart contracts use OpenZeppelin libraries and include security features like ReentrancyGuard. However, this is testnet software - always do your own research and never use real funds on testnet."
                 />
                 <FAQItem
-                    question="How do I get testnet tokens?"
-                    answer="Visit the Circle Faucet at faucet.circle.com, select Arc Testnet as the network, and request USDC or EURC. You'll need USDC for gas fees."
+                    question={IS_MAINNET ? "How do I fund my wallet?" : "How do I get testnet tokens?"}
+                    answer={IS_MAINNET ? "Bridge USDC into Arc with Circle CCTP v2 from the Bridge page, or deposit from an exchange that supports Arc. You'll need USDC for gas fees." : "Visit the Circle Faucet at faucet.circle.com, select Arc Testnet as the network, and request USDC or EURC. You'll need USDC for gas fees."}
                 />
                 <FAQItem
                     question="Why do I need to approve tokens?"
@@ -1699,14 +1615,6 @@ function FAQSection() {
                 <FAQItem
                     question="What is slippage?"
                     answer="Slippage is the difference between the expected price and the actual execution price. For stablecoin pairs, slippage is typically very low (under 0.5%)."
-                />
-                <FAQItem
-                    question="Can I unstake immediately?"
-                    answer="Yes, on testnet there's no lock period. You can unstake your tokens at any time without penalties."
-                />
-                <FAQItem
-                    question="How are rewards calculated?"
-                    answer="Rewards are calculated based on the APR (Annual Percentage Rate), the amount staked, and the time staked. Rewards accumulate continuously and can be claimed at any time."
                 />
                 <FAQItem
                     question="What happens if a transaction fails?"
@@ -1755,7 +1663,7 @@ function ContractCard({ name, address, desc, functions }: { name: string, addres
                             <span className="truncate flex-1">{address}</span>
                             <CopyButton text={address} />
                             <a 
-                                href={`https://testnet.arcscan.app/address/${address}`}
+                                href={`${ARCSCAN_URL}/address/${address}`}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="text-primary hover:text-primary/80"

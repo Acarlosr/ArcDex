@@ -11,6 +11,8 @@
  * it is intentionally excluded from this EVM dropdown.
  */
 
+import { RPC_URLS } from "./contracts"
+
 export interface BridgeChainInfo {
   /** EVM chain id */
   id: number
@@ -27,7 +29,12 @@ export interface BridgeChainInfo {
   rpc: string
 }
 
-// Arc Testnet (bridge destination)
+// Destino do bridge.
+//
+// TODO (16/09/2026): quando a Arc Public Mainnet entrar no ar, o Circle Bridge Kit
+// vai expor um novo identificador de chain (algo como "Arc") e uma lista de chains
+// de origem em mainnet. Trocar `id`, `bridgeChain` e `BRIDGE_SOURCE_CHAINS` pelos
+// valores de mainnet — o `rpc` já acompanha a rede ativa automaticamente.
 export const ARC_CHAIN_INFO: BridgeChainInfo = {
   id: 5_042_002,
   bridgeChain: "Arc_Testnet",
@@ -36,7 +43,7 @@ export const ARC_CHAIN_INFO: BridgeChainInfo = {
   logo: "⚡",
   cctpDomain: 26,
   usdc: "0x3600000000000000000000000000000000000000",
-  rpc: "https://rpc.testnet.arc.network",
+  rpc: RPC_URLS[0],
 }
 
 // Source chains (all CCTP testnets that route to Arc)

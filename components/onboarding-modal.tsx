@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button"
 import { CheckCircle2, Wallet, Globe, Droplet, Zap, ChevronRight, ChevronLeft, ExternalLink } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
+import { ARCSCAN_URL, CHAIN_CONFIG, FAUCET_URL, RPC_URLS } from "@/lib/contracts"
 
 interface OnboardingModalProps {
     open: boolean
@@ -32,10 +33,10 @@ export function OnboardingModal({ open, onOpenChange }: OnboardingModalProps) {
             description: t("onboarding.arcDesc"),
             icon: Globe,
             details: [
-                "Network: Arc Testnet",
-                "Chain ID: 5042034",
-                "RPC: https://rpc.testnet.arc.network",
-                "Explorer: https://testnet.arcscan.app"
+                `Network: ${CHAIN_CONFIG.name}`,
+                `Chain ID: ${CHAIN_CONFIG.id}`,
+                `RPC: ${RPC_URLS[0]}`,
+                `Explorer: ${ARCSCAN_URL}`
             ],
             action: {
                 label: t("onboarding.addNetwork"),
@@ -45,11 +46,12 @@ export function OnboardingModal({ open, onOpenChange }: OnboardingModalProps) {
                             await (window as unknown as { ethereum: { request: (args: { method: string; params?: unknown[] }) => Promise<unknown> } }).ethereum.request({
                                 method: "wallet_addEthereumChain",
                                 params: [{
-                                    chainId: "0x4CEF66",
-                                    chainName: "Arc Testnet",
-                                    nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 18 },
-                                    rpcUrls: ["https://rpc.testnet.arc.network"],
-                                    blockExplorerUrls: ["https://testnet.arcscan.app"]
+                                    // chainId precisa ser hex — derivado da rede ativa
+                                    chainId: `0x${CHAIN_CONFIG.id.toString(16)}`,
+                                    chainName: CHAIN_CONFIG.name,
+                                    nativeCurrency: CHAIN_CONFIG.nativeCurrency,
+                                    rpcUrls: RPC_URLS,
+                                    blockExplorerUrls: [ARCSCAN_URL]
                                 }]
                             })
                         } catch (error) {
@@ -70,10 +72,9 @@ export function OnboardingModal({ open, onOpenChange }: OnboardingModalProps) {
                 t("onboarding.faucetDetail3"),
                 t("onboarding.faucetDetail4")
             ],
-            link: {
-                label: t("onboarding.openFaucet"),
-                url: "https://faucet.circle.com"
-            }
+            link: FAUCET_URL
+                ? { label: t("onboarding.openFaucet"), url: FAUCET_URL }
+                : { label: t("onboarding.openBridge"), url: "/app/bridge" }
         },
         {
             id: 4,

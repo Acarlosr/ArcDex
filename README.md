@@ -1,10 +1,10 @@
-# 🚀 ArcDex — DeFi Protocol on Arc Network (Testnet)
+# 🚀 ArcDex — DeFi Protocol on Arc Network
 
-> ArcDex is a decentralized finance (DeFi) application built on the **Arc Network Testnet**, providing token swaps, liquidity pools, staking, payments, and an advanced Portfolio Dashboard.
+> ArcDex is a decentralized finance (DeFi) application built on **Arc Network**, providing token swaps, liquidity pools, a CCTP v2 bridge, stablecoin payments, and an advanced Portfolio Dashboard.
 
-The project is designed as a testnet showcase dApp, with a strong focus on **UX clarity**, **performance**, and **developer-friendly architecture**.
+> **Arc Public Mainnet goes live on September 16, 2026.** ArcDex is configured for mainnet by default and falls back to Arc Testnet until the official mainnet chain ID, RPC and contract addresses are published by Circle. See [Network configuration](#-network-configuration).
 
-![Arc Testnet](https://img.shields.io/badge/Network-Arc%20Testnet-00D4FF)
+![Arc Network](https://img.shields.io/badge/Network-Arc-00D4FF)
 ![Next.js](https://img.shields.io/badge/Next.js-16-black)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
@@ -16,13 +16,12 @@ The project is designed as a testnet showcase dApp, with a strong focus on **UX 
 
 ## 📋 TL;DR
 
-**ArcDex** is a full-featured DeFi protocol on Arc Network Testnet featuring:
+**ArcDex** is a full-featured DeFi protocol on Arc Network featuring:
 
 - 🔁 **Token Swaps** — USDC ↔ EURC with on-chain AMM
 - 🌊 **Liquidity Pools** — Add/remove liquidity, earn fees
-- 🥩 **Staking** — Stake tokens and claim rewards
 - 💸 **P2P Payments** — Send stablecoins with minimal fees
-- 🌐 **USDC Bridge** — Bring USDC from Ethereum Sepolia or Base Sepolia to Arc Testnet through Circle CCTP v2
+- 🌐 **USDC Bridge** — Move USDC in and out of Arc through Circle CCTP v2 (native burn-and-mint, no wrapped assets)
 - 🔗 **CCIP Messaging Prototype** — Secure Ethereum Sepolia → Arc settlement messages using Chainlink CCIP v1.6
 - 📊 **Portfolio Dashboard** — Real-time balances, transaction history, and charts
 
@@ -60,7 +59,6 @@ Arc Network is a Layer 1 blockchain optimized for **stablecoin-native DeFi** and
 ### **Why ArcDex on Arc?**
 ArcDex leverages Arc's stablecoin-native architecture to provide:
 - **Seamless swaps** between stablecoins without gas token conversions
-- **Efficient staking** with USDC/EURC directly
 - **Low-cost payments** optimized for stablecoin transfers
 - **Focused token support** aligned with the contracts currently integrated in ArcDex
 
@@ -69,7 +67,7 @@ ArcDex leverages Arc's stablecoin-native architecture to provide:
 ## ✨ Key Features
 
 ### 🔁 Token Swaps
-- ERC-20 token swaps on Arc Testnet
+- ERC-20 token swaps on Arc
 - On-chain reserve & pricing logic
 - Web3 integration using wagmi + viem
 
@@ -78,12 +76,6 @@ ArcDex leverages Arc's stablecoin-native architecture to provide:
 - View LP positions
 - Active pools: **USDC / EURC**
 
-### 🥩 Staking
-- Stake & unstake tokens
-- Claim staking rewards
-- Direct integration with ArcDexStaking contract
-- Clear UX with loading and feedback states
-
 ### 💸 Payments (P2P)
 - Payments UI implemented
 - ArcDexPayments contract deployed
@@ -91,7 +83,7 @@ ArcDex leverages Arc's stablecoin-native architecture to provide:
 
 ### 🌐 USDC Bridge
 - Browser-wallet flow powered by Circle Bridge Kit and the Viem adapter
-- Supported routes: Ethereum Sepolia → Arc Testnet and Base Sepolia → Arc Testnet
+- Supported routes: any CCTP v2 chain → Arc
 - Native USDC burn-and-mint flow through CCTP v2
 - Per-step progress, explorer links, fee estimation, and explicit error recovery
 - The current bridge supports USDC only; EURC and tokenized assets are not presented as bridgeable
@@ -111,7 +103,7 @@ The Portfolio section was developed in well-defined phases, focusing on realism 
 - Tabs: Tokens | NFTs | Transactions
 
 ### Phase 2 – Stats & Charts
-- Total Balance, Staked Value, LP Positions, Rewards
+- Total Balance, LP Positions, Trading Fees
 - Portfolio evolution chart (24H / 7D / 30D)
 
 ### Phase 3 – Real Token Balances
@@ -122,7 +114,7 @@ The Portfolio section was developed in well-defined phases, focusing on realism 
 ### Phase 4 – Transactions
 - Recent wallet transaction history
 - Integration with ArcScan Explorer API
-- Automatic classification: Swaps, Staking, Liquidity actions, Transfers
+- Automatic classification: Swaps, Bridge, Liquidity actions, Transfers
 - Direct links to the explorer
 - Graceful empty & error states
 
@@ -131,7 +123,7 @@ The Portfolio section was developed in well-defined phases, focusing on realism 
 - Off-chain token price integration
 - Per-asset valuation
 - Portfolio chart based on estimated total value
-- Clear "Estimated (testnet)" labeling
+- Clear "Estimated" labeling on off-chain-priced values
 - No backend, no indexer → fast performance
 
 ---
@@ -141,11 +133,10 @@ The Portfolio section was developed in well-defined phases, focusing on realism 
 Dedicated History page with explorer links for:
 - Wallet address
 - Swap contract
-- Staking contract
 - LP token
 - Payments contract
 
-Designed for transparency and testnet debugging.
+Designed for transparency and on-chain auditability.
 
 ---
 
@@ -154,7 +145,7 @@ Designed for transparency and testnet debugging.
 Integrated Docs page inside the dApp, prepared for onboarding content:
 - How it works
 - Network configuration
-- Faucet & testnet resources
+- Bridging USDC into Arc
 
 ---
 
@@ -183,14 +174,20 @@ Integrated Docs page inside the dApp, prepared for onboarding content:
 
 ---
 
-## 📦 Smart Contracts (Arc Testnet)
+## 📦 Smart Contracts
+
+### Arc Testnet (chain ID 5042002)
 
 | Contract | Address | Status |
 |----------|---------|--------|
 | ArcDexSwap | `0x50bb26da53555585c606280435469bfb15cac4cf` | ✅ Deployed |
 | ArcDexLP | `0x823f387a392bdc1ef57bc30cc005be7e6d067f13` | ✅ Deployed |
-| ArcDexStaking | `0x5d1ddbafd6a11131154a635563699230f0b9229b` | ✅ Deployed |
 | ArcDexPayments | `0x515683c9399445df4a38915c2130cc498aba4319` | ✅ Deployed |
+
+### Arc Mainnet
+
+Pending redeployment after September 16, 2026. Addresses are read from
+`NEXT_PUBLIC_ARC_MAINNET_ARCDEX_*` — see `.env.example`.
 
 ---
 
@@ -260,12 +257,49 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+## 🌐 Network configuration
+
+Network selection lives in [`lib/network.ts`](lib/network.ts) and is driven entirely by
+environment variables — no code changes are needed to switch networks.
+
+```bash
+NEXT_PUBLIC_ARC_NETWORK=mainnet   # "mainnet" (default) or "testnet"
+```
+
+**Mainnet values are not yet public.** Circle's docs still state that
+*"Mainnet addresses are not yet available."* Until they are, leave the
+`NEXT_PUBLIC_ARC_MAINNET_*` variables empty: the app detects that mainnet is
+unconfigured, automatically falls back to Arc Testnet, and displays a launch
+countdown banner.
+
+### On launch day (September 16, 2026)
+
+Fill these in `.env.local` and redeploy — nothing else changes:
+
+```bash
+NEXT_PUBLIC_ARC_MAINNET_CHAIN_ID=
+NEXT_PUBLIC_ARC_MAINNET_RPC_URL=
+NEXT_PUBLIC_ARC_MAINNET_RPC_FALLBACKS=
+NEXT_PUBLIC_ARC_MAINNET_EXPLORER_URL=
+NEXT_PUBLIC_ARC_MAINNET_USDC=
+NEXT_PUBLIC_ARC_MAINNET_EURC=
+NEXT_PUBLIC_ARC_MAINNET_CCTP_TOKEN_MESSENGER=
+# ... see .env.example for the full list
+NEXT_PUBLIC_ARC_MAINNET_ARCDEX_SWAP=
+NEXT_PUBLIC_ARC_MAINNET_ARCDEX_LP=
+NEXT_PUBLIC_ARC_MAINNET_ARCDEX_PAYMENTS=
+```
+
+Remaining manual step: `lib/bridge-chains.ts` still lists CCTP **testnet** source
+chains. Swap them for the mainnet set once Circle Bridge Kit ships the mainnet
+`BridgeChain` identifiers.
+
 ### Wallet Setup (Arc Testnet)
 
 | Field | Value |
 |-------|-------|
 | Network Name | Arc Testnet |
-| RPC URL | https://rpc.testnet.arc.network |
+| RPC URL | https://rpc.testnet.arc.io |
 | Chain ID | 5042002 |
 | Currency Symbol | USDC |
 | Explorer | https://testnet.arcscan.app |
@@ -280,16 +314,20 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 🚧 Roadmap (High Level)
 
+- [ ] Fill in Arc Mainnet config on September 16, 2026
+- [ ] Redeploy ArcDex contracts to Arc Mainnet
+- [ ] Switch bridge source chains from CCTP testnet to mainnet
+- [ ] External security audit before handling material volume
 - [ ] Complete Payments Web3 integration
-- [ ] Faucet & onboarding UX improvements
 - [ ] UX polish and notifications
-- [ ] Optional custom indexer (future)
 
 ---
 
 ## 🏆 Conclusion
 
-ArcDex is a modular, production-minded DeFi application built for the Arc Network Testnet, suitable as a **builder showcase**, **creator portfolio**, and **foundation for future mainnet expansion**.
+ArcDex is a modular, production-minded DeFi application built for Arc Network, ready for the Public Mainnet launch on September 16, 2026.
+
+> ⚠️ The ArcDex contracts have not been externally audited. Verify every address on ArcScan before interacting with real funds.
 
 ---
 

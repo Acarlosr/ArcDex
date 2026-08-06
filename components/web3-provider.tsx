@@ -5,22 +5,19 @@ import { WagmiProvider, createConfig, createStorage, cookieStorage } from 'wagmi
 import { fallback, http } from 'viem'
 import { injected, walletConnect } from 'wagmi/connectors'
 import { useState, useEffect, type ReactNode } from 'react'
-import { CHAIN_CONFIG } from '@/lib/contracts'
+import { CHAIN_CONFIG, IS_MAINNET, RPC_URLS } from '@/lib/contracts'
 
 // Lower retry count so a rate-limited (429) RPC doesn't hammer with retries
 const RPC_OPTS = { timeout: 20000, retryCount: 1, retryDelay: 1500 }
-const ARC_RPC_URLS = [
-  CHAIN_CONFIG.rpcUrls.default.http[0],
-  'https://rpc.blockdaemon.testnet.arc.network',
-  'https://rpc.drpc.testnet.arc.network',
-  'https://rpc.quicknode.testnet.arc.network',
-].filter(Boolean) as string[]
+
+// RPCs vêm da rede ativa (lib/network.ts): primário + fallbacks de provedores.
+const ARC_RPC_URLS = RPC_URLS.filter(Boolean)
 
 // WalletConnect Project ID
 const projectId = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID || process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '62a5e53db0163b7e29bc8b76c22d04cc'
 
-// Define Arc Testnet chain
-const arcTestnet = {
+// Chain ativa: Arc Mainnet ou Arc Testnet, conforme NEXT_PUBLIC_ARC_NETWORK
+const arcChain = {
     id: CHAIN_CONFIG.id,
     name: CHAIN_CONFIG.name,
     nativeCurrency: CHAIN_CONFIG.nativeCurrency,
@@ -44,7 +41,7 @@ function createWagmiConfig() {
                 projectId,
                 metadata: {
                     name: 'ARCDex V2',
-                    description: 'DeFi on Arc Network',
+                    description: IS_MAINNET ? 'DeFi on Arc' : 'DeFi on Arc Testnet',
                     url: 'https://www.arc-dex.xyz',
                     icons: ['https://www.arc-dex.xyz/icon.png'],
                 },
@@ -54,7 +51,7 @@ function createWagmiConfig() {
     }
 
     return createConfig({
-        chains: [arcTestnet],
+        chains: [arcChain],
         connectors,
         // Persist the last connection so a page refresh restores the wallet
         storage: createStorage({
@@ -62,7 +59,7 @@ function createWagmiConfig() {
             key: 'arcdex.wagmi',
         }),
         transports: {
-            [arcTestnet.id]: fallback(
+            [arcChain.id]: fallback(
                 ARC_RPC_URLS.map((url) => http(url, RPC_OPTS)),
                 { rank: false }
             ),

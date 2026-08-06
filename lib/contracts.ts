@@ -1,56 +1,81 @@
 // ============================================================================
-// ArcDex Contract Configuration - Arc Testnet (Chain ID: 5042002)
+// ArcDex — Endereços e constantes de protocolo
+// ============================================================================
+//
+// Os valores abaixo derivam da rede ativa (ver lib/network.ts). Trocar entre
+// Arc Mainnet e Arc Testnet é feito por variável de ambiente, sem mexer aqui.
 // ============================================================================
 
-// Arc Testnet Chain Configuration
+import {
+  ACTIVE_NETWORK,
+  ARC_MAINNET,
+  ARC_TESTNET,
+  IS_MAINNET,
+  IS_TESTNET,
+  MAINNET_CONFIGURED,
+  MAINNET_LAUNCH_DATE,
+  MAINNET_LAUNCH_LABEL,
+  MAINNET_PENDING,
+  daysUntilMainnet,
+  isMainnetLive,
+} from "./network";
+
+export {
+  ACTIVE_NETWORK,
+  ARC_MAINNET,
+  ARC_TESTNET,
+  IS_MAINNET,
+  IS_TESTNET,
+  MAINNET_CONFIGURED,
+  MAINNET_LAUNCH_DATE,
+  MAINNET_LAUNCH_LABEL,
+  MAINNET_PENDING,
+  daysUntilMainnet,
+  isMainnetLive,
+};
+
+// ============================================================================
+// CHAIN
+// ============================================================================
+
 export const CHAIN_CONFIG = {
-  id: 5042002,
-  name: "Arc Testnet",
-  nativeCurrency: {
-    name: "USDC",
-    symbol: "USDC",
-    decimals: 18, // Native gas uses 18 decimals
-  },
-  rpcUrls: {
-    default: { http: ["https://rpc.testnet.arc.network"] },
-    public: {
-      http: [
-        "https://rpc.testnet.arc.network",
-        "https://rpc.blockdaemon.testnet.arc.network",
-        "https://rpc.drpc.testnet.arc.network",
-        "https://rpc.quicknode.testnet.arc.network",
-      ],
-    },
-  },
-  blockExplorers: {
-    default: { name: "Arc Explorer", url: "https://testnet.arcscan.app" },
-  },
-  testnet: true,
+  id: ACTIVE_NETWORK.id,
+  name: ACTIVE_NETWORK.name,
+  nativeCurrency: ACTIVE_NETWORK.nativeCurrency,
+  rpcUrls: ACTIVE_NETWORK.rpcUrls,
+  blockExplorers: ACTIVE_NETWORK.blockExplorers,
+  testnet: ACTIVE_NETWORK.testnet,
 } as const;
 
-// ArcScan Explorer URLs
-export const ARCSCAN_URL = "https://testnet.arcscan.app" as const;
-export const ARCSCAN_API = "https://testnet.arcscan.app/api" as const;
+/** Nome curto exibido no badge da navbar. */
+export const NETWORK_LABEL = ACTIVE_NETWORK.shortLabel;
+
+/** Lista completa de RPCs (primário + fallbacks) da rede ativa. */
+export const RPC_URLS: string[] = [...ACTIVE_NETWORK.rpcUrls.public.http];
+
+// Explorer
+export const ARCSCAN_URL = ACTIVE_NETWORK.explorerUrl;
+export const ARCSCAN_API = ACTIVE_NETWORK.explorerApi;
+
+/** Faucet só existe em testnet — null em mainnet. */
+export const FAUCET_URL: string | null = ACTIVE_NETWORK.faucetUrl;
 
 // ============================================================================
 // STABLECOINS
 // ============================================================================
 
 export const TOKENS = {
-  // USDC - Native EVM asset, also available as ERC-20 interface (6 decimals)
-  USDC: "0x3600000000000000000000000000000000000000" as const,
-
-  // EURC - Euro-denominated stablecoin by Circle (6 decimals)
-  EURC: "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a" as const,
-
-  // QCAD - Canadian Dollar stablecoin by Stablecorp (6 decimals) - StableFX
-  QCAD: "0x4A08A0843F7f7dEe35014b8D58B25eaFD85b3B28" as const,
+  USDC: ACTIVE_NETWORK.tokens.USDC,
+  EURC: ACTIVE_NETWORK.tokens.EURC,
+  QCAD: ACTIVE_NETWORK.tokens.QCAD,
 } as const;
 
 export type TokenSymbol = keyof typeof TOKENS;
 
-// Token metadata for UI display
-export const TOKEN_INFO = {
+export const TOKEN_INFO: Record<
+  string,
+  { symbol: string; name: string; decimals: number; icon: string; flag: string; color: string }
+> = {
   [TOKENS.USDC]: {
     symbol: "USDC",
     name: "USD Coin",
@@ -75,133 +100,143 @@ export const TOKEN_INFO = {
     flag: "🇨🇦",
     color: "#FF0000",
   },
-} as const;
+};
 
 // ============================================================================
-// CCTP - Cross-Chain Transfer Protocol (Domain 26)
+// CCTP - Cross-Chain Transfer Protocol
 // ============================================================================
 
 export const CCTP = {
-  domain: 26,
-  TokenMessengerV2: "0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA" as const,
-  MessageTransmitterV2: "0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275" as const,
-  TokenMinterV2: "0xb43db544E2c27092c107639Ad201b3dEfAbcF192" as const,
-  MessageV2: "0xbaC0179bB358A8936169a63408C8481D582390C4" as const,
+  domain: ACTIVE_NETWORK.cctpDomain,
+  ...ACTIVE_NETWORK.cctp,
 } as const;
 
 // ============================================================================
-// CHAINLINK CCIP - Mensageria Ethereum Sepolia <-> Arc Testnet
+// CHAINLINK CCIP
 // ============================================================================
+// A lane de CCIP para a Arc só está publicada em testnet. Em mainnet os
+// valores ficam vazios até a Chainlink listar a rede no diretório oficial.
 
 export const CHAINLINK_CCIP = {
-  arcTestnet: {
-    router: "0xdE4E7FED43FAC37EB21aA0643d9852f75332eab8" as const,
-    chainSelector: "3034092155422581607",
-    rmnProxy: "0xD610B8f58689de7755947C05342A2DFaC30ebD57" as const,
-    tokenAdminRegistry: "0xd3e461C55676B10634a5F81b747c324B85686Dd1" as const,
-    registryModuleOwner: "0x524B83ae8208490151339c626fd0E35b964483e3" as const,
-    linkToken: "0x3F1f176e347235858DD6Db905DDBA09Eaf25478a" as const,
-  },
-  ethereumSepolia: {
-    router: "0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59" as const,
-    chainSelector: "16015286601757825753",
-  },
-  // A lane atual permite mensageria; o diretorio oficial lista zero tokens na Arc.
+  arc: IS_TESTNET
+    ? {
+        router: "0xdE4E7FED43FAC37EB21aA0643d9852f75332eab8",
+        chainSelector: "3034092155422581607",
+        rmnProxy: "0xD610B8f58689de7755947C05342A2DFaC30ebD57",
+        tokenAdminRegistry: "0xd3e461C55676B10634a5F81b747c324B85686Dd1",
+        registryModuleOwner: "0x524B83ae8208490151339c626fd0E35b964483e3",
+        linkToken: "0x3F1f176e347235858DD6Db905DDBA09Eaf25478a",
+      }
+    : {
+        router: "",
+        chainSelector: "",
+        rmnProxy: "",
+        tokenAdminRegistry: "",
+        registryModuleOwner: "",
+        linkToken: "",
+      },
+  counterparty: IS_TESTNET
+    ? {
+        name: "Ethereum Sepolia",
+        router: "0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59",
+        chainSelector: "16015286601757825753",
+      }
+    : {
+        name: "Ethereum",
+        router: "",
+        chainSelector: "",
+      },
+  /** A lane permite mensageria; o diretório oficial lista zero tokens na Arc. */
   tokenTransfersEnabled: false,
+  available: IS_TESTNET,
 } as const;
 
+// Alias legado
+export const CCIP_ARC = CHAINLINK_CCIP.arc;
+
 // ============================================================================
-// GATEWAY - Chain-abstracted USDC balances
+// GATEWAY - Saldos de USDC abstraídos entre chains
 // ============================================================================
 
 export const GATEWAY = {
-  domain: 26,
-  GatewayWallet: "0x0077777d7EBA4688BDeF3E311b846F25870A19B9" as const,
-  GatewayMinter: "0x0022222ABE238Cc2C7Bb1f21003F0a260052475B" as const,
+  domain: ACTIVE_NETWORK.cctpDomain,
+  ...ACTIVE_NETWORK.gateway,
 } as const;
 
 // ============================================================================
-// PAYMENTS & SETTLEMENT
+// PAGAMENTOS E LIQUIDAÇÃO
 // ============================================================================
 
 export const PAYMENTS = {
-  // StableFX escrow for stablecoin swaps
-  FxEscrow: "0x1f91886C7028986aD885ffCee0e40b75C9cd5aC1" as const,
-
-  // Permit2 for token allowance management
-  Permit2: "0x000000000022D473030F116dDEE9F6B43aC78BA3" as const,
+  ...ACTIVE_NETWORK.payments,
 } as const;
 
 // ============================================================================
-// ARCDEX DEPLOYED CONTRACTS
+// CONTRATOS DO ARCDEX
 // ============================================================================
 
 export const ARCDEX = {
-  // LP Token for liquidity providers
-  LP: (process.env.NEXT_PUBLIC_ARCDEX_LP ?? "0x823f387a392bdc1ef57bc30cc005be7e6d067f13") as `0x${string}`,
-
-  // AMM Swap contract (USDC/EURC)
-  Swap: (process.env.NEXT_PUBLIC_ARCDEX_SWAP ?? "0x50bb26da53555585c606280435469bfb15cac4cf") as `0x${string}`,
-
-  // Staking vault for yield
-  Staking: (process.env.NEXT_PUBLIC_ARCDEX_STAKING ?? "0x5d1ddbafd6a11131154a635563699230f0b9229b") as `0x${string}`,
-
-  // P2P Payments
-  Payments: (process.env.NEXT_PUBLIC_ARCDEX_PAYMENTS ?? "0x515683c9399445df4a38915c2130cc498aba4319") as `0x${string}`,
-
+  LP: ACTIVE_NETWORK.arcdex.LP,
+  Swap: ACTIVE_NETWORK.arcdex.Swap,
+  Payments: ACTIVE_NETWORK.arcdex.Payments,
 } as const;
 
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+
+/** Um contrato só está utilizável se tiver endereço real na rede ativa. */
+export function isDeployed(address: string | undefined): boolean {
+  return !!address && address.toLowerCase() !== ZERO_ADDRESS;
+}
+
+/** Contratos do ArcDex prontos para uso na rede ativa. */
+export const CONTRACTS_READY =
+  isDeployed(ARCDEX.Swap) && isDeployed(ARCDEX.LP) && isDeployed(ARCDEX.Payments);
+
 // ============================================================================
-// POOL DEFINITIONS
+// POOLS
 // ============================================================================
 
 export type PoolPair = "USDC_EURC";
 
-export const POOLS: Record<PoolPair, {
-  name: string;
-  token0: keyof typeof TOKENS;
-  token1: keyof typeof TOKENS;
-  lpToken: string;
-  swapContract: string;
-  enabled: boolean;
-  apr: number;
-  icon: string;
-}> = {
+export const POOLS: Record<
+  PoolPair,
+  {
+    name: string;
+    token0: keyof typeof TOKENS;
+    token1: keyof typeof TOKENS;
+    lpToken: string;
+    swapContract: string;
+    enabled: boolean;
+    icon: string;
+  }
+> = {
   USDC_EURC: {
     name: "USDC / EURC",
     token0: "USDC",
     token1: "EURC",
     lpToken: ARCDEX.LP,
     swapContract: ARCDEX.Swap,
-    enabled: true,
-    apr: 12.4,
+    enabled: isDeployed(ARCDEX.Swap),
     icon: "💱",
   },
 };
 
 // ============================================================================
-// PROTOCOL CONSTANTS
+// CONSTANTES DE PROTOCOLO
 // ============================================================================
 
 export const PROTOCOL = {
-  // Swap fee: 0.3% (30 basis points)
+  /** Taxa de swap: 0,3% (30 basis points). É a única receita do protocolo. */
   SWAP_FEE_BPS: 30,
 
-  // Payment fee: 0.05 tokens (in 6 decimal format)
+  /** Taxa de pagamento: 0,05 token (formato de 6 casas). */
   PAYMENT_FEE: 50000,
 
-  // Staking APR in basis points
-  USDC_BASE_APR_BPS: 800,  // 8%
-  USDC_BOOST_APR_BPS: 200, // 2%
-  EURC_BASE_APR_BPS: 600,  // 6%
-  EURC_BOOST_APR_BPS: 200, // 2%
-
-  // Basis points denominator
   BPS_DENOMINATOR: 10000,
 } as const;
 
 // ============================================================================
-// HELPER FUNCTIONS
+// HELPERS
 // ============================================================================
 
 export function getTokenAddress(symbol: TokenSymbol): string {
@@ -224,4 +259,13 @@ export function parseTokenAmount(amount: string, decimals: number = 6): bigint {
   const [integer, fraction = ""] = amount.split(".");
   const paddedFraction = fraction.padEnd(decimals, "0").slice(0, decimals);
   return BigInt(integer + paddedFraction);
+}
+
+/** URL de uma transação/endereço no explorer da rede ativa. */
+export function explorerTx(hash: string): string {
+  return `${ARCSCAN_URL}/tx/${hash}`;
+}
+
+export function explorerAddress(address: string): string {
+  return `${ARCSCAN_URL}/address/${address}`;
 }

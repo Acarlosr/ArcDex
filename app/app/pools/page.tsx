@@ -18,7 +18,7 @@ import {
   useApprove,
   useTokenAllowance
 } from "@/hooks/use-contracts"
-import { ARCDEX, POOLS, PoolPair, parseTokenAmount } from "@/lib/contracts"
+import { ARCDEX, POOLS, PoolPair, PROTOCOL, parseTokenAmount } from "@/lib/contracts"
 import { MobileWalletHint } from "@/components/mobile-wallet-hint"
 import { TransactionHistoryCard } from "@/components/transaction-history-card"
 import { PriceChart } from "@/components/price-chart"
@@ -194,8 +194,8 @@ export default function PoolsPage() {
                 <span className="text-lg font-semibold text-foreground">{p.name}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">{t("pools.apr")}</span>
-                <span className="text-accent font-semibold">{p.apr}%</span>
+                <span className="text-muted-foreground">{t("pools.swapFee")}</span>
+                <span className="text-accent font-semibold">{PROTOCOL.SWAP_FEE_BPS / 100}%</span>
               </div>
               <div className="flex justify-between text-sm mt-1">
                 <span className="text-muted-foreground">{t("pools.status")}</span>
@@ -290,16 +290,13 @@ export default function PoolsPage() {
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-sm text-muted-foreground">{t("pools.estimatedEarnings")}</p>
+                <p className="text-sm text-muted-foreground">{t("pools.yourPoolShare")}</p>
                 <p className="text-xl font-bold text-accent">
-                  +${reserveUSDC && reserveEURC && lpBalanceRaw && lpTotalSupplyRaw && lpTotalSupplyRaw > BigInt(0)
-                    ? (
-                      ((Number(reserveUSDC) * Number(lpBalanceRaw) / Number(lpTotalSupplyRaw) / 1e6) +
-                        (Number(reserveEURC) * Number(lpBalanceRaw) / Number(lpTotalSupplyRaw) / 1e6)) * 0.124
-                    ).toFixed(2)
-                    : "0.00"
-                  }
+                  {lpBalanceRaw && lpTotalSupplyRaw && lpTotalSupplyRaw > BigInt(0)
+                    ? ((Number(lpBalanceRaw) / Number(lpTotalSupplyRaw)) * 100).toFixed(4)
+                    : "0.0000"}%
                 </p>
+                <p className="text-xs text-muted-foreground mt-1">{t("pools.feeNote")}</p>
               </div>
             </div>
           </div>
@@ -318,7 +315,7 @@ export default function PoolsPage() {
                 <span className="px-2 py-1 bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 text-xs rounded-full">{t("common.comingSoon")}</span>
               )}
             </div>
-            <p className="text-sm text-muted-foreground mb-6">{t("pools.addLiquidityText", { apr: pool.apr })}</p>
+            <p className="text-sm text-muted-foreground mb-6">{t("pools.addLiquidityText")}</p>
 
             {pool.enabled ? (
               <div className="space-y-6">

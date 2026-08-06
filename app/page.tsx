@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { ChevronRight, Zap, TrendingUp, Droplets, Send, ArrowRight } from "lucide-react"
+import { ChevronRight, Zap, Globe, Droplets, Send, ArrowRight } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Logo } from "@/components/logo"
 import { LanguageToggle } from "@/components/language-toggle"
@@ -139,21 +139,21 @@ export default function LandingPage() {
               </Link>
             </div>
 
-            {/* Staking */}
+            {/* Bridge */}
             <div className="group bg-card border border-border rounded-xl p-8 hover:border-primary/40 transition-all">
               <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-all">
-                <TrendingUp className="w-6 h-6 text-primary" />
+                <Globe className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="text-xl font-semibold text-foreground mb-2">{t("landing.yieldStaking")}</h3>
+              <h3 className="text-xl font-semibold text-foreground mb-2">{t("landing.bridge")}</h3>
               <p className="text-muted-foreground mb-4">
-                {t("landing.yieldStakingText")}
+                {t("landing.bridgeText")}
               </p>
               <Link
-                href="/app/stake"
+                href="/app/bridge"
                 prefetch={false}
                 className="text-primary hover:text-primary/80 text-sm font-semibold flex items-center gap-2 group/link"
               >
-                {t("landing.startStaking")} <ChevronRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
+                {t("landing.startBridge")} <ChevronRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
               </Link>
             </div>
 
@@ -262,7 +262,7 @@ export default function LandingPage() {
               {t("nav.launchApp")}
             </Link>
             <a
-              href="https://www.arc.network/litepaper"
+              href="https://www.arc.io/litepaper"
               target="_blank"
               rel="noreferrer"
               className="px-8 py-4 rounded-lg border border-border text-foreground font-semibold hover:bg-muted hover:border-primary/30 transition-all"
@@ -289,8 +289,8 @@ export default function LandingPage() {
                 <Link href="/app/swap" prefetch={false} className="hover:text-primary transition-colors block">
                   {t("nav.swap")}
                 </Link>
-                <Link href="/app/stake" prefetch={false} className="hover:text-primary transition-colors block">
-                  {t("nav.stake")}
+                <Link href="/app/bridge" prefetch={false} className="hover:text-primary transition-colors block">
+                  {t("landing.bridge")}
                 </Link>
                 <Link href="/app/pools" prefetch={false} className="hover:text-primary transition-colors block">
                   {t("nav.pools")}

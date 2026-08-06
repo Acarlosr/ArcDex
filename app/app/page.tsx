@@ -2,8 +2,9 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { ArrowRight, Zap, TrendingUp, Droplets, Send, PieChart, Rocket, HelpCircle, Globe } from "lucide-react"
+import { ArrowRight, Zap, Droplets, Send, PieChart, Rocket, HelpCircle, Globe } from "lucide-react"
 import { OnboardingModal } from "@/components/onboarding-modal"
+import { NetworkBanner } from "@/components/network-banner"
 import { Button } from "@/components/ui/button"
 import { Logo } from "@/components/logo"
 import { useI18n } from "@/lib/i18n"
@@ -17,20 +18,18 @@ export default function AppHome() {
       <OnboardingModal open={showOnboarding} onOpenChange={setShowOnboarding} />
 
       <div className="max-w-6xl mx-auto px-4 py-12">
-        {/* Testnet Banner */}
-        <div className="mb-6 bg-amber-500/10 border border-amber-500/40 rounded-lg p-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 bg-amber-500 text-white text-xs font-bold rounded">{t("app.testnet")}</span>
-            <span className="text-amber-700 dark:text-amber-200 text-sm font-medium">{t("app.testnetNotice")}</span>
-          </div>
-          <button
-            onClick={() => setShowOnboarding(true)}
-            className="text-amber-700 dark:text-amber-300 text-sm font-semibold hover:text-amber-800 dark:hover:text-amber-200 flex items-center gap-1"
-          >
-            <HelpCircle className="w-4 h-4" />
-            {t("app.howToTest")}
-          </button>
-        </div>
+        {/* Status da rede (mainnet / contagem regressiva / testnet) */}
+        <NetworkBanner
+          action={
+            <button
+              onClick={() => setShowOnboarding(true)}
+              className="flex items-center gap-1 text-sm font-semibold text-amber-700 hover:text-amber-800 dark:text-amber-300 dark:hover:text-amber-200"
+            >
+              <HelpCircle className="w-4 h-4" />
+              {t("app.howToStart")}
+            </button>
+          }
+        />
 
         <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
@@ -70,7 +69,7 @@ export default function AppHome() {
                 <Globe className="w-6 h-6 text-primary" />
               </div>
               <h2 className="text-lg font-bold text-foreground mb-2">Bridge</h2>
-              <p className="text-muted-foreground text-sm mb-4">Traga USDC de Ethereum Sepolia ou Base Sepolia para a Arc Testnet via Circle CCTP v2.</p>
+              <p className="text-muted-foreground text-sm mb-4">{t("app.bridgeText")}</p>
               <div className="flex items-center gap-2 text-primary group-hover:translate-x-1 transition-transform">
                 <span className="text-sm font-semibold">Ir para Bridge</span>
                 <ArrowRight className="w-4 h-4" />
@@ -101,20 +100,6 @@ export default function AppHome() {
               <p className="text-muted-foreground text-sm mb-4">{t("app.sendPaymentsText")}</p>
               <div className="flex items-center gap-2 text-primary group-hover:translate-x-1 transition-transform">
                 <span className="text-sm font-semibold">{t("landing.sendPayment")}</span>
-                <ArrowRight className="w-4 h-4" />
-              </div>
-            </div>
-          </Link>
-
-          <Link href="/app/stake" prefetch={false} className="group">
-            <div className="card-professional p-6 hover:shadow-lg hover:shadow-primary/10 h-full">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-all">
-                <TrendingUp className="w-6 h-6 text-primary" />
-              </div>
-              <h2 className="text-lg font-bold text-foreground mb-2">{t("app.stakeEarn")}</h2>
-              <p className="text-muted-foreground text-sm mb-4">{t("app.stakeEarnText")}</p>
-              <div className="flex items-center gap-2 text-primary group-hover:translate-x-1 transition-transform">
-                <span className="text-sm font-semibold">{t("app.goToStake")}</span>
                 <ArrowRight className="w-4 h-4" />
               </div>
             </div>

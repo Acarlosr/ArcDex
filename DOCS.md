@@ -1,6 +1,8 @@
 # ArcDex Documentation
 
-> **ArcDex** is a decentralized exchange (DEX) built on **Arc Testnet**, featuring stablecoin swaps, liquidity pools, staking, and P2P payments.
+> **ArcDex** is a decentralized exchange (DEX) built on **Arc Network**, featuring stablecoin swaps, liquidity pools, a CCTP v2 bridge, and P2P payments.
+>
+> **Arc Public Mainnet launches September 16, 2026.** Network selection is driven by environment variables — see `lib/network.ts` and `.env.example`.
 
 ---
 
@@ -12,7 +14,7 @@ ArcDex is a DeFi platform designed to provide essential financial services on th
 |---------|-------------|
 | **Swap** | Exchange stablecoins (USDC ↔ EURC) with minimal fees |
 | **Pools** | Provide liquidity and earn trading fees |
-| **Stake** | Stake stablecoins to earn APR yield |
+| **Bridge** | Move USDC in and out of Arc via Circle CCTP v2 |
 | **Payments** | Send P2P payments with memo support |
 
 **Live Demo:** [https://arc-dex.vercel.app](https://arc-dex.vercel.app)
@@ -21,11 +23,19 @@ ArcDex is a DeFi platform designed to provide essential financial services on th
 
 ## 🔗 Network Configuration
 
+### Arc Mainnet (from September 16, 2026)
+
+Chain ID, RPC and explorer are supplied via `NEXT_PUBLIC_ARC_MAINNET_*`.
+Circle has not published these values yet; until they are set the app runs on
+Arc Testnet and shows a launch countdown.
+
+### Arc Testnet
+
 | Parameter | Value |
 |-----------|-------|
 | Network | Arc Testnet |
 | Chain ID | `5042002` |
-| RPC URL | `https://rpc.testnet.arc.network` |
+| RPC URL | `https://rpc.testnet.arc.io` |
 | Explorer | [https://testnet.arcscan.app](https://testnet.arcscan.app) |
 
 ---
@@ -47,7 +57,6 @@ ArcDex is a DeFi platform designed to provide essential financial services on th
 |----------|---------|---------|
 | **ArcDexSwap** | `0x50bb26da53555585c606280435469bfb15cac4cf` | AMM for USDC/EURC swaps |
 | **ArcDexLP** | `0x823f387a392bdc1ef57bc30cc005be7e6d067f13` | LP tokens for liquidity providers |
-| **ArcDexStaking** | `0x5d1ddbafd6a11131154a635563699230f0b9229b` | Yield vault for staking |
 | **ArcDexPayments** | `0x515683c9399445df4a38915c2130cc498aba4319` | P2P payment system |
 
 ---
@@ -78,17 +87,13 @@ Provide liquidity to earn a share of trading fees:
 User → approve(USDC + EURC) → addLiquidity(amountA, amountB) → receive LP tokens
 ```
 
-### 3. Staking
+### 3. Bridge (CCTP v2)
 
-Stake stablecoins to earn yield:
-
-| Token | Base APR | Boost APR | Total |
-|-------|----------|-----------|-------|
-| USDC | 8% | 2% | 10% |
-| EURC | 6% | 2% | 8% |
+Move native USDC in and out of Arc using Circle's burn-and-mint protocol — no
+wrapped assets, no third-party liquidity.
 
 ```
-User → approve(token) → stake(token, amount) → earn rewards over time
+User → approve(USDC) → depositForBurn(source) → attestation → mint on Arc
 ```
 
 ### 4. Payments
@@ -115,14 +120,14 @@ User → approve(token) → sendPayment(recipient, amount, memo)
                               │
                               ▼
 ┌──────────────────────────────────────────────────────────────┐
-│                     Arc Testnet (RPC)                        │
+│                    Arc Network (RPC)                         │
 └──────────────────────────────────────────────────────────────┘
                               │
        ┌──────────────────────┼──────────────────────┐
        ▼                      ▼                      ▼
 ┌─────────────┐      ┌─────────────┐      ┌─────────────┐
-│   ArcDex    │      │   ArcDex    │      │   ArcDex    │
-│    Swap     │      │   Staking   │      │  Payments   │
+│   ArcDex    │      │   Circle    │      │   ArcDex    │
+│    Swap     │      │   CCTP v2   │      │  Payments   │
 └─────────────┘      └─────────────┘      └─────────────┘
        │
        ▼
@@ -155,7 +160,7 @@ User → approve(token) → sendPayment(recipient, amount, memo)
 1. Click "Connect" in navbar
 2. Select MetaMask (or injected wallet)
 3. Approve connection in wallet
-4. Network auto-switches to Arc Testnet
+4. Network auto-switches to the active Arc network
 
 ### Perform a Swap
 1. Go to `/app/swap`
@@ -172,12 +177,11 @@ User → approve(token) → sendPayment(recipient, amount, memo)
 4. Click "Add Liquidity"
 5. Receive LP tokens
 
-### Stake Tokens
-1. Go to `/app/stake`
-2. Select token (USDC or EURC)
-3. Enter amount
-4. Click "Approve" then "Stake"
-5. View your position and pending rewards
+### Bridge USDC into Arc
+1. Go to `/app/bridge`
+2. Pick the source chain and amount
+3. Click "Approve" then "Bridge"
+4. Wait for the CCTP attestation, then claim on Arc
 
 ---
 
@@ -186,7 +190,7 @@ User → approve(token) → sendPayment(recipient, amount, memo)
 - **ReentrancyGuard:** All state-changing functions protected
 - **SafeERC20:** Safe token transfers
 - **Ownable:** Admin functions restricted
-- **No-lock Unstaking:** Testnet allows instant unstake
+- **Not audited:** ArcDex contracts have not undergone an external security audit
 
 ---
 
@@ -198,13 +202,13 @@ ArcDex/
 │   ├── app/               # Main app pages
 │   │   ├── swap/          # Swap interface
 │   │   ├── pools/         # Liquidity pools
-│   │   ├── stake/         # Staking vault
 │   │   ├── payments/      # P2P payments
 │   │   └── history/       # Transaction history
 │   └── layout.tsx         # Root layout
 ├── components/            # React components
 ├── hooks/                 # Custom hooks (use-contracts.ts)
 ├── lib/                   # Utilities
+│   ├── network.ts         # Mainnet/testnet selection (env-driven)
 │   ├── contracts.ts       # Contract addresses & config
 │   ├── wagmi.ts          # Wagmi configuration
 │   └── abi/              # Contract ABIs
@@ -228,7 +232,7 @@ ArcDex/
 ### Contracts (Foundry)
 ```bash
 cd contracts/arcdex-contracts
-forge script script/Deploy.s.sol --rpc-url arc_testnet --broadcast
+forge script script/Deploy.s.sol --rpc-url arc --broadcast
 ```
 
 ---
@@ -236,7 +240,7 @@ forge script script/Deploy.s.sol --rpc-url arc_testnet --broadcast
 ## 📞 Support
 
 - **Explorer:** [testnet.arcscan.app](https://testnet.arcscan.app)
-- **Faucet:** Accessible via navbar droplet icon
+- **Faucet:** Testnet only — accessible via navbar droplet icon
 
 ---
 

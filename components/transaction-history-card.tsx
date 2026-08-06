@@ -3,11 +3,8 @@
 /**
  * Reusable "recent transactions" card, backed by the ArcScan explorer API.
  * Filters the connected wallet's transactions down to the ones sent to a given
- * contract address (e.g. a pool's swap contract, the staking contract, etc.)
- * and renders them with status, method name, timestamp and a link to ArcScan.
- *
- * Used on the Stake page (staking contract) and the Pools page (per-pool swap
- * contract) so both screens share the same fetch/render logic.
+ * contract address (e.g. a pool's swap contract) and renders them with status,
+ * method name, timestamp and a link to ArcScan.
  */
 
 import { useCallback, useEffect, useState } from "react"
@@ -105,7 +102,7 @@ export function TransactionHistoryCard({
       </div>
 
       {!address ? (
-        <p className="py-6 text-center text-sm text-muted-foreground">{t("stake.connectHistory")}</p>
+        <p className="py-6 text-center text-sm text-muted-foreground">{t("history.connectHistory")}</p>
       ) : loading && txs.length === 0 ? (
         <div className="space-y-2">
           {[1, 2, 3].map((i) => (
@@ -126,7 +123,7 @@ export function TransactionHistoryCard({
           </Button>
         </div>
       ) : txs.length === 0 ? (
-        <p className="py-6 text-center text-sm text-muted-foreground">{t("stake.noHistory")}</p>
+        <p className="py-6 text-center text-sm text-muted-foreground">{t("history.noHistory")}</p>
       ) : (
         <div className="space-y-2">
           {txs.map((tx) => {
