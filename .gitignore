@@ -48,3 +48,7 @@ contracts/arcdex-contracts/local.env
 backups_*/
 backups/full_backup_20260421/
 contracts/**/broadcast/**/run-*.json
+
+# editor / sessão local
+.claude/
+_to_delete/

@@ -9,7 +9,7 @@ import { useCompliance } from "@/hooks/useCompliance"
 import { useI18n } from "@/lib/i18n"
 
 // ArcScan API configuration
-import { ARCSCAN_API, ARCSCAN_URL, NETWORK_LABEL } from "@/lib/contracts"
+import { ARCSCAN_API, ARCSCAN_URL, CHAIN_CONFIG, NETWORK_LABEL } from "@/lib/contracts"
 
 // Transaction type from ArcScan API (Etherscan-compatible)
 interface ArcScanTx {
@@ -724,7 +724,7 @@ export default function PortfolioPage() {
                             </div>
                             <div>
                                 <p className="font-medium text-foreground">{NETWORK_LABEL}</p>
-                                <p className="text-sm text-muted-foreground">Chain ID: 5042002</p>
+                                <p className="text-sm text-muted-foreground">Chain ID: {CHAIN_CONFIG.id}</p>
                             </div>
                         </div>
                     </div>

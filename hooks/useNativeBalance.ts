@@ -7,9 +7,17 @@
  */
 
 import { useQuery } from "@tanstack/react-query"
-import { createPublicClient, formatEther, http } from "viem"
+import { createPublicClient, fallback, formatEther, http } from "viem"
 import { useAccount } from "wagmi"
 import { BRIDGE_USDC_BY_CHAIN } from "@/lib/bridge-chains"
+
+/** Mesmo motivo do useBridgeBalance: um RPC único deixava o saldo sem carregar. */
+function rpcTransport(rpcs: string[]) {
+  const opts = { timeout: 20_000, retryCount: 1, retryDelay: 800 }
+  return rpcs.length > 1
+    ? fallback(rpcs.map((url) => http(url, opts)), { rank: false })
+    : http(rpcs[0], opts)
+}
 
 export interface NativeBalance {
   /** Native balance as a number (18 decimals) */
@@ -30,7 +38,7 @@ export function useNativeBalance(chainId: number): NativeBalance {
     refetchInterval: 30_000,
     queryFn: async () => {
       if (!address || !config) return 0n
-      const client = createPublicClient({ transport: http(config.rpc) })
+      const client = createPublicClient({ transport: rpcTransport(config.rpcs) })
       return await client.getBalance({ address })
     },
   })

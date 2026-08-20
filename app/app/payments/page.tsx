@@ -16,7 +16,7 @@ import {
   usePaymentFee,
   usePaymentStats,
 } from "@/hooks/use-contracts"
-import { ARCDEX, parseTokenAmount, ARCSCAN_API, ARCSCAN_URL } from "@/lib/contracts"
+import { ARCDEX, PROTOCOL, parseTokenAmount, ARCSCAN_API, ARCSCAN_URL } from "@/lib/contracts"
 import { MobileWalletHint } from "@/components/mobile-wallet-hint"
 import { useCompliance } from "@/hooks/useCompliance"
 import { useI18n } from "@/lib/i18n"
@@ -301,9 +301,18 @@ export default function PaymentsPage() {
     await batchPayment(selectedToken, validRows.map(r => r.recipient), validRows.map(r => r.amount))
   }
 
+  /**
+   * MAX descontando a taxa do protocolo E o gas.
+   *
+   * Na Arc o USDC é ao mesmo tempo o gas token nativo (18 casas) e o ERC-20
+   * (6 casas) — o MESMO saldo. Descontar só a taxa do protocolo, como antes,
+   * ainda deixava o pagamento sem gas e a transação revertia.
+   * Ver: arc.io/blog/building-with-usdc-on-arc-one-token-two-interfaces
+   */
   const handleMaxClick = () => {
     const balance = parseFloat(selectedBalance.replace(',', '')) || 0
-    const maxAmount = Math.max(0, balance - feeNum)
+    const gasReserve = selectedToken === 'USDC' ? PROTOCOL.GAS_RESERVE_USDC : 0
+    const maxAmount = Math.max(0, balance - feeNum - gasReserve)
     setAmount(maxAmount.toFixed(2))
   }
 

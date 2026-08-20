@@ -44,6 +44,7 @@ export const CHAIN_CONFIG = {
   nativeCurrency: ACTIVE_NETWORK.nativeCurrency,
   rpcUrls: ACTIVE_NETWORK.rpcUrls,
   blockExplorers: ACTIVE_NETWORK.blockExplorers,
+  contracts: ACTIVE_NETWORK.contracts,
   testnet: ACTIVE_NETWORK.testnet,
 } as const;
 
@@ -233,6 +234,16 @@ export const PROTOCOL = {
   PAYMENT_FEE: 50000,
 
   BPS_DENOMINATOR: 10000,
+
+  /**
+   * Folga de USDC reservada para gas ao usar o botão MAX.
+   *
+   * Na Arc o USDC é ao mesmo tempo o gas token nativo (18 casas) e o ERC-20
+   * (6 casas, 0x3600…0000) — é o MESMO saldo, não dois. Preencher 100% do
+   * saldo ERC-20 num swap/pagamento zera o gas e a transação reverte sempre.
+   * Ver: arc.io/blog/building-with-usdc-on-arc-one-token-two-interfaces
+   */
+  GAS_RESERVE_USDC: 0.5,
 } as const;
 
 // ============================================================================
@@ -245,6 +256,17 @@ export function getTokenAddress(symbol: TokenSymbol): string {
 
 export function getTokenInfo(address: string) {
   return TOKEN_INFO[address as keyof typeof TOKEN_INFO];
+}
+
+/**
+ * Casas decimais de um token na rede ativa, com fallback seguro.
+ *
+ * Nunca retorna undefined: se um endereço ainda não foi publicado (address(0)
+ * numa mainnet meio configurada), TOKEN_INFO não tem a entrada e o acesso
+ * direto estourava um TypeError que derrubava a página inteira.
+ */
+export function getTokenDecimals(address: string): number {
+  return TOKEN_INFO[address as keyof typeof TOKEN_INFO]?.decimals ?? 6;
 }
 
 export function formatTokenAmount(amount: bigint, decimals: number = 6): string {

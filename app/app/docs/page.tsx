@@ -1265,7 +1265,9 @@ function TokensSection() {
                         </tr>
                     </thead>
                     <tbody>
-                        <TokenRow symbol="USDC" address={TOKENS.USDC} decimals={6} type="Native Gas Token" />
+                        {/* 6 casas = interface ERC-20. O gas token nativo é o MESMO saldo, mas com 18
+                            casas. Rotular a linha de 6 casas como "Native Gas Token" induzia ao erro. */}
+                        <TokenRow symbol="USDC" address={TOKENS.USDC} decimals={6} type="ERC-20 interface (native gas uses 18)" />
                         <TokenRow symbol="EURC" address={TOKENS.EURC} decimals={6} type="Stablecoin" />
                     </tbody>
                 </table>
@@ -1424,6 +1426,20 @@ function ErrorCodesSection() {
             </div>
 
             <div className="space-y-3">
+                {/* Os dois erros mais comuns na Arc — e os que o app deixava
+                    acontecer sem explicação até a auditoria de 20/08/2026. */}
+                <ErrorCard
+                    code="ChainMismatchError / balances stuck at 0.00"
+                    title="Wallet on the Wrong Network"
+                    description={`Your wallet is connected but sitting on another chain, so every read fails silently and balances show 0.00.`}
+                    solution={`Use the "Switch to ${NETWORK_LABEL}" button in the header — it switches, and adds the network first if your wallet doesn't have it yet.`}
+                />
+                <ErrorCard
+                    code="insufficient funds for gas * price + value"
+                    title="No USDC Left for Gas"
+                    description="On Arc, USDC is both the native gas token (18 decimals) and the ERC-20 you trade (6 decimals) — one balance, not two. Spending 100% of it leaves nothing to pay gas, so the transaction reverts before it runs."
+                    solution="Keep a small USDC reserve. The MAX button already subtracts it for you; if you typed the amount by hand, lower it slightly."
+                />
                 <ErrorCard
                     code="ERC20: transfer amount exceeds allowance"
                     title="Insufficient Allowance"

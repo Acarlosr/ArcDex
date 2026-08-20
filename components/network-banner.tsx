@@ -1,8 +1,10 @@
 "use client"
 
-import { AlertTriangle, ExternalLink, Rocket } from "lucide-react"
+import { AlertTriangle, ExternalLink, Loader2, Rocket } from "lucide-react"
 import { useEffect, useState } from "react"
+import { useArcNetwork, useArcGasBalance } from "@/hooks/useArcNetwork"
 import {
+  FAUCET_URL,
   IS_MAINNET,
   MAINNET_LAUNCH_LABEL,
   MAINNET_PENDING,
@@ -22,11 +24,67 @@ import { useI18n } from "@/lib/i18n"
 export function NetworkBanner({ action }: { action?: React.ReactNode }) {
   const { t } = useI18n()
   const [days, setDays] = useState<number | null>(null)
+  const { isWrongNetwork, switchToArc, isSwitching } = useArcNetwork()
+  const { hasNoGas } = useArcGasBalance()
 
   // Calculado só no cliente para não gerar mismatch de hidratação.
   useEffect(() => {
     setDays(daysUntilMainnet())
   }, [])
+
+  // Rede errada tem prioridade sobre qualquer outro aviso: nesse estado nada
+  // no app funciona, e antes disto não havia nenhuma indicação na tela.
+  if (isWrongNetwork) {
+    return (
+      <div className="mb-6 rounded-lg border border-red-500/40 bg-red-500/10 p-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-start gap-2">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-600 dark:text-red-400" />
+          <span className="text-sm font-medium text-red-700 dark:text-red-200">
+            Sua carteira está em outra rede. Troque para {NETWORK_LABEL} para usar o ArcDex.
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={switchToArc}
+          disabled={isSwitching}
+          className="shrink-0 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-700 disabled:opacity-60"
+        >
+          {isSwitching ? (
+            <span className="inline-flex items-center gap-1">
+              <Loader2 className="h-3 w-3 animate-spin" /> Trocando…
+            </span>
+          ) : (
+            `Trocar para ${NETWORK_LABEL}`
+          )}
+        </button>
+      </div>
+    )
+  }
+
+  // Na Arc o gas é pago em USDC — o mesmo saldo do ERC-20. Dá para ter "saldo"
+  // na tela e mesmo assim não conseguir assinar nada.
+  if (hasNoGas) {
+    return (
+      <div className="mb-6 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-start gap-2">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-300" />
+          <span className="text-sm font-medium text-amber-700 dark:text-amber-200">
+            Sem USDC para gas. Na Arc o gas é pago em USDC — sem saldo nativo nenhuma transação passa.
+          </span>
+        </div>
+        {FAUCET_URL && (
+          <a
+            href={FAUCET_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="shrink-0 inline-flex items-center gap-1 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-amber-600"
+          >
+            Abrir faucet <ExternalLink className="h-3 w-3" />
+          </a>
+        )}
+      </div>
+    )
+  }
 
   if (IS_MAINNET) {
     return (

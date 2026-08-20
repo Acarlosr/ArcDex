@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { useTokenBalance, useGetAmountOut, useSwap, useApprove, useTokenAllowance } from "@/hooks/use-contracts"
 import { useAccount } from "wagmi"
-import { ARCDEX, parseTokenAmount, ARCSCAN_URL, ARCSCAN_API } from "@/lib/contracts"
+import { ARCDEX, PROTOCOL, parseTokenAmount, ARCSCAN_URL, ARCSCAN_API } from "@/lib/contracts"
+import { useArcGasBalance, useArcNetwork } from "@/hooks/useArcNetwork"
 import { Loader2, ExternalLink, CheckCircle2, XCircle, RefreshCw, ShieldCheck, ShieldAlert } from "lucide-react"
 import { MobileWalletHint } from "@/components/mobile-wallet-hint"
 import { PriceChart } from "@/components/price-chart"
@@ -194,6 +195,8 @@ export default function SwapPage() {
   const swapEnabled = isSwapEnabled(fromToken, toToken)
 
   const { isConnected, address } = useAccount()
+  const { isWrongNetwork, switchToArc, isSwitching } = useArcNetwork()
+  const { hasNoGas } = useArcGasBalance()
 
   // Get real balances from blockchain
   const { formatted: usdcBalance, isLoading: usdcLoading, refetch: refetchUSDC } = useTokenBalance('USDC')
@@ -277,15 +280,29 @@ export default function SwapPage() {
     setFromAmount("")
   }
 
+  /**
+   * MAX reservando gas.
+   *
+   * Na Arc o USDC é ao mesmo tempo o gas token nativo (18 casas) e o ERC-20
+   * (6 casas) — é o MESMO saldo. Preencher 100% do saldo de USDC aqui zerava o
+   * gas e a transação revertia sempre, antes mesmo de executar.
+   * Ver: arc.io/blog/building-with-usdc-on-arc-one-token-two-interfaces
+   */
   const handleMaxClick = () => {
-    setFromAmount(fromBalance.replace(',', ''))
+    const balance = parseFloat(fromBalance.replace(',', '')) || 0
+    const max = fromToken === 'USDC'
+      ? Math.max(0, balance - PROTOCOL.GAS_RESERVE_USDC)
+      : balance
+    setFromAmount(max.toFixed(6))
   }
 
   const handleApprove = async () => {
     if (!fromAmount || !swapEnabled) return
     try {
-      // Approve large amount (standard DeFi pattern) to avoid re-approval
-      await approve(swapFromToken, ARCDEX.Swap, '999999999')
+      // Approval EXATA. A aprovação praticamente ilimitada (999999999) tinha
+      // voltado por regressão (ver commit 88ce6bf) — ela deixa o contrato
+      // autorizado a mover todo o saldo do usuário mesmo depois do swap.
+      await approve(swapFromToken, ARCDEX.Swap, fromAmount)
       // TX submitted (user confirmed in wallet) — bypass stale allowance cache
       setJustApproved(true)
     } catch {
@@ -437,6 +454,24 @@ export default function SwapPage() {
             {!isConnected ? (
               <Button className="w-full btn-gradient h-14 text-lg font-semibold rounded-xl" disabled>
                 {t("swap.connectToSwap")}
+              </Button>
+            ) : isWrongNetwork ? (
+              /* Antes, nesta situação, o botão de swap ficava ativo e a tx
+                 falhava sem explicação nenhuma na UI. */
+              <Button
+                onClick={switchToArc}
+                disabled={isSwitching}
+                className="w-full h-14 text-lg font-semibold rounded-xl bg-amber-500 hover:bg-amber-600 text-white"
+              >
+                {isSwitching ? (
+                  <><Loader2 className="mr-2 h-5 w-5 animate-spin" />Trocando de rede…</>
+                ) : (
+                  "Trocar para a rede Arc"
+                )}
+              </Button>
+            ) : hasNoGas ? (
+              <Button className="w-full h-14 text-lg font-semibold rounded-xl" disabled variant="outline">
+                Sem USDC para gas
               </Button>
             ) : complianceBlocked ? (
               <Button className="w-full h-14 text-lg font-semibold rounded-xl" disabled variant="outline">

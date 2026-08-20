@@ -1,7 +1,7 @@
 'use client'
 
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
-import { ARCDEX, TOKENS, TOKEN_INFO, TokenSymbol, parseTokenAmount, formatTokenAmount } from '@/lib/contracts'
+import { ARCDEX, TOKENS, TokenSymbol, getTokenDecimals, parseTokenAmount, formatTokenAmount } from '@/lib/contracts'
 import { ERC20_ABI, ARCDEX_SWAP_ABI, ARCDEX_PAYMENTS_ABI } from '@/lib/abi'
 
 // ============================================================================
@@ -11,7 +11,9 @@ import { ERC20_ABI, ARCDEX_SWAP_ABI, ARCDEX_PAYMENTS_ABI } from '@/lib/abi'
 export function useTokenBalance(token: TokenSymbol, enabled = true) {
     const { address } = useAccount()
     const tokenAddress = TOKENS[token]
-    const decimals = TOKEN_INFO[tokenAddress].decimals
+    // getTokenDecimals nunca é undefined — acesso direto a TOKEN_INFO estourava
+    // TypeError quando o endereço ainda não estava publicado (address(0)).
+    const decimals = getTokenDecimals(tokenAddress)
 
     const { data, isLoading, refetch } = useReadContract({
         address: tokenAddress as `0x${string}`,
@@ -372,6 +374,12 @@ export function usePaymentStats() {
 // ============================================================================
 // LP TOKEN HOOKS
 // ============================================================================
+
+// ⚠️ AUDITORIA 20/08/2026: os dois hooks abaixo formatam com formatTokenAmount()
+// no default de 6 casas. Tokens LP em contratos ERC-20 padrão normalmente têm
+// 18. Se o ARCDEX_LP (0x823f387a…) foi deployado com 18, os números de pool na
+// UI estão 1e12 vezes maiores. Confirmar `decimals()` no ArcScan antes de mudar
+// — trocar às cegas quebraria a exibição caso o contrato realmente use 6.
 
 export function useLPBalance() {
     const { address } = useAccount()

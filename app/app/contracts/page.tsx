@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { ExternalLink, Shield, FileCode, Copy, Check, ChevronLeft } from "lucide-react"
 import { useState } from "react"
-import { ARCDEX, TOKENS, CCTP, PAYMENTS, ARCSCAN_URL } from "@/lib/contracts"
+import { ARCDEX, TOKENS, CCTP, PAYMENTS, ARCSCAN_URL, CHAIN_CONFIG } from "@/lib/contracts"
 import { useI18n } from "@/lib/i18n"
 
 interface ContractCardProps {
@@ -81,7 +81,7 @@ export default function ContractsPage() {
                         <h1 className="text-3xl font-bold text-foreground">{t("contracts.title")}</h1>
                     </div>
                     <p className="text-muted-foreground">
-                        {t("contracts.subtitle")}
+                        {t("contracts.subtitle").replace("{chainId}", String(CHAIN_CONFIG.id))}
                     </p>
                 </div>
 
@@ -133,7 +133,7 @@ export default function ContractsPage() {
                         <ContractCard
                             name="USDC"
                             address={TOKENS.USDC}
-                            description="Native USDC on Arc - also used for gas fees"
+                            description="USDC on Arc: ERC-20 interface (6 decimals). Same balance as the native gas token (18 decimals) — not two separate balances."
                         />
                         <ContractCard
                             name="EURC"

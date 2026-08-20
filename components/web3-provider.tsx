@@ -23,6 +23,9 @@ const arcChain = {
     nativeCurrency: CHAIN_CONFIG.nativeCurrency,
     rpcUrls: CHAIN_CONFIG.rpcUrls,
     blockExplorers: CHAIN_CONFIG.blockExplorers,
+    // Multicall3: agrupa as leituras num único eth_call em vez de uma chamada
+    // RPC por hook. Reduz bastante o risco de 429 nos endpoints públicos da Arc.
+    contracts: CHAIN_CONFIG.contracts,
     testnet: CHAIN_CONFIG.testnet,
 } as const
 
@@ -42,7 +45,10 @@ function createWagmiConfig() {
                 metadata: {
                     name: 'ARCDex V2',
                     description: IS_MAINNET ? 'DeFi on Arc' : 'DeFi on Arc Testnet',
-                    url: 'https://www.arc-dex.xyz',
+                    // A url tem que bater com a origem real da página, senão o
+                    // WalletConnect avisa em dev e algumas carteiras recusam a
+                    // sessão por mismatch de domínio.
+                    url: window.location.origin,
                     icons: ['https://www.arc-dex.xyz/icon.png'],
                 },
                 showQrModal: true,

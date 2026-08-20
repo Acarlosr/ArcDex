@@ -10,9 +10,17 @@
 
 import { useCallback, useState } from "react"
 import { useAccount } from "wagmi"
-import { formatUnits, type EIP1193Provider } from "viem"
+import {
+  createPublicClient,
+  fallback,
+  formatUnits,
+  http,
+  type Chain,
+  type EIP1193Provider,
+  type PublicClient,
+} from "viem"
 import type { BridgeKit, BridgeResult } from "@circle-fin/bridge-kit"
-import { CHAIN_ID_TO_BRIDGE_CHAIN as BRIDGE_MAP } from "@/lib/bridge-chains"
+import { BRIDGE_RPCS_BY_CHAIN, CHAIN_ID_TO_BRIDGE_CHAIN as BRIDGE_MAP } from "@/lib/bridge-chains"
 
 export const ARC_TESTNET_CHAIN_ID = 5_042_002
 
@@ -57,6 +65,44 @@ export interface UseBridgeKitReturn {
 }
 
 const USDC_AMOUNT_PATTERN = /^(?:0|[1-9]\d*)(?:\.\d{1,6})?$/
+
+const RPC_OPTS = { timeout: 20_000, retryCount: 2, retryDelay: 800 }
+
+/**
+ * Clients reaproveitados entre chamadas — `getPublicClient` é invocado várias
+ * vezes por operação e recriar o client a cada vez desperdiça conexões.
+ */
+const publicClientCache = new Map<number, PublicClient>()
+
+/**
+ * Substitui os RPCs internos do Circle Bridge Kit pelos nossos.
+ *
+ * O Bridge Kit traz UM endpoint fixo por chain dentro do próprio pacote
+ * (`@circle-fin/bridge-kit/index.d.ts`). Para a Ethereum Sepolia esse endpoint
+ * é `https://sepolia.drpc.org`, que passou a responder HTTP 400 —
+ * `{"message":"chain is not available on free plan","code":35}` — e derrubava
+ * todo bridge com origem na Sepolia logo na leitura de saldo.
+ *
+ * O adapter aceita `getPublicClient`, então injetamos aqui a lista de
+ * lib/bridge-chains.ts, já com fallback entre múltiplos provedores. Se a chain
+ * não estiver no nosso registro, caímos no RPC que a própria chain declara.
+ */
+function getPublicClientForChain({ chain }: { chain: Chain }): PublicClient {
+  const cached = publicClientCache.get(chain.id)
+  if (cached) return cached
+
+  const urls = BRIDGE_RPCS_BY_CHAIN[chain.id]?.length
+    ? BRIDGE_RPCS_BY_CHAIN[chain.id]
+    : [...(chain.rpcUrls?.default?.http ?? [])]
+
+  const transport = urls.length > 1
+    ? fallback(urls.map((url) => http(url, RPC_OPTS)), { rank: false })
+    : http(urls[0], RPC_OPTS)
+
+  const client = createPublicClient({ chain, transport }) as PublicClient
+  publicClientCache.set(chain.id, client)
+  return client
+}
 
 function validateParams({ fromChainId, toChainId, amount }: BridgeParams) {
   if (!CHAIN_ID_TO_BRIDGE_CHAIN[fromChainId] || !CHAIN_ID_TO_BRIDGE_CHAIN[toChainId]) {
@@ -131,7 +177,12 @@ export function useBridgeKit(): UseBridgeKitReturn {
     }
 
     const { createViemAdapterFromProvider } = await import("@circle-fin/adapter-viem-v2")
-    return createViemAdapterFromProvider({ provider })
+    // getPublicClient sobrescreve os RPCs internos do Bridge Kit — sem isto,
+    // qualquer rota vinda da Ethereum Sepolia morre no sepolia.drpc.org (400).
+    return createViemAdapterFromProvider({
+      provider,
+      getPublicClient: getPublicClientForChain,
+    })
   }, [connector])
 
   const attachListeners = useCallback((kit: BridgeKit) => {

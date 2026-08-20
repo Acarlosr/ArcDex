@@ -102,12 +102,27 @@ export const ARC_TESTNET = {
   rpcUrls: {
     default: { http: ["https://rpc.testnet.arc.io"] },
     public: {
+      // Domínio oficial da doc (arc.io) primeiro. Os mirrors arc.network são os
+      // mesmos endpoints de antes do rebrand, continuam no ar e são exatamente
+      // os que o viem embarca em `viem/chains → arcTestnet`. Servem de fallback.
       http: [
         "https://rpc.testnet.arc.io",
         "https://rpc.blockdaemon.testnet.arc.io",
         "https://rpc.drpc.testnet.arc.io",
         "https://rpc.quicknode.testnet.arc.io",
+        "https://rpc.testnet.arc.network",
+        "https://rpc.quicknode.testnet.arc.network",
+        "https://rpc.blockdaemon.testnet.arc.network",
       ],
+    },
+  },
+  // Multicall3 é determinístico (CREATE2) e tem o mesmo endereço em toda EVM.
+  // Sem ele o wagmi dispara uma chamada RPC por leitura em vez de agrupar,
+  // o que multiplica o risco de 429 nos endpoints públicos.
+  contracts: {
+    multicall3: {
+      address: "0xcA11bde05977b3631167028862bE2a173976CA11" as `0x${string}`,
+      blockCreated: 0,
     },
   },
   blockExplorers: {
@@ -164,6 +179,12 @@ export const ARC_MAINNET = {
     default: { http: mainnetRpc ? [mainnetRpc] : [] },
     public: { http: [mainnetRpc, ...mainnetRpcFallbacks].filter(Boolean) },
   },
+  contracts: {
+    multicall3: {
+      address: "0xcA11bde05977b3631167028862bE2a173976CA11" as `0x${string}`,
+      blockCreated: 0,
+    },
+  },
   blockExplorers: {
     default: { name: "ArcScan", url: mainnetExplorer },
   },
@@ -204,8 +225,19 @@ export const ARC_MAINNET = {
 // Seleção da rede ativa
 // ----------------------------------------------------------------------------
 
-/** true quando chain ID + RPC de mainnet já foram informados no .env. */
-export const MAINNET_CONFIGURED = ARC_MAINNET.id > 0 && mainnetRpc.length > 0;
+/**
+ * true só quando a mainnet está configurada o SUFICIENTE para o app funcionar.
+ *
+ * Exigir apenas chain ID + RPC não bastava: com os endereços de token ainda
+ * vazios, TOKENS.USDC/EURC/QCAD viravam todos address(0), colidiam na mesma
+ * chave de TOKEN_INFO e quebravam `useTokenBalance` com um TypeError (tela
+ * branca). Sem os endereços dos tokens, continuamos na testnet.
+ */
+export const MAINNET_CONFIGURED =
+  ARC_MAINNET.id > 0 &&
+  mainnetRpc.length > 0 &&
+  ARC_MAINNET.tokens.USDC !== ZERO &&
+  ARC_MAINNET.tokens.EURC !== ZERO;
 
 const requestedNetwork: ArcNetworkKey =
   ENV.network?.trim().toLowerCase() === "testnet" ? "testnet" : "mainnet";

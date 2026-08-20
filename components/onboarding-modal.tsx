@@ -32,11 +32,16 @@ export function OnboardingModal({ open, onOpenChange }: OnboardingModalProps) {
             title: t("onboarding.arcTitle"),
             description: t("onboarding.arcDesc"),
             icon: Globe,
+            gasNotice: true,
             details: [
                 `Network: ${CHAIN_CONFIG.name}`,
                 `Chain ID: ${CHAIN_CONFIG.id}`,
                 `RPC: ${RPC_URLS[0]}`,
-                `Explorer: ${ARCSCAN_URL}`
+                `Explorer: ${ARCSCAN_URL}`,
+                // A doc da Arc avisa que carteiras sem suporte a gas token
+                // customizado exibem o saldo errado se as casas decimais não
+                // forem configuradas. Melhor o usuário ver isso aqui.
+                `Gas token: ${CHAIN_CONFIG.nativeCurrency.symbol} (${CHAIN_CONFIG.nativeCurrency.decimals} decimals)`
             ],
             action: {
                 label: t("onboarding.addNetwork"),
@@ -66,11 +71,13 @@ export function OnboardingModal({ open, onOpenChange }: OnboardingModalProps) {
             title: t("onboarding.faucetTitle"),
             description: t("onboarding.faucetDesc"),
             icon: Droplet,
+            gasNotice: true,
             details: [
                 t("onboarding.faucetDetail1"),
                 t("onboarding.faucetDetail2"),
                 t("onboarding.faucetDetail3"),
-                t("onboarding.faucetDetail4")
+                t("onboarding.faucetDetail4"),
+                t("onboarding.faucetDetail5")
             ],
             link: FAUCET_URL
                 ? { label: t("onboarding.openFaucet"), url: FAUCET_URL }
@@ -81,6 +88,7 @@ export function OnboardingModal({ open, onOpenChange }: OnboardingModalProps) {
             title: t("onboarding.startTitle"),
             description: t("onboarding.startDesc"),
             icon: Zap,
+            gasNotice: true,
             details: [
                 t("onboarding.startDetail1"),
                 t("onboarding.startDetail2"),
@@ -156,6 +164,16 @@ export function OnboardingModal({ open, onOpenChange }: OnboardingModalProps) {
                             <p key={idx} className="text-xs text-foreground font-mono">{detail}</p>
                         ))}
                     </div>
+
+                    {/* Na Arc o gas é pago em USDC — o MESMO saldo que o usuário
+                        vai negociar. O tutorial não dizia isso em lugar nenhum. */}
+                    {step.gasNotice && (
+                        <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
+                            <p className="text-xs text-amber-700 dark:text-amber-200">
+                                <strong>{t("onboarding.gasTitle")}</strong> {t("onboarding.gasNotice")}
+                            </p>
+                        </div>
+                    )}
 
                     {/* Action Button */}
                     {step.action && (

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Droplet, Loader2, Copy, Check, ExternalLink, Smartphone, Shield, ShieldAlert, ShieldCheck } from "lucide-react"
+import { Droplet, Loader2, Copy, Check, ExternalLink, Smartphone, Shield, ShieldAlert, ShieldCheck, AlertTriangle, RotateCcw } from "lucide-react"
 import { useAccount, useConnect, useDisconnect } from "wagmi"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
@@ -13,7 +13,11 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { LanguageToggle } from "@/components/language-toggle"
 import { useI18n } from "@/lib/i18n"
 import { useCompliance } from "@/hooks/useCompliance"
-import { ARCSCAN_URL, FAUCET_URL, IS_MAINNET, NETWORK_LABEL } from "@/lib/contracts"
+import { ARCSCAN_URL, CHAIN_CONFIG, FAUCET_URL, IS_MAINNET, NETWORK_LABEL } from "@/lib/contracts"
+import { useArcNetwork } from "@/hooks/useArcNetwork"
+
+/** Timeout único para qualquer estado de conexão pendurado. */
+const CONNECT_TIMEOUT_MS = 30_000
 
 const WALLET_DEEP_LINKS = {
   metamask: 'https://metamask.app.link/dapp/www.arc-dex.xyz/app',
@@ -33,9 +37,10 @@ export function Navbar() {
   const [connectionError, setConnectionError] = useState<string | null>(null)
   const pathname = usePathname()
 
-  const { address, isConnected, isConnecting } = useAccount()
+  const { address, isConnected, isConnecting, isReconnecting } = useAccount()
   const { connectAsync, connectors, isPending, reset: resetConnect } = useConnect()
   const { disconnect } = useDisconnect()
+  const { isWrongNetwork, switchToArc, isSwitching } = useArcNetwork()
   const { result: complianceResult, checkCompliance, loading: complianceLoading } = useCompliance()
 
   const { formatted: usdcBalance } = useTokenBalance('USDC', isDialogOpen && isConnected)
@@ -55,15 +60,21 @@ export function Navbar() {
     }
   }, [isConnected, address, complianceResult, checkCompliance])
 
+  // Qualquer estado pendente precisa de saída. Antes só isManualConnecting tinha
+  // timeout: se o connectAsync nunca resolvia (usuário fecha o QR no X, carteira
+  // travada, estado corrompido no localStorage), isPending/isReconnecting ficavam
+  // true para sempre e o botão travava em "Conectando…" sem erro nem escape.
+  const isBusyConnecting = isManualConnecting || isPending || isConnecting || isReconnecting
+
   useEffect(() => {
-    if (!isManualConnecting) return
+    if (!isBusyConnecting || isConnected) return
     const timeout = window.setTimeout(() => {
       setIsManualConnecting(false)
       setConnectionError(t("wallet.connectionTimedOut"))
       resetConnect()
-    }, 30000)
+    }, CONNECT_TIMEOUT_MS)
     return () => window.clearTimeout(timeout)
-  }, [isManualConnecting, resetConnect, t])
+  }, [isBusyConnecting, isConnected, resetConnect, t])
 
   useEffect(() => {
     if (isConnected) {
@@ -84,7 +95,9 @@ export function Navbar() {
       try {
         setConnectionError(null)
         setIsManualConnecting(true)
-        await connectAsync({ connector: wcConnector })
+        // chainId explícito: sem ele a carteira conecta continuando na rede em
+        // que estava, e todas as leituras falham com ChainMismatchError.
+        await connectAsync({ connector: wcConnector, chainId: CHAIN_CONFIG.id })
         setIsDialogOpen(false)
       } catch (error) {
         setConnectionError(error instanceof Error ? error.message : t("wallet.connectionFailed"))
@@ -107,7 +120,10 @@ export function Navbar() {
       try {
         setConnectionError(null)
         setIsManualConnecting(true)
-        await connectAsync({ connector: injectedConnector })
+        await connectAsync({ connector: injectedConnector, chainId: CHAIN_CONFIG.id })
+        // Se a carteira não tinha a Arc cadastrada, o connect passa mas fica na
+        // rede antiga. switchToArc troca — e cadastra a rede se não existir.
+        await switchToArc()
         setIsDialogOpen(false)
       } catch (error) {
         setConnectionError(error instanceof Error ? error.message : t("wallet.connectionFailed"))
@@ -126,6 +142,31 @@ export function Navbar() {
     setIsManualConnecting(false)
     setConnectionError(null)
     setIsDialogOpen(false)
+  }
+
+  /**
+   * Escape hatch para estado de conexão corrompido.
+   *
+   * Sessão do WalletConnect meio aberta ou cache do wagmi inconsistente deixavam
+   * o app pendurado em "reconnecting" sem forma de sair a não ser limpar o
+   * localStorage na mão pelo DevTools. Isto faz isso pelo usuário.
+   */
+  const handleHardReset = () => {
+    try {
+      disconnect()
+      resetConnect()
+      Object.keys(window.localStorage)
+        .filter(
+          (k) =>
+            k.startsWith("wc@2") ||
+            k.startsWith("arcdex.wagmi") ||
+            k.startsWith("wagmi.") ||
+            k === "walletconnect",
+        )
+        .forEach((k) => window.localStorage.removeItem(k))
+    } finally {
+      window.location.reload()
+    }
   }
 
   const copyAddress = () => {
@@ -250,7 +291,21 @@ export function Navbar() {
             </span>
 
             {/* Wallet button */}
-            {isConnected && address ? (
+            {isConnected && isWrongNetwork ? (
+              /* Rede errada: antes o app simplesmente ficava mudo aqui — saldos
+                 em 0.00, botões inertes, nenhuma pista do que estava errado. */
+              <Button
+                onClick={switchToArc}
+                disabled={isSwitching}
+                className="px-4 py-2 text-sm h-auto bg-amber-500 hover:bg-amber-600 text-white"
+              >
+                {isSwitching ? (
+                  <><Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />Trocando…</>
+                ) : (
+                  <><AlertTriangle className="mr-2 h-3.5 w-3.5" />Trocar para {NETWORK_LABEL}</>
+                )}
+              </Button>
+            ) : isConnected && address ? (
               <button
                 onClick={openWalletDialog}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-card hover:border-primary/30 hover:bg-muted transition-all text-sm font-medium text-foreground"
@@ -263,7 +318,7 @@ export function Navbar() {
                 onClick={openWalletDialog}
                 className="btn-arc-primary px-4 py-2 text-sm h-auto"
               >
-                {isConnecting || isPending || isManualConnecting ? (
+                {isBusyConnecting ? (
                   <><Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />{t("wallet.connecting")}</>
                 ) : (
                   t("wallet.connect")
@@ -366,12 +421,40 @@ export function Navbar() {
                 <div className="rounded-xl border border-destructive/30 bg-destructive/8 p-3 text-sm text-destructive">
                   <p className="font-semibold">{t("wallet.connectionFailed")}</p>
                   <p className="mt-1 text-xs opacity-75">{connectionError}</p>
+                  <div className="mt-2 flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => { resetConnect(); setIsManualConnecting(false); setConnectionError(null) }}
+                      className="text-xs font-bold underline underline-offset-4"
+                    >
+                      {t("wallet.tryAgain")}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleHardReset}
+                      className="inline-flex items-center gap-1 text-xs font-bold underline underline-offset-4 opacity-80"
+                    >
+                      <RotateCcw className="h-3 w-3" />
+                      Resetar conexão
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Escape hatch sempre visível quando algo está pendurado. */}
+              {!connectionError && isBusyConnecting && (
+                <div className="rounded-xl border border-border bg-muted/50 p-3 text-xs text-muted-foreground">
+                  <p className="flex items-center gap-2">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    Aguardando a carteira responder…
+                  </p>
                   <button
                     type="button"
-                    onClick={() => { resetConnect(); setIsManualConnecting(false); setConnectionError(null) }}
-                    className="mt-2 text-xs font-bold underline underline-offset-4"
+                    onClick={handleHardReset}
+                    className="mt-2 inline-flex items-center gap-1 font-bold underline underline-offset-4"
                   >
-                    {t("wallet.tryAgain")}
+                    <RotateCcw className="h-3 w-3" />
+                    Travou? Resetar conexão
                   </button>
                 </div>
               )}

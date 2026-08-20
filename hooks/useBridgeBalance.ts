@@ -9,9 +9,23 @@
  */
 
 import { useQuery } from "@tanstack/react-query"
-import { createPublicClient, formatUnits, http, type Address } from "viem"
+import { createPublicClient, fallback, formatUnits, http } from "viem"
 import { useAccount } from "wagmi"
 import { BRIDGE_USDC_BY_CHAIN } from "@/lib/bridge-chains"
+
+/**
+ * Transport com fallback entre os RPCs da chain.
+ *
+ * Antes cada leitura usava UM endpoint só: quando o provedor caía ou passava a
+ * exigir plano pago (foi o que aconteceu com a Sepolia na dRPC), o saldo
+ * simplesmente não carregava e o bridge ficava bloqueado sem explicação.
+ */
+function rpcTransport(rpcs: string[]) {
+  const opts = { timeout: 20_000, retryCount: 1, retryDelay: 800 }
+  return rpcs.length > 1
+    ? fallback(rpcs.map((url) => http(url, opts)), { rank: false })
+    : http(rpcs[0], opts)
+}
 
 const ERC20_BALANCE_ABI = [
   {
@@ -43,7 +57,7 @@ export function useBridgeBalance(chainId: number): BridgeBalance {
     refetchInterval: 15_000,
     queryFn: async () => {
       if (!address || !config) return 0n
-      const client = createPublicClient({ transport: http(config.rpc) })
+      const client = createPublicClient({ transport: rpcTransport(config.rpcs) })
       return (await client.readContract({
         address: config.usdc,
         abi: ERC20_BALANCE_ABI,

@@ -365,7 +365,7 @@ export const spanishTranslations = {
 
   "contracts.back": "Volver a la app",
   "contracts.title": "Contratos y seguridad",
-  "contracts.subtitle": "Todos los contratos inteligentes desplegados en Arc (Chain ID: 5042002). Verifica las direcciones en ArcScan.",
+  "contracts.subtitle": "Todos los contratos inteligentes desplegados en Arc (Chain ID: {chainId}). Verifica las direcciones en ArcScan.",
   "contracts.core": "Contratos core de ARCDex",
   "contracts.tokens": "Tokens soportados",
   "contracts.infrastructure": "Infraestructura del protocolo Arc",
@@ -392,6 +392,9 @@ export const spanishTranslations = {
   "onboarding.faucetDetail2": "2. Conecta tu wallet",
   "onboarding.faucetDetail3": "3. Selecciona la red 'Arc'",
   "onboarding.faucetDetail4": "4. Solicita USDC",
+  "onboarding.faucetDetail5": "5. Deja ~0,5 USDC de margen — es tu gas",
+  "onboarding.gasTitle": "El gas se paga en USDC.",
+  "onboarding.gasNotice": "En Arc el USDC es a la vez el gas token nativo (18 decimales) y un ERC-20 (6 decimales) — es un solo saldo, no dos. Nunca gastes el 100%: deja un margen o la transacción revierte.",
   "onboarding.openFaucet": "Abrir Circle Faucet",
   "onboarding.startTitle": "¡Empieza a probar!",
   "onboarding.startDesc": "Prueba las funciones DeFi en Arc.",
